@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In Demand Products - Anihan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="profile-dropdown.css">
+    <link rel="stylesheet" href="sub_admin_in_demand_products.css">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                <span class="brand-text">Anihan</span>
+            </a>
+            <div class="user-avatar" onclick="toggleProfileDropdown()">
+                <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
+                <i id="userAvatarIcon" class="fas fa-user"></i>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            <img id="profileAvatarImage" class="profile-avatar-img" style="display: none;" alt="Profile">
+                            <i id="profileAvatarIcon" class="fas fa-user"></i>
+                        </div>
+                        <h6 id="profileUserName" class="profile-dropdown-name">Loading...</h6>
+                    </div>
+                    <div class="profile-dropdown-details">
+                        <div class="profile-detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <span id="profileUserEmail">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-user-tag"></i>
+                            <span id="profileUserRole">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="profileUserAccess">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-actions">
+                        <button class="btn" onclick="signOut()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="municipality_dashboard.html">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </a>
+                    <a class="nav-link" href="sub_admin_inventory.html">
+                        <i class="fas fa-boxes me-2"></i>
+                        Inventory Records
+                    </a>
+                    <a class="nav-link" href="sub_admin_price_monitoring.html">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        Price Monitoring
+                    </a>
+                    <a class="nav-link active" href="sub_admin_in_demand_products.html">
+                        <i class="fas fa-chart-line me-2"></i>
+                        In Demand Products
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Demand Card -->
+                <div class="card demand-card">
+                    <!-- Card Header -->
+                    <div class="demand-card-header">
+                        <h2>Most In Demand Products Per Locations</h2>
+                        <div class="search-container">
+                            <div class="search-input-wrapper">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="form-control search-input" placeholder="Search..." id="searchInput">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+                            <table class="demand-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Contact Number</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <tr>
+                                        <td>Pluto D. Espejo</td>
+                                        <td>Pluto@Gmail.com</td>
+                                        <td>09455678945</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pluto D. Espejo</td>
+                                        <td>Pluto@Gmail.com</td>
+                                        <td>09455678945</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pluto D. Espejo</td>
+                                        <td>Pluto@Gmail.com</td>
+                                        <td>09455678945</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pluto D. Espejo</td>
+                                        <td>Pluto@Gmail.com</td>
+                                        <td>09455678945</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="demand-card-footer">
+                            <div class="view-all">
+                                <a href="#" class="view-all-link">View all ></a>
+                            </div>
+                            <div class="demand-pagination">
+                                <button class="btn">&lt;</button>
+                                <button class="btn active">1</button>
+                                <button class="btn">&gt;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Shared Profile System -->
+    <script src="shared-profile.js"></script>
+    
+    <script>
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = 'sign_in_form.html';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const userAvatar = document.querySelector('.user-avatar');
+            
+            if (!userAvatar.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            // Search functionality will be implemented when data is added
+            console.log('Searching:', this.value);
+        });
+    </script>
+</body>
+</html>
+</html>

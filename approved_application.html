@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anihan Dashboard - Approved Applications</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="fixed-layout.css" rel="stylesheet">
+    <link href="profile-dropdown.css" rel="stylesheet">
+    <link href="approved_application.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                <span class="brand-text">Anihan</span>
+            </a>
+            <div class="user-avatar" onclick="toggleProfileDropdown()">
+                <img id="userAvatarImage" src="" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;">
+                <i id="userAvatarIcon" class="fas fa-user"></i>
+                        <!-- Profile Dropdown -->
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="profile-dropdown-header">
+                                <div class="profile-dropdown-avatar">
+                                    <img id="profileAvatarImage" src="" alt="Profile Avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; display: none;">
+                                    <i id="profileAvatarIcon" class="fas fa-user"></i>
+                                </div>
+                                <h6 class="profile-dropdown-name" id="profileUserName">Loading...</h6>
+                            </div>
+                            <div class="profile-dropdown-details">
+                                <div class="profile-detail-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span id="profileUserEmail">Loading...</span>
+                                </div>
+                                <div class="profile-detail-item">
+                                    <i class="fas fa-user-tag"></i>
+                                    <span id="profileUserRole">Loading...</span>
+                                </div>
+                                <div class="profile-detail-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span id="profileUserTitle">System Administrator</span>
+                                </div>
+                            </div>
+                            <div class="profile-dropdown-actions">
+                                <button class="btn" onclick="signOut()">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Sign out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar bg-white border-end">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link d-flex align-items-center text-start" href="dashboard_super_admin.html">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="admin_accounts.html">
+                        <i class="fas fa-user-shield me-2"></i>
+                        Admin Accounts
+                    </a>
+                    
+                    <!-- Account Approval Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#accountApprovalSubmenu" 
+                                aria-expanded="true" aria-controls="accountApprovalSubmenu">
+                            <span>
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Account Approval
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse show" id="accountApprovalSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="for_approval.html">
+                                    <i class="fas fa-user-clock me-2"></i>
+                                    For Approval
+                                </a>
+                                <a class="nav-link submenu-link active d-flex align-items-center text-start" href="approved_application.html">
+                                    <i class="fas fa-user-check me-2"></i>
+                                    Approved Applications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="inventory_records.html">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Inventory Records
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="price_monitoring.html">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        Price Monitoring
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="in_demand_products.html">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        In Demand Products
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="sales_per_location.html">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        Sales Per Location
+                    </a>
+                    
+                    <!-- Voucher Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#voucherSubmenu" 
+                                aria-expanded="false" aria-controls="voucherSubmenu">
+                            <span>
+                                <i class="fas fa-ticket-alt me-2"></i>
+                                Voucher
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse" id="voucherSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="add_voucher.html">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Add Voucher
+                                </a>
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="voucher_records.html">
+                                    <i class="fas fa-list me-2"></i>
+                                    Voucher Records
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="violation.html">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Violation
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Approved Applications Table -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="approval-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Approved Application</h5>
+                                <!-- Search Bar in Header -->
+                                <div class="search-container">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" class="form-control search-input" placeholder="Search...">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Full Name</th>
+                                                <th>Email</th>
+                                                <th>Phone</th>
+                                                <th>Approval Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>John Doe</td>
+                                                <td>John.doe@example.com</td>
+                                                <td>09123456544</td>
+                                                <td><span class="badge bg-success">Pending Approval</span></td>
+                                                <td>
+                                                    <button class="btn btn-primary btn-sm view-btn">
+                                                        View Info
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="table-footer">
+                                    <div class="table-info-section">
+                                        <a href="#" class="view-all">View all ></a>
+                                    </div>
+                                    <div class="pagination-controls">
+                                        <button class="btn btn-sm btn-outline-secondary">&lt;</button>
+                                        <button class="btn btn-sm btn-success">1</button>
+                                        <button class="btn btn-sm btn-outline-secondary">&gt;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Add Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Add CryptoJS for MD5 hashing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        // Current user ID for tracking
+        window.currentUserId = null;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing profile...');
+            loadCurrentUserProfile();
+        });
+
+        // Profile loading functions
+        async function loadCurrentUserProfile() {
+            try {
+                console.log('=== LOADING CURRENT USER PROFILE ===');
+                
+                // Get current user from session storage (set during login)
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                console.log('Session storage user:', currentUser);
+                
+                if (!currentUser.id || currentUser.id === 'fallback') {
+                    console.log('No valid logged-in user found in session, checking database...');
+                    await loadFirstUserForTesting();
+                    return;
+                }
+                
+                console.log('Found logged-in user with ID:', currentUser.id);
+                window.currentUserId = currentUser.id;
+                
+                // Fetch the actual user data from database using their ID
+                try {
+                    const { data: userData, error } = await supabaseClient
+                        .from('admin_accounts')
+                        .select('*')
+                        .eq('id', currentUser.id)
+                        .single();
+                    
+                    if (error) {
+                        console.error('Database error fetching user:', error);
+                        await loadFirstUserForTesting();
+                        return;
+                    }
+                    
+                    if (userData) {
+                        console.log('Logged-in user data from database:', userData);
+                        
+                        // Update session with fresh data
+                        const userSession = {
+                            id: userData.id,
+                            name: userData.name,
+                            email: userData.email,
+                            userType: userData.user_type,
+                            image_url: userData.image_url
+                        };
+                        sessionStorage.setItem('currentUser', JSON.stringify(userSession));
+                        
+                        // Update profile display with logged-in user's data
+                        updateProfileDisplay({
+                            name: userData.name,
+                            email: userData.email,
+                            user_type: userData.user_type,
+                            image_url: userData.image_url
+                        });
+                    } else {
+                        console.log('No user data found for ID:', currentUser.id);
+                        updateProfileDisplay(currentUser);
+                    }
+                    
+                } catch (dbError) {
+                    console.error('Database connection error:', dbError);
+                    await loadFirstUserForTesting();
+                }
+                
+            } catch (error) {
+                console.error('Error in loadCurrentUserProfile:', error);
+                await loadFirstUserForTesting();
+            }
+        }
+
+        // Fallback function to load any user for testing
+        async function loadFirstUserForTesting() {
+            try {
+                console.log('=== LOADING FIRST USER FOR TESTING ===');
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available, using fallback data');
+                    updateProfileDisplay({
+                        name: 'Administrator',
+                        email: 'admin@anihan.gov.ph',
+                        user_type: 'SUPER ADMIN',
+                        image_url: null
+                    });
+                    return;
+                }
+                
+                const { data: users, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) {
+                    console.error('Database error in loadFirstUserForTesting:', error);
+                    updateProfileDisplay({
+                        name: 'Administrator',
+                        email: 'admin@anihan.gov.ph',
+                        user_type: 'SUPER ADMIN',
+                        image_url: null
+                    });
+                    return;
+                }
+                
+                if (users && users.length > 0) {
+                    const user = users[0];
+                    console.log('Using first user from database:', user);
+                    
+                    updateProfileDisplay({
+                        name: user.name,
+                        email: user.email,
+                        user_type: user.user_type,
+                        image_url: user.image_url
+                    });
+                } else {
+                    console.log('No users in database, using default');
+                    updateProfileDisplay({
+                        name: 'Administrator',
+                        email: 'admin@anihan.gov.ph',
+                        user_type: 'SUPER ADMIN',
+                        image_url: null
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error in loadFirstUserForTesting:', error);
+                updateProfileDisplay({
+                    name: 'Administrator',
+                    email: 'admin@anihan.gov.ph',
+                    user_type: 'SUPER ADMIN',
+                    image_url: null
+                });
+            }
+        }
+
+        function updateProfileDisplay(userData) {
+            console.log('=== UPDATING PROFILE DISPLAY ===');
+            console.log('Updating profile display with data:', userData);
+            
+            // Update profile name
+            const profileName = document.getElementById('profileUserName');
+            if (profileName) {
+                const displayName = userData.name || 'Administrator';
+                profileName.textContent = displayName;
+                console.log('✅ Updated profile name to:', displayName);
+            }
+            
+            // Update profile email
+            const profileEmail = document.getElementById('profileUserEmail');
+            if (profileEmail) {
+                const displayEmail = userData.email || 'admin@anihan.gov.ph';
+                profileEmail.textContent = displayEmail;
+                console.log('✅ Updated profile email to:', displayEmail);
+            }
+            
+            // Update profile role
+            const profileRole = document.getElementById('profileUserRole');
+            if (profileRole) {
+                const displayRole = userData.user_type || userData.userType || 'ADMIN';
+                profileRole.textContent = displayRole;
+                console.log('✅ Updated profile role to:', displayRole);
+            }
+            
+            // Update profile title based on role
+            const profileTitle = document.getElementById('profileUserTitle');
+            if (profileTitle) {
+                const userRole = userData.user_type || userData.userType || 'ADMIN';
+                if (userRole === 'SUPER ADMIN') {
+                    profileTitle.textContent = 'System Administrator';
+                } else if (userRole === 'SUB ADMIN') {
+                    profileTitle.textContent = 'Municipal Administrator';
+                } else {
+                    profileTitle.textContent = 'Administrator';
+                }
+                console.log('Updated profile title for role:', userRole);
+            }
+            
+            // Update profile images
+            console.log('=== PROCESSING PROFILE IMAGE ===');
+            
+            if (userData.image_url && userData.image_url.trim() !== '' && userData.image_url !== 'null') {
+                console.log('✅ Profile image found - processing...');
+                
+                // Clean up the image URL
+                let cleanImageUrl = userData.image_url.trim();
+                if (cleanImageUrl.startsWith('"') && cleanImageUrl.endsWith('"')) {
+                    cleanImageUrl = cleanImageUrl.slice(1, -1);
+                }
+                
+                // Get image elements
+                const userAvatarImage = document.getElementById('userAvatarImage');
+                const userAvatarIcon = document.getElementById('userAvatarIcon');
+                const profileAvatarImage = document.getElementById('profileAvatarImage');
+                const profileAvatarIcon = document.getElementById('profileAvatarIcon');
+                
+                // Update main avatar (in navbar)
+                if (userAvatarImage && userAvatarIcon) {
+                    userAvatarImage.src = cleanImageUrl;
+                    userAvatarImage.style.display = 'block';
+                    userAvatarIcon.style.display = 'none';
+                    
+                    userAvatarImage.onerror = function() {
+                        console.error('❌ Main avatar image failed to load');
+                        this.style.display = 'none';
+                        userAvatarIcon.style.display = 'block';
+                    };
+                    
+                    userAvatarImage.onload = function() {
+                        console.log('✅ Main avatar image loaded successfully');
+                    };
+                }
+                
+                // Update dropdown avatar
+                if (profileAvatarImage && profileAvatarIcon) {
+                    profileAvatarImage.src = cleanImageUrl;
+                    profileAvatarImage.style.display = 'block';
+                    profileAvatarIcon.style.display = 'none';
+                    
+                    profileAvatarImage.onerror = function() {
+                        console.error('❌ Dropdown avatar image failed to load');
+                        this.style.display = 'none';
+                        profileAvatarIcon.style.display = 'block';
+                    };
+                    
+                    profileAvatarImage.onload = function() {
+                        console.log('✅ Dropdown avatar image loaded successfully');
+                    };
+                }
+                
+            } else {
+                console.log('❌ No profile image found - showing default icons');
+                
+                // Get image elements
+                const userAvatarImage = document.getElementById('userAvatarImage');
+                const userAvatarIcon = document.getElementById('userAvatarIcon');
+                const profileAvatarImage = document.getElementById('profileAvatarImage');
+                const profileAvatarIcon = document.getElementById('profileAvatarIcon');
+                
+                // Show icons when no image
+                if (userAvatarImage && userAvatarIcon) {
+                    userAvatarImage.style.display = 'none';
+                    userAvatarIcon.style.display = 'block';
+                }
+                if (profileAvatarImage && profileAvatarIcon) {
+                    profileAvatarImage.style.display = 'none';
+                    profileAvatarIcon.style.display = 'block';
+                }
+            }
+            
+            console.log('=== PROFILE DISPLAY UPDATE COMPLETE ===');
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = 'sign_in_form.html';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const userAvatar = document.querySelector('.user-avatar');
+            
+            if (!userAvatar.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

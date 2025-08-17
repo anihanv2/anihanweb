@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Municipality Dashboard - Anihan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="fixed-layout.css">
+    <link href="profile-dropdown.css" rel="stylesheet">
+    <link rel="stylesheet" href="municipality_dashboard.css">
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                <span class="brand-text">Anihan</span>
+            </a>
+            <div class="user-avatar" onclick="toggleProfileDropdown()">
+                <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
+                <i id="userAvatarIcon" class="fas fa-user"></i>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            <img id="profileAvatarImage" class="profile-avatar-img" style="display: none;" alt="Profile">
+                            <i id="profileAvatarIcon" class="fas fa-user"></i>
+                        </div>
+                        <h6 id="profileUserName" class="profile-dropdown-name">Loading...</h6>
+                    </div>
+                    <div class="profile-dropdown-details">
+                        <div class="profile-detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <span id="profileUserEmail">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-user-tag"></i>
+                            <span id="profileUserRole">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="profileUserAccess">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-actions">
+                        <button class="btn" onclick="signOut()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="municipality_dashboard.html">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </a>
+                    <a class="nav-link" href="sub_admin_inventory.html">
+                        <i class="fas fa-boxes me-2"></i>
+                        Inventory Records
+                    </a>
+                    <a class="nav-link" href="sub_admin_price_monitoring.html">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        Price Monitoring
+                    </a>
+                    <a class="nav-link" href="sub_admin_in_demand_products.html">
+                        <i class="fas fa-chart-line me-2"></i>
+                        In Demand Products
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="main-content">
+                    <!-- Stats Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="stats-card stats-users">
+                                <div class="stats-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">21 Users</div>
+                                    <div class="stats-label">Active Users</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card stats-products">
+                                <div class="stats-icon">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">7 Products</div>
+                                    <div class="stats-label">Available</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card stats-farmers">
+                                <div class="stats-icon">
+                                    <i class="fas fa-tractor"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">12 Farmers</div>
+                                    <div class="stats-label">Active Farmers</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Cards Row 1 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="analytics-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>Sales Analytics</h5>
+                                    <div class="chart-controls">
+                                        <select class="form-select form-select-sm me-2" id="salesFilter" style="width: 100px;">
+                                            <option value="monthly">Monthly</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="yearly">Yearly</option>
+                                        </select>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-bars"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('sales', 'csv')">
+                                                    <i class="fas fa-file-csv me-2"></i>Save as CSV
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('sales', 'pdf')">
+                                                    <i class="fas fa-file-pdf me-2"></i>Save as PDF
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('sales', 'word')">
+                                                    <i class="fas fa-file-word me-2"></i>Save as Word
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('sales', 'picture')">
+                                                    <i class="fas fa-image me-2"></i>Save as Picture
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="salesChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="analytics-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>Stocks Analytics</h5>
+                                    <div class="chart-controls">
+                                        <select class="form-select form-select-sm me-2" id="stocksFilter" style="width: 100px;">
+                                            <option value="category">Category</option>
+                                            <option value="status">Status</option>
+                                            <option value="supplier">Supplier</option>
+                                        </select>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-bars"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('stocks', 'csv')">
+                                                    <i class="fas fa-file-csv me-2"></i>Save as CSV
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('stocks', 'pdf')">
+                                                    <i class="fas fa-file-pdf me-2"></i>Save as PDF
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('stocks', 'word')">
+                                                    <i class="fas fa-file-word me-2"></i>Save as Word
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('stocks', 'picture')">
+                                                    <i class="fas fa-image me-2"></i>Save as Picture
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="stocksChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Cards Row 2 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="analytics-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>Soil Analytics</h5>
+                                    <div class="chart-controls">
+                                        <select class="form-select form-select-sm me-2" id="soilFilter" style="width: 100px;">
+                                            <option value="type">Soil Type</option>
+                                            <option value="region">Region</option>
+                                            <option value="season">Season</option>
+                                        </select>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-bars"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('soil', 'csv')">
+                                                    <i class="fas fa-file-csv me-2"></i>Save as CSV
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('soil', 'pdf')">
+                                                    <i class="fas fa-file-pdf me-2"></i>Save as PDF
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('soil', 'word')">
+                                                    <i class="fas fa-file-word me-2"></i>Save as Word
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('soil', 'picture')">
+                                                    <i class="fas fa-image me-2"></i>Save as Picture
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="soilChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="analytics-card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>Hectare Analytics</h5>
+                                    <div class="chart-controls">
+                                        <select class="form-select form-select-sm me-2" id="hectareFilter" style="width: 100px;">
+                                            <option value="monthly">Monthly</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="yearly">Yearly</option>
+                                        </select>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-bars"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('hectare', 'csv')">
+                                                    <i class="fas fa-file-csv me-2"></i>Save as CSV
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('hectare', 'pdf')">
+                                                    <i class="fas fa-file-pdf me-2"></i>Save as PDF
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('hectare', 'word')">
+                                                    <i class="fas fa-file-word me-2"></i>Save as Word
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportChart('hectare', 'picture')">
+                                                    <i class="fas fa-image me-2"></i>Save as Picture
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="hectareChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Farmers Management -->
+                    <div class="price-card shadow-sm mt-4">
+                        <div class="price-card-header d-flex justify-content-between align-items-center">
+                            <span>Farmers Management</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="price-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Contact Number</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Pluto D. Espijo</td>
+                                        <td>pluto.espejo@gmail.com</td>
+                                        <td>09455678945</td>
+                                        <td>Quezon Province</td>
+                                        <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Maria Santos</td>
+                                        <td>maria.santos@gmail.com</td>
+                                        <td>09123456789</td>
+                                        <td>Bataan Province</td>
+                                        <td><span class="badge bg-success">Approved</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Juan Cruz</td>
+                                        <td>juan.cruz@gmail.com</td>
+                                        <td>09987654321</td>
+                                        <td>Pampanga Province</td>
+                                        <td><span class="badge bg-danger">Rejected</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Carmen Reyes</td>
+                                        <td>carmen.reyes@gmail.com</td>
+                                        <td>09654321789</td>
+                                        <td>Tarlac Province</td>
+                                        <td><span class="badge bg-success">Approved</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="price-card-footer">
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
+                            <div class="price-pagination">
+                                <button class="btn">&lt;</button>
+                                <button class="btn active">1</button>
+                                <button class="btn">&gt;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Shared Profile System -->
+    <script src="shared-profile.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Chart variables
+        let salesChart, stocksChart, soilChart, hectareChart;
+
+        // Chart Data for Municipality Dashboard
+        const analyticsData = {
+            sales: {
+                monthly: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    data: [12000, 15500, 18000, 16800, 22500, 25000, 28000, 26500, 29000, 32000, 35000, 38000]
+                },
+                weekly: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    data: [7500, 8200, 9500, 11000]
+                },
+                yearly: {
+                    labels: ['2021', '2022', '2023', '2024'],
+                    data: [180000, 220000, 280000, 320000]
+                }
+            },
+            stocks: {
+                category: {
+                    labels: ['Rice', 'Corn', 'Vegetables', 'Fruits', 'Herbs'],
+                    data: [35, 25, 20, 15, 5],
+                    colors: ['#28a745', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14']
+                },
+                status: {
+                    labels: ['In Stock', 'Low Stock', 'Out of Stock', 'Pending'],
+                    data: [45, 30, 15, 10],
+                    colors: ['#28a745', '#ffc107', '#dc3545', '#6c757d']
+                },
+                supplier: {
+                    labels: ['Local Farmers', 'Cooperatives', 'Direct Import', 'Distributors'],
+                    data: [40, 30, 20, 10],
+                    colors: ['#28a745', '#17a2b8', '#ffc107', '#6f42c1']
+                }
+            },
+            soil: {
+                type: {
+                    labels: ['Loamy', 'Clay', 'Sandy', 'Silty', 'Peaty'],
+                    data: [40, 25, 20, 10, 5],
+                    colors: ['#8b4513', '#d2691e', '#daa520', '#bc8f8f', '#556b2f']
+                },
+                region: {
+                    labels: ['North District', 'South District', 'East District', 'West District'],
+                    data: [30, 25, 25, 20],
+                    colors: ['#28a745', '#17a2b8', '#ffc107', '#6f42c1']
+                },
+                season: {
+                    labels: ['Dry Season', 'Wet Season', 'Transition'],
+                    data: [45, 35, 20],
+                    colors: ['#ff6b35', '#4ecdc4', '#45b7d1']
+                }
+            },
+            hectare: {
+                monthly: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    data: [450, 480, 520, 490, 540, 580, 620, 600, 650, 680, 720, 750]
+                },
+                weekly: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    data: [180, 185, 190, 195]
+                },
+                yearly: {
+                    labels: ['2021', '2022', '2023', '2024'],
+                    data: [5500, 6200, 6800, 7500]
+                }
+            }
+        };
+
+        // Initialize Charts
+        function initializeCharts() {
+            initSalesChart();
+            initStocksChart();
+            initSoilChart();
+            initHectareChart();
+        }
+
+        // Sales Chart (Line Graph)
+        function initSalesChart() {
+            const canvas = document.getElementById('salesChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const currentData = analyticsData.sales.monthly;
+            
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: currentData.labels,
+                    datasets: [{
+                        label: 'Sales (₱)',
+                        data: currentData.data,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                boxWidth: 40,
+                                usePointStyle: false
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Stocks Chart (Pie Chart)
+        function initStocksChart() {
+            const canvas = document.getElementById('stocksChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const currentData = analyticsData.stocks.category;
+            
+            stocksChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: currentData.labels,
+                    datasets: [{
+                        data: currentData.data,
+                        backgroundColor: currentData.colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Soil Chart (Donut Chart)
+        function initSoilChart() {
+            const canvas = document.getElementById('soilChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const currentData = analyticsData.soil.type;
+            
+            soilChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: currentData.labels,
+                    datasets: [{
+                        data: currentData.data,
+                        backgroundColor: currentData.colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Hectare Chart (Bar Chart)
+        function initHectareChart() {
+            const canvas = document.getElementById('hectareChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const currentData = analyticsData.hectare.monthly;
+            
+            hectareChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: currentData.labels,
+                    datasets: [{
+                        label: 'Hectares',
+                        data: currentData.data,
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        borderColor: '#28a745',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                boxWidth: 40,
+                                usePointStyle: false
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' ha';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Filter Functions
+        function updateSalesChart(period) {
+            const data = analyticsData.sales[period];
+            salesChart.data.labels = data.labels;
+            salesChart.data.datasets[0].data = data.data;
+            salesChart.update();
+        }
+
+        function updateStocksChart(view) {
+            const data = analyticsData.stocks[view];
+            stocksChart.data.labels = data.labels;
+            stocksChart.data.datasets[0].data = data.data;
+            stocksChart.data.datasets[0].backgroundColor = data.colors;
+            stocksChart.update();
+        }
+
+        function updateSoilChart(view) {
+            const data = analyticsData.soil[view];
+            soilChart.data.labels = data.labels;
+            soilChart.data.datasets[0].data = data.data;
+            soilChart.data.datasets[0].backgroundColor = data.colors;
+            soilChart.update();
+        }
+
+        function updateHectareChart(period) {
+            const data = analyticsData.hectare[period];
+            hectareChart.data.labels = data.labels;
+            hectareChart.data.datasets[0].data = data.data;
+            hectareChart.update();
+        }
+
+        // Event Listeners for Filters
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            if (typeof Chart !== 'undefined') {
+                initializeCharts();
+            }
+            
+            // Add event listeners for filters
+            const salesFilter = document.getElementById('salesFilter');
+            if (salesFilter) {
+                salesFilter.addEventListener('change', function() {
+                    updateSalesChart(this.value);
+                });
+            }
+
+            const stocksFilter = document.getElementById('stocksFilter');
+            if (stocksFilter) {
+                stocksFilter.addEventListener('change', function() {
+                    updateStocksChart(this.value);
+                });
+            }
+
+            const soilFilter = document.getElementById('soilFilter');
+            if (soilFilter) {
+                soilFilter.addEventListener('change', function() {
+                    updateSoilChart(this.value);
+                });
+            }
+
+            const hectareFilter = document.getElementById('hectareFilter');
+            if (hectareFilter) {
+                hectareFilter.addEventListener('change', function() {
+                    updateHectareChart(this.value);
+                });
+            }
+        });
+
+        // Export Functions
+        function exportChart(chartType, format) {
+            const chartMap = {
+                sales: salesChart,
+                stocks: stocksChart,
+                soil: soilChart,
+                hectare: hectareChart
+            };
+            
+            const chart = chartMap[chartType];
+            const filename = chartType + '_analytics_municipality_' + new Date().toISOString().split('T')[0];
+            
+            switch(format) {
+                case 'csv':
+                    exportToCSV(chartType, filename);
+                    break;
+                case 'pdf':
+                    exportToPDF(chartType, filename);
+                    break;
+                case 'word':
+                    exportToWord(chartType, filename);
+                    break;
+                case 'picture':
+                    exportToPicture(chartType, filename);
+                    break;
+            }
+        }
+
+        function exportToCSV(chartType, filename) {
+            let csv = 'Label,Value\n';
+            let data;
+            
+            switch(chartType) {
+                case 'sales':
+                    data = analyticsData.sales.monthly;
+                    data.labels.forEach((label, index) => {
+                        csv += `${label},${data.data[index]}\n`;
+                    });
+                    break;
+                case 'stocks':
+                    data = analyticsData.stocks.category;
+                    data.labels.forEach((label, index) => {
+                        csv += `${label},${data.data[index]}\n`;
+                    });
+                    break;
+                case 'soil':
+                    data = analyticsData.soil.type;
+                    data.labels.forEach((label, index) => {
+                        csv += `${label},${data.data[index]}\n`;
+                    });
+                    break;
+                case 'hectare':
+                    data = analyticsData.hectare.monthly;
+                    data.labels.forEach((label, index) => {
+                        csv += `${label},${data.data[index]}\n`;
+                    });
+                    break;
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename + '.csv';
+            link.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportToPDF(chartType, filename) {
+            const canvas = document.querySelector('#' + chartType + 'Chart');
+            if (canvas) {
+                html2canvas(canvas).then(canvas => {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const imgData = canvas.toDataURL('image/png');
+                    doc.addImage(imgData, 'PNG', 10, 10, 190, 100);
+                    doc.save(filename + '.pdf');
+                });
+            }
+        }
+
+        function exportToWord(chartType, filename) {
+            const canvas = document.querySelector('#' + chartType + 'Chart');
+            if (canvas) {
+                html2canvas(canvas).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const content = `
+                        <html>
+                        <head><title>Municipality ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics</title></head>
+                        <body>
+                            <h1>Municipality ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics Report</h1>
+                            <img src="${imgData}" style="max-width: 100%; height: auto;">
+                        </body>
+                        </html>
+                    `;
+                    const blob = new Blob([content], { type: 'application/msword' });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename + '.doc';
+                    link.click();
+                    window.URL.revokeObjectURL(url);
+                });
+            }
+        }
+
+        function exportToPicture(chartType, filename) {
+            const canvas = document.querySelector('#' + chartType + 'Chart');
+            if (canvas) {
+                html2canvas(canvas).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = filename + '.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            }
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = 'sign_in_form.html';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const userAvatar = document.querySelector('.user-avatar');
+            
+            if (!userAvatar.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

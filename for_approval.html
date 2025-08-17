@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anihan Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="fixed-layout.css" rel="stylesheet">
+    <link href="profile-dropdown.css" rel="stylesheet">
+    <link href="for_approval.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                <span class="brand-text">Anihan</span>
+            </a>
+            <div class="user-avatar" onclick="toggleProfileDropdown()">
+                <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
+                <i id="userAvatarIcon" class="fas fa-user"></i>
+                        <!-- Profile Dropdown -->
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="profile-dropdown-header">
+                                <div class="profile-dropdown-avatar">
+                                    <img id="profileAvatarImage" class="profile-avatar-img" style="display: none;" alt="Profile">
+                                    <i id="profileAvatarIcon" class="fas fa-user"></i>
+                                </div>
+                                <h6 id="profileUserName" class="profile-dropdown-name">Loading...</h6>
+                            </div>
+                            <div class="profile-dropdown-details">
+                                <div class="profile-detail-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <span id="profileUserEmail">Loading...</span>
+                                </div>
+                                <div class="profile-detail-item">
+                                    <i class="fas fa-user-tag"></i>
+                                    <span id="profileUserRole">Loading...</span>
+                                </div>
+                                <div class="profile-detail-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span id="profileUserAccess">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="profile-dropdown-actions">
+                                <button class="btn" onclick="signOut()">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Sign out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar bg-white border-end">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link d-flex align-items-center text-start" href="dashboard_super_admin.html">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="admin_accounts.html">
+                        <i class="fas fa-user-shield me-2"></i>
+                        Admin Accounts
+                    </a>
+                    
+                    <!-- Account Approval Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#accountApprovalSubmenu" 
+                                aria-expanded="true" aria-controls="accountApprovalSubmenu">
+                            <span>
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Account Approval
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse show" id="accountApprovalSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link active d-flex align-items-center text-start" href="for_approval.html">
+                                    <i class="fas fa-user-clock me-2"></i>
+                                    For Approval
+                                </a>
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="approved_application.html">
+                                    <i class="fas fa-user-check me-2"></i>
+                                    Approved Applications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="inventory_records.html">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Inventory Records
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="price_monitoring.html">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        Price Monitoring
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="in_demand_products.html">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        In Demand Products
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="sales_per_location.html">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        Sales Per Location
+                    </a>
+                    
+                    <!-- Voucher Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#voucherSubmenu" 
+                                aria-expanded="false" aria-controls="voucherSubmenu">
+                            <span>
+                                <i class="fas fa-ticket-alt me-2"></i>
+                                Voucher
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse" id="voucherSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="add_voucher.html">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Add Voucher
+                                </a>
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="voucher_records.html">
+                                    <i class="fas fa-list me-2"></i>
+                                    Voucher Records
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="violation.html">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Violation
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- For Approval Applications Table -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="approval-card">
+                            <div class="approval-card-header d-flex justify-content-between align-items-center">
+                                <span>For Approval Farmers</span>
+                                <!-- Search Bar in Header -->
+                                <div class="search-container">
+                                    <div class="search-input-wrapper">
+                                        <i class="fas fa-search search-icon"></i>
+                                        <input type="text" class="form-control search-input" placeholder="Search">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="approval-card-body">
+                                <div class="table-responsive">
+                                    <table class="approval-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Full Name</th>
+                                                <th>Email</th>
+                                                <th>Phone</th>
+                                                <th>Approval Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>John Doe</td>
+                                                <td>john.doe@example.com</td>
+                                                <td>+1234567890</td>
+                                                <td><span class="badge bg-warning">Pending Approval</span></td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        <button class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check me-1"></i>Approve
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-times me-1"></i>Reject
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Jane Smith</td>
+                                                <td>jane.smith@example.com</td>
+                                                <td>+1234567891</td>
+                                                <td><span class="badge bg-warning">Pending Approval</span></td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        <button class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check me-1"></i>Approve
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-times me-1"></i>Reject
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mike Johnson</td>
+                                                <td>mike.johnson@example.com</td>
+                                                <td>+1234567892</td>
+                                                <td><span class="badge bg-warning">Pending Approval</span></td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        <button class="btn btn-success btn-sm">
+                                                            <i class="fas fa-times me-1"></i>Approve
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-times me-1"></i>Reject
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="approval-card-footer">
+                                    <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
+                                    <div class="approval-pagination">
+                                        <button class="btn">&lt;</button>
+                                        <button class="btn active">1</button>
+                                        <button class="btn">&gt;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Shared Profile System -->
+    <script src="shared-profile.js"></script>
+    
+    <script>
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                window.location.href = 'sign_in_form.html';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const userAvatar = document.querySelector('.user-avatar');
+            
+            if (!userAvatar.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

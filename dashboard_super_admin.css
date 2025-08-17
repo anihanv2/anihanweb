@@ -1,0 +1,810 @@
+
+body {
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.navbar {
+    height: 80px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar .container-fluid {
+    height: 100%;
+    background: white;
+    margin: 0;
+    max-width: 100%;
+    padding: 0 1.5rem;
+}
+
+.logo-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.brand-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-avatar {
+    background: #6c757d;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Analytics Data Styling */
+.analytics-data-container {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.analytics-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #28a745;
+}
+
+.analytics-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    flex: 1;
+}
+
+.analytics-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c5aa0;
+    margin: 0 8px;
+}
+
+.analytics-growth {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.analytics-status {
+    font-size: 0.75rem;
+}
+
+.municipality-sales {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #28a745;
+    margin-left: 10px;
+}
+
+/* Chart Controls Styling */
+.chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-controls .form-select {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.875rem;
+}
+
+.chart-controls .btn {
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.chart-controls .dropdown-menu {
+    min-width: 150px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.chart-controls .dropdown-item {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+}
+
+.chart-controls .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+
+.sidebar {
+    background: white;
+    border-right: 1px solid #e9ecef;
+    padding: 1rem 0;
+    position: fixed !important;
+    top: 80px;
+    left: 0;
+    width: 250px;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    z-index: 1020;
+}
+
+.sidebar .nav-link {
+    color: #495057;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    transition: all 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #28a745;
+}
+
+.sidebar .nav-link.active {
+    background-color: #e8f5e9;
+    color: #28a745;
+    font-weight: 500;
+}
+
+/* Dropdown Navigation */
+.nav-dropdown {
+    position: relative;
+}
+
+.dropdown-icon {
+    transition: transform 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.nav-dropdown[aria-expanded="true"] .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.submenu {
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0.5rem 0;
+}
+
+.submenu-link {
+    padding: 0.5rem 1.5rem 0.5rem 3rem !important;
+    font-size: 0.9rem;
+    color: #6c757d !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+}
+
+.submenu-link:hover {
+    background-color: #e9ecef !important;
+    color: #28a745 !important;
+}
+
+.submenu-link.active {
+    background-color: #d4edda !important;
+    color: #28a745 !important;
+}
+
+.submenu-link i {
+    width: 14px;
+    font-size: 0.8rem;
+}
+
+/* Main Content */
+.main-content {
+    padding: 2rem;
+    background-color: #f5f5f5;
+    position: fixed !important;
+    top: 80px;
+    left: 250px;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    width: calc(100% - 250px);
+}
+
+/* Stats Cards */
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    color: white;
+}
+
+.stats-users .stats-icon {
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+}
+
+.stats-products .stats-icon {
+    background: linear-gradient(135deg, #FF9800, #FFB74D);
+}
+
+.stats-farmers .stats-icon {
+    background: linear-gradient(135deg, #F44336, #EF5350);
+}
+
+.stats-info .stats-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.stats-info .stats-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 400;
+}
+
+/* Analytics Cards */
+.analytics-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.analytics-card .card-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.analytics-card .card-header h5 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.analytics-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Chart Placeholders */
+.chart-placeholder {
+    position: relative;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.chart-dark {
+    background: #343a40;
+    color: white;
+}
+
+.chart-title {
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.chart-options {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #6c757d;
+    cursor: pointer;
+}
+
+.chart-dark .chart-options {
+    color: #adb5bd;
+}
+
+/* Pie Chart */
+.pie-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+}
+
+.pie-chart-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #4CAF50;
+}
+
+/* Donut Chart */
+.donut-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+}
+
+.donut-chart-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #4CAF50;
+    position: relative;
+}
+
+.donut-chart-circle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Bar Chart */
+.bar-chart {
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.bar-chart-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.bar {
+    width: 20px;
+    background: #4CAF50;
+    border-radius: 2px 2px 0 0;
+    min-height: 10px;
+}
+
+.bar-chart-labels {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.bar-chart-xlabel {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Municipality Card */
+.municipality-card .card-header {
+    background: #28a745;
+    color: white;
+    border-bottom: none;
+}
+
+.municipality-header h5 {
+    color: white;
+    margin: 0;
+}
+
+.municipality-header .chart-options {
+    color: rgba(255,255,255,0.8);
+}
+
+.municipality-chart {
+    margin-bottom: 1rem;
+}
+
+.municipality-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.municipality-name {
+    width: 120px;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.municipality-bar {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    margin-left: 1rem;
+    position: relative;
+}
+
+.municipality-progress {
+    height: 100%;
+    background: #d1d1d1;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.municipality-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 1rem;
+    padding-left: 140px;
+}
+
+/* Users Card */
+.users-card .card-header {
+    background: #28a745;
+    color: white;
+    border-bottom: none;
+}
+
+.users-header h5 {
+    color: white;
+    margin: 0;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-top: none;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.table tbody td {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0.75rem;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.85rem;
+}
+
+.table-info-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.table-info {
+    color: #6c757d;
+}
+
+.view-all {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pagination-controls .btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.users-card .card-header {
+    background: #28a745;
+    color: white;
+    border-bottom: none;
+}
+
+.users-header h5 {
+    color: white;
+    margin: 0;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-top: none;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.table tbody td {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0.75rem;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.85rem;
+}
+
+.table-info-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.table-info {
+    color: #6c757d;
+}
+
+.view-all {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pagination-controls .btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* Users Card */
+.users-card .card-header {
+    background: #28a745;
+    color: white;
+    border-bottom: none;
+}
+
+.users-header h5 {
+    color: white;
+    margin: 0;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-top: none;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.table tbody td {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0.75rem;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.85rem;
+}
+
+.table-info-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.table-info {
+    color: #6c757d;
+}
+
+.view-all {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pagination-controls .btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .stats-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stats-icon {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .municipality-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .municipality-name {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .municipality-bar {
+        margin-left: 0;
+    }
+    
+    .municipality-scale {
+        padding-left: 0;
+    }
+    
+    .table-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+}
+
+/* Enhanced Dashboard Styles */
+.users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #28a745;
+    color: white;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-controls .form-select {
+    min-width: 120px;
+    font-size: 0.875rem;
+}
+
+/* Search Container Styles */
+.search-container {
+    max-width: 300px;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.search-input {
+    padding-left: 2.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.search-input:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4) !important;
+    background-color: white !important;
+    outline: none !important;
+}
+
+/* Badge styles */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}
+
+/* Responsive enhancements */
+@media (max-width: 768px) {
+    .users-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .filter-controls {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}

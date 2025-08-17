@@ -1,0 +1,370 @@
+/* admin_account.css */
+body {
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navigation */
+.navbar {
+    height: 80px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar .container-fluid {
+    height: 100%;
+    background: white;
+    margin: 0;
+    max-width: 100%;
+    padding: 0 1.5rem;
+}
+
+/* Logo Image */
+.logo-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.brand-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-avatar {
+    background: #6c757d;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Sidebar */
+.sidebar {
+    background: white;
+    border-right: 1px solid #e9ecef;
+    min-height: calc(100vh - 76px);
+    padding: 1rem 0;
+}
+
+.sidebar .nav-link {
+    color: #495057;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    transition: all 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #28a745;
+}
+
+.sidebar .nav-link.active {
+    background-color: #e8f5e9;
+    color: #28a745;
+    font-weight: 500;
+}
+
+.sidebar .nav-link i {
+    width: 16px;
+}
+
+/* Main Content */
+.main-content {
+    padding: 2rem;
+    background-color: #f5f5f5;
+}
+
+/* Admin Form Card */
+.admin-form-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.admin-form-header {
+    background: #28a745;
+    color: white;
+    padding: 1.25rem 1.5rem;
+}
+
+.admin-form-header h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.admin-form-body {
+    padding: 2rem;
+}
+
+/* Form Elements */
+.form-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    background-color: white;
+}
+
+.form-select {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+}
+
+.form-select:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    background-color: white;
+}
+
+/* File Input */
+.file-input-container {
+    position: relative;
+}
+
+.btn-file {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    color: #495057;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.btn-file:hover {
+    background-color: #dee2e6;
+    border-color: #adb5bd;
+}
+
+/* Add Account Button */
+.form-actions {
+    margin-top: 2rem;
+}
+
+.btn-add-account {
+    background-color: #4e73df;
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.btn-add-account:hover {
+    background-color: #3e63cf;
+}
+
+/* Admin List Card */
+.admin-list-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.admin-list-header {
+    background: #28a745;
+    color: white;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-list-header h5 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.admin-list-body {
+    padding: 0;
+}
+
+/* Search Container */
+.search-container {
+    max-width: 300px;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.search-input {
+    padding-left: 2.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.search-input:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4) !important;
+    background-color: white !important;
+    outline: none !important;
+}
+
+/* Table */
+.admin-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+.admin-table thead th {
+    font-weight: 600;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    color: #495057;
+    border-top: none;
+}
+
+.admin-table tbody td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+    vertical-align: middle;
+}
+
+.admin-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* Table Footer */
+.table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.85rem;
+    background: white;
+}
+
+.table-info-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.table-info {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.view-all {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pagination-controls .btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+}
+
+.pagination-controls .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.pagination-controls .btn-outline-secondary {
+    border-color: #ced4da;
+    color: #6c757d;
+}
+
+.pagination-controls .btn-outline-secondary:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    color: #495057;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .admin-form-body {
+        padding: 1.5rem;
+    }
+    
+    .admin-list-body {
+        padding: 1.5rem;
+    }
+    
+    .table-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .table-info-section {
+        justify-content: center;
+    }
+    
+    .pagination-controls {
+        justify-content: center;
+    }
+}

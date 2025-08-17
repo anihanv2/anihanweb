@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Accounts - Anihan</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="fixed-layout.css" rel="stylesheet">
+    <link href="profile-dropdown.css" rel="stylesheet">
+    <link href="dashboard_super_admin.css" rel="stylesheet">
+    <link href="admin_account.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                <span class="brand-text">Anihan</span>
+            </a>
+            <div class="user-avatar" id="userAvatarButton">
+                <img id="userAvatarImage" src="" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;">
+                <i id="userAvatarIcon" class="fas fa-user"></i>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            <img id="profileAvatarImage" src="" alt="Profile Avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; display: none;">
+                            <i id="profileAvatarIcon" class="fas fa-user"></i>
+                        </div>
+                        <h6 class="profile-dropdown-name" id="profileUserName">Loading...</h6>
+                    </div>
+                    <div class="profile-dropdown-details">
+                        <div class="profile-detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <span id="profileUserEmail">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-user-tag"></i>
+                            <span id="profileUserRole">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span id="profileUserTitle">System Administrator</span>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-actions">
+                        <button class="btn" onclick="signOut()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard_super_admin.html">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="admin_accounts.html">
+                            <i class="fas fa-user-shield me-2"></i>
+                            Admin Accounts
+                        </a>
+                    </li>
+                    <!-- Account Approval Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#accountApprovalSubmenu" 
+                                aria-expanded="false" aria-controls="accountApprovalSubmenu">
+                            <span>
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Account Approval
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse" id="accountApprovalSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="for_approval.html">
+                                    <i class="fas fa-user-clock me-2"></i>
+                                    For Approval
+                                </a>
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="approved_application.html">
+                                    <i class="fas fa-user-check me-2"></i>
+                                    Approved Applications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="inventory_records.html">
+                            <i class="fas fa-clipboard-list me-2"></i>
+                            Inventory Records
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="price_monitoring.html">
+                            <i class="fas fa-dollar-sign me-2"></i>
+                            Price Monitoring
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="in_demand_products.html">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            In Demand Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sales_per_location.html">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            Sales Per Location
+                        </a>
+                    </li>
+                    
+                    <!-- Voucher Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#voucherSubmenu" 
+                                aria-expanded="false" aria-controls="voucherSubmenu">
+                            <span>
+                                <i class="fas fa-ticket-alt me-2"></i>
+                                Voucher
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse" id="voucherSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="add_voucher.html">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Add Voucher
+                                </a>
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="voucher_records.html">
+                                    <i class="fas fa-list me-2"></i>
+                                    Voucher Records
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="violation.html">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Violation
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Add Admin Form -->
+                <div class="admin-form-card">
+                    <div class="admin-form-header">
+                        <h5>Admin Details</h5>
+                    </div>
+                    <div class="admin-form-body">
+                        <form id="adminForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="adminName" class="form-label">NAME <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="adminName" placeholder="Name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="contactNumber" class="form-label">CONTACT NUMBER</label>
+                                    <input type="text" class="form-control" id="contactNumber" placeholder="Contact Number" maxlength="12" pattern="[0-9]*" title="Please enter only numbers (max 12 digits)">
+                                    <div class="form-text">Enter numbers only (12 digits)</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="address" class="form-label">ADDRESS</label>
+                                    <input type="text" class="form-control" id="address" placeholder="Address">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">EMAIL ADDRESS <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="email" placeholder="Name@example" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">PASSWORD <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password" placeholder="Password" required minlength="6">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <small class="form-text text-muted">Minimum 6 characters</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="userType" class="form-label">USER TYPE</label>
+                                    <select class="form-select" id="userType">
+                                        <option value="SUB ADMIN" selected>SUB ADMIN</option>
+                                        <option value="SUPER ADMIN">SUPER ADMIN</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="uploadImage" class="form-label">UPLOAD IMAGE</label>
+                                    <div class="file-input-container">
+                                        <input type="file" class="form-control d-none" id="uploadImage" accept="image/*">
+                                        <button type="button" class="btn btn-file" onclick="document.getElementById('uploadImage').click()">
+                                            Choose File
+                                        </button>
+                                        <span id="fileName" class="ms-2 text-muted"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-add-account">Add Account</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Admin List -->
+                <div class="admin-list-card">
+                    <div class="admin-list-header">
+                        <h5>Admin Details</h5>
+                        <!-- Search Bar -->
+                        <div class="search-container">
+                            <div class="search-input-wrapper">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="form-control search-input" placeholder="Search...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-list-body">
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="table admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>IMAGE</th>
+                                        <th>NAME</th>
+                                        <th>CONTACT NUMBER</th>
+                                        <th>EMAIL</th>
+                                        <th>ADDRESS</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be loaded here from database -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table Footer -->
+                        <div class="table-footer">
+                            <div class="table-info-section">
+                                <span class="table-info">Loading...</span>
+                                <a href="#" class="view-all">View all ></a>
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-outline-secondary">&lt;</button>
+                                <button class="btn btn-sm btn-success">1</button>
+                                <button class="btn btn-sm btn-outline-secondary">&gt;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Add Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Add CryptoJS for MD5 hashing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        // Pagination variables
+        let currentPage = 1;
+        let itemsPerPage = 5;
+        let totalItems = 0;
+        let allAdmins = [];
+        let showAllMode = false;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, initializing...');
+            loadCurrentUserProfile();
+            loadAdminAccounts();
+            
+            // File input change event
+            document.getElementById('uploadImage').addEventListener('change', function() {
+                const fileName = document.getElementById('fileName');
+                if (this.files[0]) {
+                    fileName.textContent = this.files[0].name;
+                } else {
+                    fileName.textContent = '';
+                }
+            });
+
+            // View all toggle event
+            document.querySelector('.view-all').addEventListener('click', function(e) {
+                e.preventDefault();
+                toggleViewAll();
+            });
+
+            // Contact number validation - only numbers and max 12 characters
+            document.getElementById('contactNumber').addEventListener('input', function(e) {
+                // Remove any non-numeric characters
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                
+                // Limit to 12 characters
+                if (value.length > 12) {
+                    value = value.substring(0, 12);
+                }
+                
+                // Update the input value
+                e.target.value = value;
+            });
+
+            // Contact number validation on paste
+            document.getElementById('contactNumber').addEventListener('paste', function(e) {
+                e.preventDefault();
+                
+                // Get pasted text
+                let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                
+                // Remove non-numeric characters and limit to 12 digits
+                let cleanedText = pastedText.replace(/[^0-9]/g, '').substring(0, 12);
+                
+                // Set the cleaned value
+                e.target.value = cleanedText;
+            });
+
+            // Password toggle functionality
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordField = document.getElementById('password');
+                const toggleIcon = this.querySelector('i');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            });
+        });
+
+        // Function to load current user profile data
+        async function loadCurrentUserProfile() {
+            try {
+                console.log('=== LOADING CURRENT USER PROFILE ===');
+                
+                // Get current user from session storage (set during login)
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                console.log('Session storage user:', currentUser);
+                
+                if (!currentUser.id || currentUser.id === 'fallback') {
+                    console.log('No valid logged-in user found in session, checking database...');
+                    // Check if there are any real users in the database
+                    await loadFirstUserForTesting();
+                    return;
+                }
+                
+                console.log('Found logged-in user with ID:', currentUser.id);
+                
+                // Fetch the actual user data from database using their ID
+                try {
+                    const { data: userData, error } = await supabaseClient
+                        .from('admin_accounts')
+                        .select('*')
+                        .eq('id', currentUser.id)
+                        .single();
+                    
+                    if (error) {
+                        console.error('Database error fetching user:', error);
+                        // Try to load any available user from database
+                        console.log('Trying to load any available user from database...');
+                        await loadFirstUserForTesting();
+                        return;
+                    }
+                    
+                    if (userData) {
+                        console.log('Logged-in user data from database:', userData);
+                        
+                        // Update session with fresh data
+                        const userSession = {
+                            id: userData.id,
+                            name: userData.name,
+                            email: userData.email,
+                            userType: userData.user_type,
+                            image_url: userData.image_url
+                        };
+                        sessionStorage.setItem('currentUser', JSON.stringify(userSession));
+                        
+                        // Update profile display with logged-in user's data
+                        updateProfileDisplay({
+                            name: userData.name,
+                            email: userData.email,
+                            user_type: userData.user_type,
+                            image_url: userData.image_url
+                        });
+                    } else {
+                        console.log('No user data found for ID:', currentUser.id);
+                        updateProfileDisplay(currentUser);
+                    }
+                    
+                } catch (dbError) {
+                    console.error('Database connection error:', dbError);
+                    console.log('Database connection failed, trying to load any available user...');
+                    await loadFirstUserForTesting();
+                }
+                
+            } catch (error) {
+                console.error('Error in loadCurrentUserProfile:', error);
+                await loadFirstUserForTesting();
+            }
+        }
+
+        // Debug function to check database contents
+        async function debugDatabaseUsers() {
+            try {
+                console.log('=== DEBUGGING DATABASE USERS ===');
+                const { data: users, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .select('id, name, email, user_type, image_url, created_at');
+                
+                if (error) {
+                    console.error('Database error:', error);
+                    return;
+                }
+                
+                console.log('Users found in database:', users);
+                console.log('Total users:', users ? users.length : 0);
+                
+                if (users && users.length > 0) {
+                    users.forEach((user, index) => {
+                        console.log(`User ${index + 1}:`, {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            type: user.user_type,
+                            hasImage: !!user.image_url,
+                            imageUrl: user.image_url,
+                            imageType: typeof user.image_url
+                        });
+                        
+                        // Test each user's image URL if it exists
+                        if (user.image_url && user.image_url.trim() !== '') {
+                            console.log(`Testing image for ${user.name}:`, user.image_url);
+                            testImageUrl(user.image_url);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Debug error:', error);
+            }
+        }
+        
+        // Function to load first user for testing when no session exists
+        async function loadFirstUserForTesting() {
+            try {
+                console.log('Loading user from database...');
+                
+                // First, try to get all users to see what's available
+                const { data: users, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('Error fetching users from database:', error);
+                    console.log('Database connection failed, creating fallback profile');
+                    createFallbackProfile();
+                    return;
+                }
+                
+                if (users && users.length > 0) {
+                    // Use the first user found in the database
+                    const firstUser = users[0];
+                    console.log('Found users in database. Using user:', firstUser);
+                    
+                    // Set as current user for this session
+                    sessionStorage.setItem('currentUser', JSON.stringify({
+                        id: firstUser.id,
+                        name: firstUser.name,
+                        email: firstUser.email,
+                        userType: firstUser.user_type,
+                        image_url: firstUser.image_url
+                    }));
+                    
+                    updateProfileDisplay({
+                        name: firstUser.name,
+                        email: firstUser.email,
+                        user_type: firstUser.user_type,
+                        image_url: firstUser.image_url
+                    });
+                } else {
+                    console.log('No users found in database');
+                    createFallbackProfile();
+                }
+                
+            } catch (error) {
+                console.error('Error loading test user:', error);
+                createFallbackProfile();
+            }
+        }
+        
+        // Function to create fallback profile when database is unavailable
+        function createFallbackProfile() {
+            console.log('Creating fallback profile...');
+            const fallbackUser = {
+                name: 'System Administrator',
+                email: 'admin@anihan.gov.ph',
+                user_type: 'SUPER ADMIN',
+                image_url: null
+            };
+            
+            sessionStorage.setItem('currentUser', JSON.stringify({
+                id: 'fallback',
+                ...fallbackUser,
+                userType: fallbackUser.user_type
+            }));
+            
+            updateProfileDisplay(fallbackUser);
+        }
+
+        // Function to update profile display elements
+        function updateProfileDisplay(userData) {
+            console.log('=== UPDATING PROFILE DISPLAY ===');
+            console.log('Updating profile display with data:', userData);
+            console.log('User data keys:', Object.keys(userData));
+            console.log('Image URL raw value:', userData.image_url);
+            console.log('Image URL type:', typeof userData.image_url);
+            
+            // Update profile name
+            const profileName = document.getElementById('profileUserName');
+            if (profileName) {
+                const displayName = userData.name || 'Administrator';
+                profileName.textContent = displayName;
+                console.log('✅ Updated profile name to:', displayName);
+            }
+            
+            // Update profile email
+            const profileEmail = document.getElementById('profileUserEmail');
+            if (profileEmail) {
+                const displayEmail = userData.email || 'admin@anihan.gov.ph';
+                profileEmail.textContent = displayEmail;
+                console.log('✅ Updated profile email to:', displayEmail);
+            }
+            
+            // Update profile role
+            const profileRole = document.getElementById('profileUserRole');
+            if (profileRole) {
+                const displayRole = userData.user_type || userData.userType || 'ADMIN';
+                profileRole.textContent = displayRole;
+                console.log('✅ Updated profile role to:', displayRole);
+            }
+            
+            // Update profile title based on role
+            const profileTitle = document.getElementById('profileUserTitle');
+            if (profileTitle) {
+                const userRole = userData.user_type || userData.userType || 'ADMIN';
+                if (userRole === 'SUPER ADMIN') {
+                    profileTitle.textContent = 'System Administrator';
+                } else if (userRole === 'SUB ADMIN') {
+                    profileTitle.textContent = 'Municipal Administrator';
+                } else {
+                    profileTitle.textContent = 'Administrator';
+                }
+                console.log('Updated profile title for role:', userRole);
+            }
+            
+            // Update profile images
+            const userAvatarImage = document.getElementById('userAvatarImage');
+            const userAvatarIcon = document.getElementById('userAvatarIcon');
+            const profileAvatarImage = document.getElementById('profileAvatarImage');
+            const profileAvatarIcon = document.getElementById('profileAvatarIcon');
+            
+            console.log('=== PROCESSING PROFILE IMAGE ===');
+            console.log('Raw image URL from database:', userData.image_url);
+            console.log('Image URL type:', typeof userData.image_url);
+            console.log('Image URL length:', userData.image_url ? userData.image_url.length : 0);
+            
+            if (userData.image_url && userData.image_url.trim() !== '' && userData.image_url !== 'null') {
+                console.log('✅ Profile image found - processing...');
+                
+                // Clean up the image URL (remove any extra quotes or whitespace)
+                let cleanImageUrl = userData.image_url.trim();
+                if (cleanImageUrl.startsWith('"') && cleanImageUrl.endsWith('"')) {
+                    cleanImageUrl = cleanImageUrl.slice(1, -1);
+                    console.log('Removed surrounding quotes from image URL');
+                }
+                
+                console.log('Cleaned image URL/data preview:', cleanImageUrl.substring(0, 50) + '...');
+                
+                // Check if it's a base64 data URL or regular URL
+                const isBase64 = cleanImageUrl.startsWith('data:image/');
+                console.log('Is base64 image:', isBase64);
+                
+                // Get image elements
+                const userAvatarImage = document.getElementById('userAvatarImage');
+                const userAvatarIcon = document.getElementById('userAvatarIcon');
+                const profileAvatarImage = document.getElementById('profileAvatarImage');
+                const profileAvatarIcon = document.getElementById('profileAvatarIcon');
+                
+                console.log('Avatar elements found:', {
+                    userAvatarImage: !!userAvatarImage,
+                    userAvatarIcon: !!userAvatarIcon,
+                    profileAvatarImage: !!profileAvatarImage,
+                    profileAvatarIcon: !!profileAvatarIcon
+                });
+                
+                // Update main avatar (in navbar)
+                if (userAvatarImage && userAvatarIcon) {
+                    console.log('Setting main avatar image...');
+                    userAvatarImage.src = cleanImageUrl;
+                    userAvatarImage.style.display = 'block';
+                    userAvatarIcon.style.display = 'none';
+                    
+                    // Handle image load error
+                    userAvatarImage.onerror = function() {
+                        console.error('❌ Main avatar image failed to load');
+                        console.error('Image src preview:', this.src.substring(0, 50) + '...');
+                        this.style.display = 'none';
+                        userAvatarIcon.style.display = 'block';
+                    };
+                    
+                    userAvatarImage.onload = function() {
+                        console.log('✅ Main avatar image loaded successfully');
+                    };
+                } else {
+                    console.error('❌ Main avatar elements not found');
+                }
+                
+                // Update dropdown avatar
+                if (profileAvatarImage && profileAvatarIcon) {
+                    console.log('Setting dropdown avatar image...');
+                    profileAvatarImage.src = cleanImageUrl;
+                    profileAvatarImage.style.display = 'block';
+                    profileAvatarIcon.style.display = 'none';
+                    
+                    // Handle image load error
+                    profileAvatarImage.onerror = function() {
+                        console.error('❌ Dropdown avatar image failed to load');
+                        console.error('Image src preview:', this.src.substring(0, 50) + '...');
+                        this.style.display = 'none';
+                        profileAvatarIcon.style.display = 'block';
+                    };
+                    
+                    profileAvatarImage.onload = function() {
+                        console.log('✅ Dropdown avatar image loaded successfully');
+                    };
+                } else {
+                    console.error('❌ Dropdown avatar elements not found');
+                }
+                
+                // Test if image URL is accessible (for base64, this should work immediately)
+                if (isBase64) {
+                    console.log('✅ Base64 image detected - should load immediately');
+                } else {
+                    console.log('Testing external image URL...');
+                    testImageUrl(cleanImageUrl);
+                }
+                
+            } else {
+                console.log('❌ No profile image found or image URL is empty/null');
+                console.log('Image URL value:', userData.image_url);
+                
+                // Get image elements
+                const userAvatarImage = document.getElementById('userAvatarImage');
+                const userAvatarIcon = document.getElementById('userAvatarIcon');
+                const profileAvatarImage = document.getElementById('profileAvatarImage');
+                const profileAvatarIcon = document.getElementById('profileAvatarIcon');
+                
+                // Show icons when no image
+                if (userAvatarImage && userAvatarIcon) {
+                    userAvatarImage.style.display = 'none';
+                    userAvatarIcon.style.display = 'block';
+                    console.log('✅ Showing main avatar icon (no image)');
+                }
+                
+                if (profileAvatarImage && profileAvatarIcon) {
+                    profileAvatarImage.style.display = 'none';
+                    profileAvatarIcon.style.display = 'block';
+                    console.log('✅ Showing dropdown avatar icon (no image)');
+                }
+            }
+            
+            console.log('=== PROFILE DISPLAY UPDATE COMPLETED ===');
+        }
+
+        // Function to clean up test users from database
+        async function cleanupTestUsers() {
+            try {
+                console.log('=== CLEANING UP TEST USERS ===');
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    return false;
+                }
+
+                // Delete users with "DELETE ME" in their name or test emails
+                const { data: deletedUsers, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .delete()
+                    .or('name.ilike.%DELETE ME%,name.ilike.%Test User%,name.ilike.%Image Test%,email.ilike.%test-%,email.ilike.%imagetest-%')
+                    .select();
+
+                if (error) {
+                    console.error('Error deleting test users:', error);
+                    return false;
+                }
+
+                console.log('✅ Test users deleted:', deletedUsers);
+                
+                // Refresh the admin accounts display
+                loadAdminAccounts();
+                
+                return true;
+            } catch (error) {
+                console.error('Cleanup failed:', error);
+                return false;
+            }
+        }
+
+        // Make cleanup function available globally for console use
+        window.cleanupTestUsers = cleanupTestUsers;
+
+        // Function to test storage bucket access
+        async function testStorageBucket() {
+            try {
+                console.log('=== TESTING STORAGE BUCKET ===');
+                
+                // List buckets to see if admin-images exists
+                const { data: buckets, error: bucketsError } = await supabaseClient.storage.listBuckets();
+                
+                if (bucketsError) {
+                    console.error('Error listing buckets:', bucketsError);
+                    return false;
+                }
+                
+                console.log('Available buckets:', buckets);
+                const adminImagesBucket = buckets.find(bucket => bucket.name === 'admin-images');
+                
+                if (!adminImagesBucket) {
+                    console.error('❌ admin-images bucket does not exist!');
+                    console.error('Available buckets:', buckets.map(b => b.name));
+                    alert('Error: admin-images bucket not found. Please create it in Supabase Storage.');
+                    return false;
+                }
+                
+                console.log('✓ admin-images bucket found:', adminImagesBucket);
+                
+                // Test if bucket is public
+                console.log('Bucket is public:', adminImagesBucket.public);
+                
+                // Try to list files in the bucket (to test read access)
+                const { data: files, error: filesError } = await supabaseClient.storage
+                    .from('admin-images')
+                    .list('', { limit: 1 });
+                
+                if (filesError) {
+                    console.error('Error accessing bucket:', filesError);
+                    console.error('This might be a permissions issue');
+                    return false;
+                }
+                
+                console.log('✓ Bucket access successful');
+                console.log('Files in bucket:', files);
+                return true;
+                
+            } catch (error) {
+                console.error('Storage test failed:', error);
+                return false;
+            }
+        }
+
+        // Function to test image URL accessibility
+        function testImageUrl(imageUrl) {
+            console.log('Testing image URL accessibility:', imageUrl);
+            
+            const testImg = new Image();
+            testImg.onload = function() {
+                console.log('✓ Image URL is accessible and valid:', imageUrl);
+                console.log('Image dimensions:', this.naturalWidth + 'x' + this.naturalHeight);
+            };
+            testImg.onerror = function() {
+                console.error('✗ Image URL failed to load:', imageUrl);
+                console.error('Possible issues:');
+                console.error('- URL is incorrect or inaccessible');
+                console.error('- CORS policy blocking the image');
+                console.error('- Image file is corrupted or missing');
+                console.error('- Network connection issue');
+            };
+            testImg.src = imageUrl;
+        }
+
+        // Function to test a simple upload
+        async function testSimpleUpload() {
+            try {
+                console.log('=== TESTING SIMPLE UPLOAD ===');
+                
+                // Create a simple text file for testing
+                const testContent = 'Test file for storage upload';
+                const testFile = new File([testContent], 'test.txt', { type: 'text/plain' });
+                
+                console.log('Test file created:', testFile);
+                
+                const fileName = `test-${Date.now()}.txt`;
+                console.log('Uploading test file as:', fileName);
+                
+                const { data, error } = await supabaseClient.storage
+                    .from('admin-images')
+                    .upload(fileName, testFile);
+                
+                if (error) {
+                    console.error('Test upload failed:', error);
+                    return false;
+                }
+                
+                console.log('✓ Test upload successful:', data);
+                
+                // Get public URL
+                const { data: { publicUrl } } = supabaseClient.storage
+                    .from('admin-images')
+                    .getPublicUrl(fileName);
+                
+                console.log('✓ Test file public URL:', publicUrl);
+                
+                // Clean up - delete test file
+                await supabaseClient.storage
+                    .from('admin-images')
+                    .remove([fileName]);
+                
+                console.log('✓ Test file cleaned up');
+                return true;
+                
+            } catch (error) {
+                console.error('Simple upload test failed:', error);
+                return false;
+            }
+        }
+
+        // Manual test function - you can call this from console
+        window.debugImageUpload = async function() {
+            console.log('=== MANUAL IMAGE UPLOAD DEBUG ===');
+            
+            const fileInput = document.getElementById('uploadImage');
+            if (!fileInput.files[0]) {
+                console.error('❌ No file selected. Please select an image first.');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            console.log('Selected file:', file);
+            console.log('File name:', file.name);
+            console.log('File size:', file.size);
+            console.log('File type:', file.type);
+            
+            // Test upload
+            console.log('Testing upload...');
+            const imageUrl = await uploadImage(file);
+            
+            if (imageUrl) {
+                console.log('✅ Upload successful!');
+                console.log('Generated URL:', imageUrl);
+                
+                // Test URL accessibility
+                testImageUrl(imageUrl);
+                
+                // Test database insertion with this URL
+                console.log('Testing database insertion...');
+                const testData = {
+                    name: 'Manual Test DELETE ME',
+                    email: `manual-${Date.now()}@example.com`,
+                    password: hashPassword('testpass123'),
+                    user_type: 'SUB ADMIN',
+                    image_url: imageUrl
+                };
+                
+                const { data, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .insert([testData])
+                    .select('*');
+                
+                if (error) {
+                    console.error('❌ Database insertion failed:', error);
+                } else {
+                    console.log('✅ Database insertion successful!');
+                    console.log('Saved data:', data[0]);
+                    
+                    // Clean up
+                    await supabaseClient
+                        .from('admin_accounts')
+                        .delete()
+                        .eq('id', data[0].id);
+                    console.log('✓ Test record cleaned up');
+                }
+            } else {
+                console.error('❌ Upload failed');
+            }
+        };
+
+        // Manual function to refresh profile from database
+        window.refreshProfile = async function() {
+            console.log('=== MANUALLY REFRESHING PROFILE ===');
+            
+            try {
+                // Get the current user ID from session
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                console.log('Current user from session:', currentUser);
+                
+                if (!currentUser.id) {
+                    console.log('No user ID found, loading first user from database...');
+                    await loadFirstUserForTesting();
+                    return;
+                }
+                
+                // Fetch fresh data from database
+                console.log('Fetching fresh user data for ID:', currentUser.id);
+                const { data: userData, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching user data:', error);
+                    return;
+                }
+                
+                if (userData) {
+                    console.log('Fresh user data from database:', userData);
+                    console.log('Image URL in fresh data:', userData.image_url);
+                    
+                    // Update session with fresh data
+                    const userSession = {
+                        id: userData.id,
+                        name: userData.name,
+                        email: userData.email,
+                        userType: userData.user_type,
+                        image_url: userData.image_url
+                    };
+                    sessionStorage.setItem('currentUser', JSON.stringify(userSession));
+                    
+                    // Update profile display
+                    updateProfileDisplay({
+                        name: userData.name,
+                        email: userData.email,
+                        user_type: userData.user_type,
+                        image_url: userData.image_url
+                    });
+                    
+                    console.log('✅ Profile refreshed successfully');
+                } else {
+                    console.log('No user data found');
+                }
+                
+            } catch (error) {
+                console.error('Error refreshing profile:', error);
+            }
+        };
+
+        // Function to get current logged-in user data
+        function getCurrentUser() {
+            return JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+        }
+
+        // Function to check if user is logged in
+        function isUserLoggedIn() {
+            const user = getCurrentUser();
+            return user && user.id;
+        }
+
+        // Password hashing function (MD5-compatible with your database default)
+        function hashPassword(password) {
+            // Try to use CryptoJS MD5 if available
+            if (typeof CryptoJS !== 'undefined' && CryptoJS.MD5) {
+                return CryptoJS.MD5(password).toString();
+            }
+            
+            // Fallback to simple hash
+            console.warn('CryptoJS not available, using fallback hash');
+            return simpleHash(password);
+        }
+        
+        // Fallback hash function if CryptoJS is not available
+        function simpleHash(password) {
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash).toString(16);
+        }
+
+        // Function to load all admin accounts from database
+        async function loadAdminAccounts() {
+            console.log('=== LOADING ADMIN ACCOUNTS ===');
+            console.log('Current page:', currentPage, 'Items per page:', itemsPerPage, 'Show all mode:', showAllMode);
+            
+            try {
+                // Check if Supabase client is available
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    allAdmins = [];
+                    totalItems = 0;
+                    displayAdminAccounts();
+                    return;
+                }
+                
+                console.log('Fetching admin accounts from database...');
+                const { data: admins, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('Supabase error:', error);
+                    console.log('Database error, displaying empty state');
+                    allAdmins = [];
+                    totalItems = 0;
+                    displayAdminAccounts();
+                    return;
+                }
+                
+                console.log('Admin accounts fetched successfully:', admins);
+                
+                if (admins && admins.length > 0) {
+                    allAdmins = admins;
+                    totalItems = admins.length;
+                    displayAdminAccounts();
+                } else {
+                    console.log('No admin accounts found in database');
+                    allAdmins = [];
+                    totalItems = 0;
+                    displayAdminAccounts();
+                }
+                
+            } catch (error) {
+                console.error('Error loading admin accounts:', error);
+                console.log('Connection error, displaying empty state');
+                allAdmins = [];
+                totalItems = 0;
+                displayAdminAccounts();
+            }
+        }
+
+        // Function to display admin accounts in table
+        function displayAdminAccounts() {
+            console.log('Displaying admin accounts - Total:', totalItems, 'Page:', currentPage, 'Show all:', showAllMode);
+            const tbody = document.querySelector('.admin-table tbody');
+            
+            if (!tbody) {
+                console.error('Table body not found!');
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            if (allAdmins.length === 0) {
+                console.log('No admin accounts to display');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No admin accounts found</td>
+                    </tr>
+                `;
+                document.querySelector('.table-info').textContent = '0 items';
+                updatePaginationControls();
+                return;
+            }
+            
+            let adminsToShow;
+            let startIndex, endIndex;
+            
+            if (showAllMode) {
+                adminsToShow = allAdmins;
+                startIndex = 1;
+                endIndex = allAdmins.length;
+            } else {
+                startIndex = (currentPage - 1) * itemsPerPage;
+                endIndex = Math.min(startIndex + itemsPerPage, allAdmins.length);
+                adminsToShow = allAdmins.slice(startIndex, endIndex);
+                startIndex += 1; // Convert to 1-based for display
+            }
+            
+            console.log('Showing items', startIndex, 'to', endIndex, 'of', totalItems);
+            
+            adminsToShow.forEach(admin => {
+                const row = document.createElement('tr');
+                let imageCell = '';
+                const url = admin.image_url ? admin.image_url.trim() : '';
+                console.log(`Admin: ${admin.name}, image_url:`, url);
+                let showImage = false;
+                if (url) {
+                    if (url.startsWith('data:image/')) {
+                        showImage = true;
+                    } else if (url.startsWith('http://') || url.startsWith('https://')) {
+                        showImage = true;
+                    } else if (url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
+                        showImage = true;
+                    }
+                }
+                if (showImage) {
+                    imageCell = `<img src="${url}" alt="Admin Image" title="${url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; background: #f8f9fa;" onerror=\"this.onerror=null;this.style.display='none';console.warn('Image failed to load:', this.src);\">`;
+                } else {
+                    imageCell = `<i class='fas fa-image' style='font-size: 24px; color: #ccc;' title='No image or invalid URL: ${url}'></i>`;
+                }
+                row.innerHTML = `
+                    <td>${imageCell}</td>
+                    <td>${admin.name}</td>
+                    <td>${admin.contact_number || ''}</td>
+                    <td>${admin.email}</td>
+                    <td>${admin.address || ''}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm me-1" onclick="editAdmin('${admin.id}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAdmin('${admin.id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Update table info
+            if (showAllMode) {
+                document.querySelector('.table-info').textContent = `Showing all ${totalItems} items`;
+            } else {
+                document.querySelector('.table-info').textContent = `${startIndex} to ${endIndex} items of ${totalItems}`;
+            }
+            
+            updatePaginationControls();
+        }
+
+        // Function to update pagination controls
+        function updatePaginationControls() {
+            const paginationContainer = document.querySelector('.pagination-controls');
+            if (!paginationContainer) return;
+            
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (showAllMode || totalItems <= itemsPerPage) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            
+            paginationContainer.style.display = 'block';
+            paginationContainer.innerHTML = '';
+            
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `btn btn-sm ${currentPage === 1 ? 'btn-outline-secondary' : 'btn-outline-primary'}`;
+            prevBtn.innerHTML = '&lt;';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => goToPage(currentPage - 1);
+            paginationContainer.appendChild(prevBtn);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `btn btn-sm ${i === currentPage ? 'btn-success' : 'btn-outline-secondary'}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => goToPage(i);
+                paginationContainer.appendChild(pageBtn);
+            }
+            
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `btn btn-sm ${currentPage === totalPages ? 'btn-outline-secondary' : 'btn-outline-primary'}`;
+            nextBtn.innerHTML = '&gt;';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => goToPage(currentPage + 1);
+            paginationContainer.appendChild(nextBtn);
+        }
+
+        // Function to go to specific page
+        function goToPage(page) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            showAllMode = false;
+            displayAdminAccounts();
+        }
+
+        // Function to toggle "View All" mode
+        function toggleViewAll() {
+            showAllMode = !showAllMode;
+            if (showAllMode) {
+                document.querySelector('.view-all').textContent = 'Show pages <';
+            } else {
+                document.querySelector('.view-all').textContent = 'View all >';
+                currentPage = 1; // Reset to first page when exiting view all mode
+            }
+            displayAdminAccounts();
+        }
+
+        // Function to add new admin account - ADDED PASSWORD
+        async function addAdminAccount(formData) {
+            try {
+                console.log('=== ADDING ADMIN ACCOUNT ===');
+                console.log('Form data:', formData);
+                
+                // Upload image if provided
+                let imageUrl = null;
+                const imageFile = document.getElementById('uploadImage').files[0];
+                console.log('Image file selected:', imageFile);
+                
+                if (imageFile) {
+                    console.log('Uploading image to Supabase Storage...');
+                    imageUrl = await uploadImageToSupabase(imageFile, 'admin-images');
+                    console.log('Image upload result (public URL):', imageUrl);
+                    if (!imageUrl) {
+                        console.error('❌ Image upload failed - imageUrl is null');
+                        alert('Warning: Image upload failed, but account will be created without image.');
+                    } else {
+                        console.log('✓ Image upload successful:', imageUrl);
+                    }
+                } else {
+                    console.log('No image file selected');
+                }
+                
+                const insertData = {
+                    name: formData.name,
+                    contact_number: formData.contactNumber || null,
+                    email: formData.email,
+                    address: formData.address || null,
+                    user_type: formData.userType,
+                    password: hashPassword(formData.password),
+                    image_url: imageUrl
+                };
+                
+                console.log('Data to insert:', insertData);
+                console.log('Image URL being saved:', imageUrl);
+                console.log('Password hash:', insertData.password);
+                
+                const { data, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .insert([insertData])
+                    .select('*'); // Select all fields to see what was inserted
+                
+                if (error) {
+                    console.error('Database insert error:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    console.error('Error details:', error.details);
+                    throw error;
+                }
+                
+                console.log('Insert successful! Returned data:', data);
+                if (data && data[0]) {
+                    console.log('New admin ID:', data[0].id);
+                    console.log('Saved image_url:', data[0].image_url);
+                    console.log('Saved name:', data[0].name);
+                    console.log('Saved email:', data[0].email);
+                }
+                
+                alert('Admin account added successfully!');
+                
+                // Clear the form
+                document.getElementById('adminForm').reset();
+                document.getElementById('fileName').textContent = '';
+                
+                // Reload the table to show new data
+                loadAdminAccounts();
+                
+            } catch (error) {
+                console.error('Error adding admin account:', error);
+                
+                if (error.code === '23505') {
+                    alert('Error: An admin with this email already exists.');
+                } else {
+                    alert('Error adding admin account: ' + error.message);
+                }
+            }
+        }
+
+        // Function to delete admin account
+        async function deleteAdmin(adminId) {
+            if (!confirm('Are you sure you want to delete this admin account?')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('admin_accounts')
+                    .delete()
+                    .eq('id', adminId);
+                
+                if (error) throw error;
+                
+                alert('Admin account deleted successfully!');
+                loadAdminAccounts(); // Reload the table
+            } catch (error) {
+                console.error('Error deleting admin account:', error);
+                alert('Error deleting admin account: ' + error.message);
+            }
+        }
+
+        // Function to edit admin account - UPDATED FOR PASSWORD
+        async function editAdmin(adminId) {
+            try {
+                const { data: admin, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .select('*')
+                    .eq('id', adminId)
+                    .single();
+                
+                if (error) throw error;
+                
+                // Populate form with admin data (except password for security)
+                document.getElementById('adminName').value = admin.name;
+                document.getElementById('contactNumber').value = admin.contact_number || '';
+                document.getElementById('email').value = admin.email;
+                document.getElementById('address').value = admin.address || '';
+                document.getElementById('userType').value = admin.user_type;
+                document.getElementById('password').value = ''; // Don't show existing password
+                
+                // Change form to edit mode
+                const form = document.getElementById('adminForm');
+                form.dataset.editId = adminId;
+                
+                const submitBtn = document.querySelector('.btn-add-account');
+                submitBtn.textContent = 'Update Account';
+                submitBtn.className = 'btn btn-warning';
+                
+                // Change password field to optional during edit
+                const passwordField = document.getElementById('password');
+                passwordField.placeholder = 'Leave blank to keep current password';
+                passwordField.removeAttribute('required');
+                
+                // Add cancel button if not exists
+                if (!document.querySelector('.btn-cancel')) {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.type = 'button';
+                    cancelBtn.className = 'btn btn-secondary ms-2 btn-cancel';
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.onclick = cancelEdit;
+                    submitBtn.parentNode.appendChild(cancelBtn);
+                }
+                
+                // Scroll to form
+                document.querySelector('.admin-form-card').scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (error) {
+                console.error('Error loading admin for edit:', error);
+                alert('Error loading admin data: ' + error.message);
+            }
+        }
+
+        // Function to update admin account - UPDATED FOR PASSWORD AND IMAGE PRESERVATION
+        async function updateAdminAccount(adminId, formData) {
+            try {
+                console.log('Updating admin account:', adminId, formData);
+                
+                // Check if a new image is being uploaded
+                const imageFile = document.getElementById('uploadImage').files[0];
+                let imageUrl = null;
+                
+                if (imageFile) {
+                    console.log('New image file detected, uploading...');
+                    imageUrl = await uploadImage(imageFile);
+                    console.log('New image uploaded:', imageUrl ? 'Success' : 'Failed');
+                } else {
+                    console.log('No new image file - preserving existing image');
+                }
+                
+                const updateData = {
+                    name: formData.name,
+                    contact_number: formData.contactNumber,
+                    email: formData.email,
+                    address: formData.address,
+                    user_type: formData.userType,
+                    updated_at: new Date().toISOString()
+                };
+                
+                // Only update password if a new one is provided
+                if (formData.password && formData.password.trim() !== '') {
+                    updateData.password = hashPassword(formData.password);
+                    console.log('Password will be updated');
+                } else {
+                    console.log('Password will not be updated');
+                }
+                
+                // Only update image if a new one was uploaded
+                if (imageUrl) {
+                    updateData.image_url = imageUrl;
+                    console.log('Image will be updated with new image');
+                } else {
+                    console.log('Image will be preserved (not updated)');
+                }
+                
+                const { error } = await supabaseClient
+                    .from('admin_accounts')
+                    .update(updateData)
+                    .eq('id', adminId);
+                
+                if (error) throw error;
+                
+                console.log('Admin account updated successfully');
+                alert('Admin account updated successfully!');
+                
+                // Clear the file input after successful update
+                const fileInput = document.getElementById('uploadImage');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+                document.getElementById('fileName').textContent = '';
+                
+                cancelEdit();
+                loadAdminAccounts();
+                
+                // Refresh the profile display if this was the current user
+                if (adminId === window.currentUserId) {
+                    console.log('Updated current user - refreshing profile display');
+                    await loadCurrentUserProfile();
+                }
+            } catch (error) {
+                console.error('Error updating admin account:', error);
+                alert('Error updating admin account: ' + error.message);
+            }
+        }
+
+        // Function to cancel edit mode
+        function cancelEdit() {
+            const form = document.getElementById('adminForm');
+            form.reset();
+            delete form.dataset.editId;
+            document.getElementById('fileName').textContent = '';
+            
+            // Reset password field
+            const passwordField = document.getElementById('password');
+            passwordField.placeholder = 'Password';
+            passwordField.setAttribute('required', '');
+            
+            const submitBtn = document.querySelector('.btn-add-account, .btn-warning');
+            submitBtn.textContent = 'Add Account';
+            submitBtn.className = 'btn btn-add-account';
+            
+            const cancelBtn = document.querySelector('.btn-cancel');
+            if (cancelBtn) {
+                cancelBtn.remove();
+            }
+        }
+
+        // Function to convert image to base64 (no storage bucket needed)
+        async function uploadImage(file) {
+            try {
+                console.log('=== CONVERTING IMAGE TO BASE64 ===');
+                console.log('File to process:', file);
+                console.log('File name:', file.name);
+                console.log('File size:', file.size, 'bytes');
+                console.log('File type:', file.type);
+                
+                // Check file size (limit to 5MB for base64)
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.size > maxSize) {
+                    console.error('❌ File too large. Maximum size: 5MB');
+                    alert('Error: Image file is too large. Please choose an image smaller than 5MB.');
+                    return null;
+                }
+                
+                // Convert to base64
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(event) {
+                        const base64String = event.target.result;
+                        console.log('✅ Image converted to base64 successfully');
+                        console.log('Base64 length:', base64String.length);
+                        console.log('Base64 preview:', base64String.substring(0, 50) + '...');
+                        console.log('=== IMAGE PROCESSING COMPLETED ===');
+                        resolve(base64String);
+                    };
+                    
+                    reader.onerror = function(error) {
+                        console.error('❌ Error converting image to base64:', error);
+                        reject(error);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+                
+            } catch (error) {
+                console.error('=== IMAGE PROCESSING FAILED ===');
+                console.error('Processing error:', error);
+                return null;
+            }
+        }
+
+        // Handle form submission - UPDATED FOR PASSWORD
+        document.getElementById('adminForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('adminName').value.trim(),
+                contactNumber: document.getElementById('contactNumber').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                userType: document.getElementById('userType').value,
+                password: document.getElementById('password').value.trim()
+            };
+            
+            // Basic validation
+            if (!formData.name || !formData.email) {
+                alert('Please fill in required fields (Name and Email).');
+                return;
+            }
+            
+            // Check if editing or adding
+            const editId = this.dataset.editId;
+            
+            // Password validation for new accounts
+            if (!editId && (!formData.password || formData.password.length < 6)) {
+                alert('Password is required and must be at least 6 characters long.');
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            // Contact number validation
+            if (formData.contactNumber) {
+                // Check if contact number contains only digits
+                const phoneRegex = /^[0-9]+$/;
+                if (!phoneRegex.test(formData.contactNumber)) {
+                    alert('Contact number must contain only numbers.');
+                    return;
+                }
+                
+                // Check if contact number is between 1 and 12 digits
+                if (formData.contactNumber.length > 12) {
+                    alert('Contact number must not exceed 12 digits.');
+                    return;
+                }
+                
+                // Check if contact number is not too short (at least 7 digits for a valid phone)
+                if (formData.contactNumber.length < 7) {
+                    alert('Contact number must be at least 7 digits long.');
+                    return;
+                }
+            }
+            
+            if (editId) {
+                await updateAdminAccount(editId, formData);
+            } else {
+                await addAdminAccount(formData);
+            }
+        });
+
+        // Search functionality
+        document.querySelector('.search-input').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.admin-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Profile dropdown functions
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+                console.log('Dropdown toggled, classes:', dropdown.className);
+            }
+        }
+
+        // Add event listener to user avatar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded - initializing page...');
+            
+            // Initialize Supabase if not already done
+            if (typeof supabaseClient === 'undefined') {
+                console.log('Initializing Supabase client...');
+                initializeSupabase();
+            }
+            
+            // Test database access first
+            setTimeout(async () => {
+                console.log('Database connection ready');
+                // Test functions removed to prevent dummy data creation
+            }, 200);
+            
+            // Debug database contents first
+            setTimeout(() => {
+                debugDatabaseUsers();
+            }, 500);
+            
+            // Load current user profile data first
+            setTimeout(() => {
+                loadCurrentUserProfile();
+            }, 500);
+            
+            // Load admin accounts data
+            setTimeout(() => {
+                loadAdminAccounts();
+            }, 1000);
+            
+            const userAvatar = document.getElementById('userAvatarButton');
+            if (userAvatar) {
+                userAvatar.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    console.log('Avatar clicked - toggling dropdown');
+                    toggleProfileDropdown();
+                });
+                console.log('User avatar click listener added');
+            } else {
+                console.log('ERROR: User avatar button not found');
+            }
+        });
+        
+        // Initialize Supabase client
+        function initializeSupabase() {
+            try {
+                if (typeof supabase !== 'undefined') {
+                    window.supabaseClient = supabase.createClient(
+                        'https://ontuivohwjfkxjwrjnot.supabase.co',
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUyNzA3NjIsImV4cCI6MjA1MDg0Njc2Mn0.HB46hZCf7xhcVIhz6HUkhpAGCYDh8HPE1Xp_xvGnxsI'
+                    );
+                    console.log('Supabase client initialized successfully');
+                } else {
+                    console.error('Supabase library not loaded');
+                }
+            } catch (error) {
+                console.error('Error initializing Supabase:', error);
+            }
+        }
+
+        function signOut() {
+            if (confirm('Are you sure you want to sign out?')) {
+                sessionStorage.removeItem('currentUser');
+                window.location.href = 'sign_in_form.html';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('profileDropdown');
+            const userAvatar = document.getElementById('userAvatarButton');
+            
+            if (dropdown && userAvatar && !userAvatar.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

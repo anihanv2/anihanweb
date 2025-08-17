@@ -1,0 +1,394 @@
+body {
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Styles */
+.navbar {
+    height: 80px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background: white !important;
+}
+
+.navbar .container-fluid {
+    height: 100%;
+    background: white;
+    margin: 0;
+    max-width: 100%;
+    padding: 0 1.5rem;
+}
+
+.navbar-brand {
+    color: #333 !important;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.brand-text {
+    color: #333;
+}
+
+.logo-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: #6c757d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background: white;
+    height: calc(100vh - 80px);
+    padding: 1rem 0;
+    border-right: 1px solid #e9ecef;
+    position: fixed;
+    top: 80px;
+    left: 0;
+    width: 250px;
+    overflow-y: auto;
+    z-index: 1020;
+}
+
+.sidebar .nav-link {
+    color: #495057;
+    font-weight: 400;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #28a745;
+}
+
+.sidebar .nav-link.active {
+    background-color: #e8f5e9;
+    color: #28a745;
+    font-weight: 500;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Main Content Styles */
+.main-content {
+    padding: 2rem;
+    background: #f5f5f5;
+    position: fixed;
+    top: 80px;
+    left: 250px;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    height: calc(100vh - 80px);
+    width: calc(100% - 250px);
+}
+
+/* Card Styles */
+.price-monitoring-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: none;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.price-monitoring-card-header {
+    background: #28a745;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Table Styles */
+.table-responsive {
+    padding: 0;
+}
+
+.price-monitoring-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.price-monitoring-table thead {
+    background: #f8f9fa;
+}
+
+.price-monitoring-table th {
+    font-weight: 600;
+    padding: 20px 30px;
+    border-bottom: 2px solid #e9ecef;
+    color: #495057;
+    font-size: 0.95rem;
+    text-align: left;
+}
+
+.price-monitoring-table th:first-child {
+    width: 25%;
+}
+
+.price-monitoring-table th:nth-child(2) {
+    width: 40%;
+    padding-left: 60px;
+}
+
+.price-monitoring-table th:nth-child(3) {
+    width: 35%;
+}
+
+.price-monitoring-table td {
+    padding: 20px 30px;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.price-monitoring-table td:nth-child(2) {
+    padding-left: 60px;
+}
+
+.price-monitoring-table td:first-child {
+    padding: 15px 20px;
+}
+
+.price-monitoring-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Product Image Placeholder */
+.product-image-placeholder {
+    width: 50px;
+    height: 50px;
+    background: #e9ecef;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+/* Empty Table State */
+.price-monitoring-table tbody:empty::after {
+    content: '';
+    display: block;
+    height: 200px;
+}
+
+/* Footer Styles */
+.table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    font-size: 0.85rem;
+}
+
+.table-info-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.table-info {
+    color: #6c757d;
+}
+
+.view-all {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.view-all:hover {
+    text-decoration: underline;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.pagination-controls .btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 0;
+    background: white;
+    border: none;
+    border-right: 1px solid #ddd;
+    color: #495057;
+}
+
+.pagination-controls .btn:last-child {
+    border-right: none;
+}
+
+.pagination-controls .btn:hover {
+    background: #e9ecef;
+}
+
+.pagination-controls .btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.pagination-controls .btn-success:hover {
+    background: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        left: -250px;
+        transition: left 0.3s ease;
+    }
+    
+    .sidebar.show {
+        left: 0;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    .price-monitoring-card-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        padding: 15px 20px;
+    }
+    
+    .price-monitoring-table th,
+    .price-monitoring-table td {
+        padding: 15px 10px;
+        font-size: 0.85rem;
+    }
+    
+    .price-monitoring-table th:first-child,
+    .price-monitoring-table td:first-child {
+        width: 60px;
+        padding: 10px 5px;
+    }
+    
+    .product-image-placeholder {
+        width: 40px;
+        height: 40px;
+        font-size: 0.7rem;
+    }
+    
+    .table-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+        padding: 15px 20px;
+    }
+    
+    .pagination-controls {
+        align-self: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .price-monitoring-card-header h4 {
+        font-size: 1.25rem;
+    }
+    
+    .price-monitoring-table {
+        font-size: 0.8rem;
+    }
+    
+    .price-monitoring-table th,
+    .price-monitoring-table td {
+        padding: 12px 8px;
+    }
+    
+    .product-image-placeholder {
+        width: 35px;
+        height: 35px;
+        font-size: 0.6rem;
+    }
+    
+    /* Hide some columns on very small screens */
+    .price-monitoring-table th:nth-child(3),
+    .price-monitoring-table td:nth-child(3),
+    .price-monitoring-table th:nth-child(6),
+    .price-monitoring-table td:nth-child(6) {
+        display: none;
+    }
+}
+
+/* Search Container */
+.search-container {
+    max-width: 300px;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.search-input {
+    padding-left: 2.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.search-input:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4) !important;
+    background-color: white !important;
+    outline: none !important;
+}
