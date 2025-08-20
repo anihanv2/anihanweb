@@ -3,55 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Per Location - Anihan</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Violation - Anihan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="profile-dropdown.css" rel="stylesheet">
-    <link href="sales_per_location.css" rel="stylesheet">
+    <link rel="stylesheet" href="violation.css">
+</head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Violations - Anihan Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="violation.css">
 </head>
 <body>
-    <!-- Top Navigation -->
-    <nav class="navbar navbar-light bg-white border-bottom">
+    <!-- Header -->
+    <nav class="navbar navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="#">
                 <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
                 <span class="brand-text">Anihan</span>
             </a>
-            <div class="navbar-nav">
-                <div class="nav-item">
-                    <div class="user-avatar" onclick="toggleProfileDropdown()">
-                        <img id="userAvatarImage" src="" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;">
-                        <i id="userAvatarIcon" class="fas fa-user"></i>
-                        <!-- Profile Dropdown -->
-                        <div class="profile-dropdown" id="profileDropdown">
-                            <div class="profile-dropdown-header">
-                                <div class="profile-dropdown-avatar">
-                                    <img id="profileAvatarImage" src="" alt="Profile Avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; display: none;">
-                                    <i id="profileAvatarIcon" class="fas fa-user"></i>
-                                </div>
-                                <h6 class="profile-dropdown-name" id="profileUserName">Loading...</h6>
-                            </div>
-                            <div class="profile-dropdown-details">
-                                <div class="profile-detail-item">
-                                    <i class="fas fa-envelope"></i>
-                                    <span id="profileUserEmail">Loading...</span>
-                                </div>
-                                <div class="profile-detail-item">
-                                    <i class="fas fa-user-tag"></i>
-                                    <span id="profileUserRole">Loading...</span>
-                                </div>
-                                <div class="profile-detail-item">
-                                    <i class="fas fa-shield-alt"></i>
-                                    <span id="profileUserTitle">System Administrator</span>
-                                </div>
-                            </div>
-                            <div class="profile-dropdown-actions">
-                                <button class="btn" onclick="signOut()">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Sign out
-                                </button>
-                            </div>
+            <div class="user-avatar" onclick="toggleProfileDropdown()">
+                <img id="userAvatarImage" src="" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: none;">
+                <i id="userAvatarIcon" class="fas fa-user"></i>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            <img id="profileAvatarImage" src="" alt="Profile Avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; display: none;">
+                            <i id="profileAvatarIcon" class="fas fa-user"></i>
                         </div>
+                        <h6 class="profile-dropdown-name" id="profileUserName">Loading...</h6>
+                    </div>
+                    <div class="profile-dropdown-details">
+                        <div class="profile-detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <span id="profileUserEmail">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-user-tag"></i>
+                            <span id="profileUserRole">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span id="profileUserTitle">System Administrator</span>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-actions">
+                        <button class="btn" onclick="signOut()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign out
+                        </button>
                     </div>
                 </div>
             </div>
@@ -61,158 +66,179 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar bg-white border-end">
-                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                    <a class="nav-link d-flex align-items-center text-start" href="dashboard_super_admin.html">
-                        <i class="fas fa-tachometer-alt me-2"></i>
-                        Dashboard
-                    </a>
-                    
-                    <a class="nav-link d-flex align-items-center text-start" href="admin_accounts.html">
-                        <i class="fas fa-user-shield me-2"></i>
-                        Admin Accounts
-                    </a>
-                    
-                    <!-- Account Approval Dropdown -->
-                    <div class="nav-dropdown">
-                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
-                                type="button" data-bs-toggle="collapse" data-bs-target="#accountApprovalSubmenu" 
-                                aria-expanded="false" aria-controls="accountApprovalSubmenu">
-                            <span>
-                                <i class="fas fa-clipboard-check me-2"></i>
-                                Account Approval
-                            </span>
-                            <i class="fas fa-chevron-down dropdown-icon"></i>
-                        </button>
-                        <div class="collapse" id="accountApprovalSubmenu">
-                            <div class="submenu">
-                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="for_approval.html">
-                                    <i class="fas fa-user-clock me-2"></i>
-                                    For Approval
-                                </a>
-                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="approved_application.html">
-                                    <i class="fas fa-user-check me-2"></i>
-                                    Approved Applications
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <a class="nav-link d-flex align-items-center text-start" href="inventory_records.html">
-                        <i class="fas fa-clipboard-list me-2"></i>
-                        Inventory Records
-                    </a>
-                    
-                    <a class="nav-link d-flex align-items-center text-start" href="price_monitoring.html">
-                        <i class="fas fa-dollar-sign me-2"></i>
-                        Price Monitoring
-                    </a>
-                    
-                    <a class="nav-link d-flex align-items-center text-start" href="in_demand_products.html">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        In Demand Products
-                    </a>
-                    
-                    <a class="nav-link active d-flex align-items-center text-start" href="sales_per_location.html">
-                        <i class="fas fa-map-marker-alt me-2"></i>
-                        Sales Per Location
-                    </a>
-                    
-                    <!-- Voucher Dropdown -->
-                    <div class="nav-dropdown">
-                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
-                                type="button" data-bs-toggle="collapse" data-bs-target="#voucherSubmenu" 
-                                aria-expanded="false" aria-controls="voucherSubmenu">
-                            <span>
-                                <i class="fas fa-ticket-alt me-2"></i>
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar">
+                    <nav class="nav flex-column">
+                        <a class="nav-link" href="dashboard_super_admin.html">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
+                        <a class="nav-link" href="admin_accounts.html">
+                            <i class="fas fa-user-shield me-2"></i>
+                            Admin Accounts
+                        </a>
+                        <a class="nav-link" href="for_approval.html">
+                            <i class="fas fa-clock me-2"></i>
+                            For Approval
+                        </a>
+                        <a class="nav-link" href="approved_application.html">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Approved Application
+                        </a>
+                        <a class="nav-link" href="inventory_records.html">
+                            <i class="fas fa-boxes me-2"></i>
+                            Inventory Records
+                        </a>
+                        <a class="nav-link" href="price_monitoring.html">
+                            <i class="fas fa-dollar-sign me-2"></i>
+                            Price Monitoring
+                        </a>
+                        <a class="nav-link" href="in_demand_products.html">
+                            <i class="fas fa-chart-line me-2"></i>
+                            In Demand Products
+                        </a>
+                        <a class="nav-link" href="sales_per_location.html">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            Sales Per Location
+                        </a>
+                        
+                        <!-- Voucher Dropdown -->
+                        <div class="nav-dropdown">
+                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#voucherSubmenu" aria-expanded="false">
+                                <i class="fas fa-gift me-2"></i>
                                 Voucher
-                            </span>
-                            <i class="fas fa-chevron-down dropdown-icon"></i>
-                        </button>
-                        <div class="collapse" id="voucherSubmenu">
-                            <div class="submenu">
-                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="add_voucher.html">
+                                <i class="fas fa-chevron-down dropdown-icon ms-auto"></i>
+                            </a>
+                            <div class="collapse submenu" id="voucherSubmenu">
+                                <a class="nav-link submenu-link" href="add_voucher.html">
                                     <i class="fas fa-plus me-2"></i>
                                     Add Voucher
                                 </a>
-                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="voucher_records.html">
+                                <a class="nav-link submenu-link" href="voucher_records.html">
                                     <i class="fas fa-list me-2"></i>
                                     Voucher Records
                                 </a>
                             </div>
                         </div>
-                    </div>
-                    
-                    <a class="nav-link d-flex align-items-center text-start" href="violation.html">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Violation
-                    </a>
+                        
+                        <a class="nav-link active" href="violation.html">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Violation
+                        </a>
+                    </nav>
                 </div>
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 main-content">
-                <div class="sales-card shadow-sm mt-4">
-                    <div class="sales-card-header d-flex justify-content-between align-items-center">
-                        <span>Sales Per Location</span>
-                        <div class="search-container">
-                            <div class="search-input-wrapper">
-                                <i class="fas fa-search search-icon"></i>
-                                <input type="text" class="form-control search-input" placeholder="Search">
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <div class="card violation-card">
+                        <div class="violation-card-header">
+                            <h4 class="mb-0">Store Violations</h4>
+                            <div class="search-container">
+                                <div class="search-input-wrapper">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" class="form-control search-input" placeholder="Search violations...">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="sales-table">
-                            <thead>
-                                <tr>
-                                    <th>Store Location</th>
-                                    <th>Most Bought Products</th>
-                                    <th>Quantity</th>
-                                    <th>Total Sales</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Data rows will be populated here -->
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="sales-card-footer">
-                        <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
-                        <div class="sales-pagination">
-                            <button class="btn">&lt;</button>
-                            <button class="btn active">1</button>
-                            <button class="btn">&gt;</button>
+                        
+                        <div class="table-responsive">
+                            <table class="table violation-table">
+                                <thead>
+                                    <tr>
+                                        <th>Store Name</th>
+                                        <th>Violation Type</th>
+                                        <th>Date of Violation</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Biryanah</td>
+                                        <td>Scam</td>
+                                        <td>03-25-25</td>
+                                        <td><span class="badge bg-warning text-dark">Open</span></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm me-1">
+                                                <i class="fas fa-check"></i> Resolved
+                                            </button>
+                                            <button class="btn btn-danger btn-sm">
+                                                <i class="fas fa-ban"></i> Block
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Green Market</td>
+                                        <td>Fake Products</td>
+                                        <td>03-22-25</td>
+                                        <td><span class="badge bg-success">Resolved</span></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm me-1" disabled>
+                                                <i class="fas fa-check"></i> Resolved
+                                            </button>
+                                            <button class="btn btn-danger btn-sm">
+                                                <i class="fas fa-ban"></i> Block
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Farm Fresh</td>
+                                        <td>Poor Quality</td>
+                                        <td>03-20-25</td>
+                                        <td><span class="badge bg-warning text-dark">Open</span></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm me-1">
+                                                <i class="fas fa-check"></i> Resolved
+                                            </button>
+                                            <button class="btn btn-danger btn-sm">
+                                                <i class="fas fa-ban"></i> Block
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Organic Store</td>
+                                        <td>Late Delivery</td>
+                                        <td>03-18-25</td>
+                                        <td><span class="badge bg-danger">Blocked</span></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm me-1" disabled>
+                                                <i class="fas fa-check"></i> Resolved
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" disabled>
+                                                <i class="fas fa-ban"></i> Block
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>City Grocers</td>
+                                        <td>Overpricing</td>
+                                        <td>03-15-25</td>
+                                        <td><span class="badge bg-success">Resolved</span></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm me-1" disabled>
+                                                <i class="fas fa-check"></i> Resolved
+                                            </button>
+                                            <button class="btn btn-danger btn-sm">
+                                                <i class="fas fa-ban"></i> Block
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="table-footer">
+                            <div class="table-info-section">
+                                <span class="table-info">Showing 5 of 25 violations</span>
+                                <a href="#" class="view-all">View all ></a>
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-outline-secondary">&lt;</button>
+                                <button class="btn btn-sm btn-success">1</button>
+                                <button class="btn btn-sm btn-outline-secondary">&gt;</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -220,7 +246,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Add Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Add Shared Profile System -->
@@ -245,6 +271,58 @@
             if (!userAvatar.contains(event.target)) {
                 dropdown.classList.remove('show');
             }
+        });
+    </script>
+    <script>
+        // Handle dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownToggle = document.querySelector('[data-bs-toggle="collapse"]');
+            const dropdownIcon = dropdownToggle.querySelector('.dropdown-icon');
+            const submenu = document.querySelector('#voucherSubmenu');
+            
+            submenu.addEventListener('show.bs.collapse', function() {
+                dropdownIcon.style.transform = 'rotate(180deg)';
+            });
+            
+            submenu.addEventListener('hide.bs.collapse', function() {
+                dropdownIcon.style.transform = 'rotate(0deg)';
+            });
+        });
+
+        // Handle action buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const resolvedButtons = document.querySelectorAll('.btn-success');
+            const blockButtons = document.querySelectorAll('.btn-danger');
+            
+            resolvedButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        const row = this.closest('tr');
+                        const statusBadge = row.querySelector('.badge');
+                        statusBadge.className = 'badge bg-success';
+                        statusBadge.textContent = 'Resolved';
+                        this.disabled = true;
+                    }
+                });
+            });
+            
+            blockButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        const row = this.closest('tr');
+                        const statusBadge = row.querySelector('.badge');
+                        statusBadge.className = 'badge bg-danger';
+                        statusBadge.textContent = 'Blocked';
+                        this.disabled = true;
+                        
+                        // Also disable resolved button
+                        const resolvedBtn = row.querySelector('.btn-success');
+                        if (resolvedBtn) {
+                            resolvedBtn.disabled = true;
+                        }
+                    }
+                });
+            });
         });
     </script>
 </body>
