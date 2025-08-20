@@ -176,7 +176,7 @@
                             <thead>
                                 <tr>
                                     <th>Product Name</th>
-                                    <th>Label</th>
+                                    <th>Category</th>
                                     <th>Stocks</th>
                                     <th>Price</th>
                                     <th>Status</th>
@@ -422,15 +422,13 @@
                         </div>
                     </td>
                     <td>
-                        <span class="label-badge">${escapeHtml(product.variation || 'N/A')}</span>
+                        <span class="label-badge">${escapeHtml(product.category || 'N/A')}</span>
                     </td>
                     <td>
-                        <span class="stock-status">-</span>
-                        <small class="text-muted d-block">No stock data</small>
+                        <span class="stock-status">${escapeHtml(product.quantity || '0')}</span>
                     </td>
                     <td>
                         <span class="price">₱${escapeHtml(product.price || '0')}</span>
-                        ${product.discount ? `<div class="discount text-success small">-${escapeHtml(product.discount)}</div>` : ''}
                     </td>
                     <td>
                         <span class="status-badge status-available">Available</span>

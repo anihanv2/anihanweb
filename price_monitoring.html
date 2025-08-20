@@ -233,19 +233,16 @@
                         id,
                         name,
                         price,
-                        size,
-                        variation,
+                        category,
                         description,
                         discount,
                         image_url,
                         user_id,
                         users!my_products_user_id_fkey (
                             id,
+                            municipality,
                             store-owner!store-owner_user_id_fkey (
-                                store_name,
-                                latitude,
-                                longitude,
-                                crops_type
+                                store_name
                             )
                         )
                     `);
@@ -306,12 +303,13 @@ function populatePriceTable(priceData) {
         console.log(`Creating row ${index + 1} for product:`, product);
         console.log('Image URL from database:', product.image_url); // Debug log
 
-        // Extract store information
-        const user = product.users;
-        const storeOwner = user?.['store-owner']?.[0];
-        const storeName = storeOwner?.store_name || 'Unknown Store';
-        const storeLocation = getLocationString(storeOwner?.latitude, storeOwner?.longitude);
-        const category = storeOwner?.crops_type || product.variation || 'General';
+
+    // Extract user and store information
+    const user = product.users;
+    const storeOwner = user?.['store-owner']?.[0];
+    const storeName = storeOwner?.store_name || 'Unknown Store';
+    const municipality = user?.municipality || 'Unknown';
+    const category = product.category || 'General';
 
         const row = document.createElement('tr');
 
@@ -325,7 +323,6 @@ function populatePriceTable(priceData) {
         nameTd.innerHTML = `
             <div class="product-info">
                 <div class="product-name">${escapeHtml(product.name || 'N/A')}</div>
-                <div class="product-size text-muted small">${escapeHtml(product.size || '')}</div>
             </div>
         `;
         row.appendChild(nameTd);
@@ -335,20 +332,21 @@ function populatePriceTable(priceData) {
         categoryTd.innerHTML = `<span class="category-badge">${escapeHtml(category)}</span>`;
         row.appendChild(categoryTd);
 
-        // Price cell
-        const priceTd = document.createElement('td');
-        priceTd.innerHTML = `<span class="price">₱${escapeHtml(product.price || '0')}</span>${product.discount ? `<div class="discount text-success small">-${escapeHtml(product.discount)}</div>` : ''}`;
-        row.appendChild(priceTd);
+    // Price cell
+    const priceTd = document.createElement('td');
+    priceTd.innerHTML = `<span class="price">₱${escapeHtml(product.price || '0')}</span>`;
+    row.appendChild(priceTd);
 
         // Store name cell
         const storeNameTd = document.createElement('td');
         storeNameTd.innerHTML = `<span class="store-name">${escapeHtml(storeName)}</span>`;
         row.appendChild(storeNameTd);
 
-        // Store location cell
-        const storeLocationTd = document.createElement('td');
-        storeLocationTd.innerHTML = `<span class="store-location">${escapeHtml(storeLocation)}</span>`;
-        row.appendChild(storeLocationTd);
+
+    // Municipality cell
+    const municipalityTd = document.createElement('td');
+    municipalityTd.innerHTML = `<span class="store-location">${escapeHtml(municipality)}</span>`;
+    row.appendChild(municipalityTd);
 
         tbody.appendChild(row);
     });
@@ -357,36 +355,183 @@ function populatePriceTable(priceData) {
 
 
 // Create image cell as a DOM element for robust error handling
-function createImageCellDOM(imageUrl, productName, tdElement) {
-    console.log('Processing image URL:', imageUrl);
+
+// Updated createImageCellDOM function with proper byte array handling
+function createImageCellDOM(imageData, productName, tdElement) {
     tdElement.innerHTML = '';
-    if (!imageUrl || imageUrl.trim() === '') {
-        console.log('No image URL provided');
+    console.log('Processing image data:', imageData);
+    
+    if (!imageData) {
         tdElement.innerHTML = `<i class="fas fa-image" style="font-size: 24px; color: #ccc;" title="No image available"></i>`;
         return;
     }
-    const url = imageUrl.trim();
-    console.log('Cleaned URL:', url);
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/')) {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = productName || 'Product';
-        img.style.width = '40px';
-        img.style.height = '40px';
-        img.style.objectFit = 'cover';
-        img.style.borderRadius = '4px';
-        img.style.background = '#f8f9fa';
-        img.onerror = function() {
-            handleImageError(this, url);
-        };
-        img.onload = function() {
-            console.log('Image loaded successfully:', this.src);
-        };
-        tdElement.appendChild(img);
-    } else {
-        console.warn('Invalid or non-public image URL format:', url);
-        tdElement.innerHTML = `<i class="fas fa-image" style="font-size: 24px; color: #ccc;" title="Invalid image URL: ${escapeHtml(url)}"></i>`;
+
+    try {
+        // Case 1: If imageData is already a valid data URL
+        if (typeof imageData === 'string' && imageData.startsWith('data:image/')) {
+            createImageElement(imageData, productName, tdElement);
+            return;
+        }
+
+        // Case 2: If imageData is a regular URL (http/https)
+        if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
+            createImageElement(imageData, productName, tdElement);
+            return;
+        }
+
+        // Case 3: If imageData is a stringified byte array: "[137,80,78,...]"
+        if (typeof imageData === 'string' && imageData.trim().startsWith('[') && imageData.trim().endsWith(']')) {
+            try {
+                const byteArray = JSON.parse(imageData.trim());
+                if (Array.isArray(byteArray)) {
+                    const base64String = bytesToBase64(byteArray);
+                    const dataUrl = `data:image/jpeg;base64,${base64String}`; // Default to JPEG
+                    createImageElement(dataUrl, productName, tdElement);
+                    return;
+                }
+            } catch (parseError) {
+                console.error('Error parsing stringified byte array:', parseError);
+            }
+        }
+
+        // Case 4: If imageData is a direct byte array (Array or Uint8Array)
+        if (Array.isArray(imageData)) {
+            const base64String = bytesToBase64(imageData);
+            const dataUrl = `data:image/jpeg;base64,${base64String}`;
+            createImageElement(dataUrl, productName, tdElement);
+            return;
+        }
+
+        if (imageData instanceof Uint8Array) {
+            const base64String = uint8ArrayToBase64(imageData);
+            const dataUrl = `data:image/jpeg;base64,${base64String}`;
+            createImageElement(dataUrl, productName, tdElement);
+            return;
+        }
+
+        // Case 5: If imageData is a Buffer-like object with data property
+        if (typeof imageData === 'object' && imageData.data && Array.isArray(imageData.data)) {
+            const base64String = bytesToBase64(imageData.data);
+            const dataUrl = `data:image/jpeg;base64,${base64String}`;
+            createImageElement(dataUrl, productName, tdElement);
+            return;
+        }
+
+        // Case 6: Try to handle as base64 string without data URL prefix
+        if (typeof imageData === 'string' && isBase64String(imageData)) {
+            const dataUrl = `data:image/jpeg;base64,${imageData}`;
+            createImageElement(dataUrl, productName, tdElement);
+            return;
+        }
+
+        // Fallback: Unknown format
+        console.warn('Unknown image data format:', typeof imageData, imageData);
+        tdElement.innerHTML = `<i class="fas fa-image" style="font-size: 24px; color: #ccc;" title="Unsupported image format"></i>`;
+
+    } catch (error) {
+        console.error('Error processing image data:', error);
+        tdElement.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #dc3545;" title="Image processing error"></i>`;
     }
+}
+
+// Helper function to create image element with error handling
+function createImageElement(src, alt, tdElement) {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = alt || 'Product';
+    img.style.width = '40px';
+    img.style.height = '40px';
+    img.style.objectFit = 'cover';
+    img.style.borderRadius = '4px';
+    img.style.background = '#f8f9fa';
+    img.style.border = '1px solid #dee2e6';
+    
+    img.onerror = function() {
+        console.error('Failed to load image:', src);
+        this.outerHTML = `<i class="fas fa-image" style="font-size: 24px; color: #dc3545;" title="Failed to load image"></i>`;
+    };
+    
+    img.onload = function() {
+        console.log('Image loaded successfully');
+    };
+    
+    tdElement.appendChild(img);
+}
+
+// Improved byte array to base64 conversion
+function bytesToBase64(byteArray) {
+    try {
+        // Convert array to Uint8Array if it isn't already
+        const uint8Array = new Uint8Array(byteArray);
+        
+        // Method 1: Using btoa with binary string (works for smaller images)
+        if (uint8Array.length < 100000) { // Less than ~100KB
+            let binary = '';
+            for (let i = 0; i < uint8Array.length; i++) {
+                binary += String.fromCharCode(uint8Array[i]);
+            }
+            return btoa(binary);
+        }
+        
+        // Method 2: Chunked processing for larger images
+        const chunkSize = 8192;
+        let binary = '';
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+            const chunk = uint8Array.slice(i, i + chunkSize);
+            binary += String.fromCharCode.apply(null, chunk);
+        }
+        return btoa(binary);
+        
+    } catch (error) {
+        console.error('Error converting bytes to base64:', error);
+        throw error;
+    }
+}
+
+// Convert Uint8Array to base64
+function uint8ArrayToBase64(uint8Array) {
+    return bytesToBase64(Array.from(uint8Array));
+}
+
+// Check if string is valid base64
+function isBase64String(str) {
+    if (!str || typeof str !== 'string') return false;
+    
+    // Remove data URL prefix if present
+    const base64Part = str.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    // Basic base64 pattern check
+    const base64Pattern = /^[A-Za-z0-9+/]*={0,2}$/;
+    
+    // Check pattern and length (base64 length should be divisible by 4)
+    return base64Pattern.test(base64Part) && base64Part.length % 4 === 0 && base64Part.length > 10;
+}
+
+// Debug function to test image conversion
+function debugImageConversion(imageData) {
+    console.log('=== Image Debug Info ===');
+    console.log('Data type:', typeof imageData);
+    console.log('Data value:', imageData);
+    
+    if (Array.isArray(imageData)) {
+        console.log('Array length:', imageData.length);
+        console.log('First 10 bytes:', imageData.slice(0, 10));
+        
+        // Check if it looks like a valid image header
+        if (imageData.length > 4) {
+            const header = imageData.slice(0, 4);
+            if (header[0] === 0xFF && header[1] === 0xD8) {
+                console.log('Detected JPEG image');
+            } else if (header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4E && header[3] === 0x47) {
+                console.log('Detected PNG image');
+            } else if (header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46) {
+                console.log('Detected GIF image');
+            } else {
+                console.log('Unknown image format, header:', header);
+            }
+        }
+    }
+    console.log('======================');
 }
 
 function isValidImageUrl(url) {
