@@ -232,7 +232,6 @@
                                     <select class="form-select form-select-sm me-2" id="stocksFilter" style="width: 100px;">
                                         <option value="category">Category</option>
                                         <option value="status">Status</option>
-                                        <option value="supplier">Supplier</option>
                                     </select>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
@@ -1216,9 +1215,12 @@
         }
 
         // Event listeners
-        document.getElementById('categoryFilter').addEventListener('change', applyFilters);
-        document.getElementById('periodFilter').addEventListener('change', applyFilters);
-        document.getElementById('analyticsSearch').addEventListener('input', applyFilters);
+    const categoryFilterEl = document.getElementById('categoryFilter');
+    if (categoryFilterEl) categoryFilterEl.addEventListener('change', applyFilters);
+    const periodFilterEl = document.getElementById('periodFilter');
+    if (periodFilterEl) periodFilterEl.addEventListener('change', applyFilters);
+    const analyticsSearchEl = document.getElementById('analyticsSearch');
+    if (analyticsSearchEl) analyticsSearchEl.addEventListener('input', applyFilters);
 
         // Initialize table
         updateTable();
@@ -1284,21 +1286,21 @@
             },
             stocks: {
                 category: {
-                    labels: ['Vegetables', 'Fruits', 'Rice', 'Seeds', 'Tools'],
-                    data: [35, 25, 20, 12, 8],
-                    colors: ['#28a745', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14']
+                    labels: [],
+                    data: [],
+                    colors: ['#28a745', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#fd7e14', '#6610f2', '#6c757d']
                 },
                 status: {
-                    labels: ['Available', 'Low Stock', 'Out of Stock', 'Reserved'],
-                    data: [45, 30, 15, 10],
+                    labels: [],
+                    data: [],
                     colors: ['#28a745', '#ffc107', '#dc3545', '#6c757d']
                 }
             },
             soil: {
                 type: {
-                    labels: ['Clay Soil', 'Sandy Soil', 'Loam Soil', 'Silt Soil', 'Peat Soil'],
-                    data: [30, 25, 20, 15, 10],
-                    colors: ['#8B4513', '#F4A460', '#DEB887', '#D2B48C', '#A0522D']
+                    labels: [],
+                    data: [],
+                    colors: ['#8B4513', '#F4A460', '#DEB887', '#D2B48C', '#A0522D', '#198754', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14']
                 }
             },
             hectare: {
@@ -1309,12 +1311,228 @@
             }
         };
 
+        // Fetch product stock data from Supabase and update analyticsData.stocks.category
+        async function updateStockAnalyticsFromDB() {
+            // ...existing code...
+    // ...existing code...
+
+        // Move updateSoilAnalyticsFromDB to top-level scope so it is defined before use
+        async function updateSoilAnalyticsFromDB() {
+            try {
+                const { data: stores, error } = await supabaseClient
+                    .from('store-owner')
+                    .select('soil_type');
+                const soilErrorDiv = document.getElementById('soilAnalyticsError');
+                const soilDebugDiv = document.getElementById('soilAnalyticsDebug');
+                console.log('[SoilAnalytics] Raw fetch result:', stores, error);
+                if (error) {
+                    console.error('Error fetching stores for soil analytics:', error);
+                    if (soilErrorDiv) soilErrorDiv.textContent = 'Error fetching soil analytics: ' + error.message;
+                    if (soilDebugDiv) soilDebugDiv.textContent = '';
+                    alert('Error fetching soil analytics: ' + error.message);
+                    return;
+                }
+                if (!stores || stores.length === 0) {
+                    if (soilErrorDiv) soilErrorDiv.textContent = 'No soil data found in the database.';
+                    if (soilDebugDiv) soilDebugDiv.textContent = '[SoilAnalytics] No data returned from Supabase.';
+                    alert('No soil data found in the database.');
+                    // Clear chart if no data
+                    if (typeof soilChart !== 'undefined' && soilChart) {
+                        soilChart.data.labels = [];
+                        soilChart.data.datasets[0].data = [];
+                        soilChart.update();
+                    }
+                    return;
+                } else {
+                    if (soilErrorDiv) soilErrorDiv.textContent = '';
+                    if (soilDebugDiv) soilDebugDiv.textContent = '[SoilAnalytics] Fetched soil_type data: ' + JSON.stringify(stores);
+                }
+                // Count occurrences of each soil_type
+                const soilTypeMap = {};
+                stores.forEach(store => {
+                    const soil = store.soil_type && store.soil_type.trim() ? store.soil_type.trim() : 'Unknown';
+                    if (!soilTypeMap[soil]) soilTypeMap[soil] = 0;
+                    soilTypeMap[soil] += 1;
+                });
+                analyticsData.soil.type.labels = Object.keys(soilTypeMap);
+                analyticsData.soil.type.data = Object.values(soilTypeMap);
+                analyticsData.soil.type.counts = Object.values(soilTypeMap);
+                // Optionally trim or repeat colors array to match soil types
+                const baseColors = analyticsData.soil.type.colors;
+                analyticsData.soil.type.colors = analyticsData.soil.type.labels.map((_, i) => baseColors[i % baseColors.length]);
+                // Log chart data to debug div
+                if (soilDebugDiv) {
+                    soilDebugDiv.textContent += '\n[SoilAnalytics] Chart labels: ' + JSON.stringify(analyticsData.soil.type.labels) + '\nChart data: ' + JSON.stringify(analyticsData.soil.type.data);
+                }
+                // Refresh or initialize the chart
+                if (typeof soilChart !== 'undefined' && soilChart) {
+                    soilChart.data.labels = analyticsData.soil.type.labels;
+                    soilChart.data.datasets[0].data = analyticsData.soil.type.data;
+                    soilChart.data.datasets[0].backgroundColor = analyticsData.soil.type.colors;
+                    soilChart.update();
+                } else {
+                    initSoilChart();
+                }
+                console.log('[SoilAnalytics] Chart updated:', analyticsData.soil.type);
+            } catch (err) {
+                console.error('Exception updating soil analytics:', err);
+                const soilErrorDiv = document.getElementById('soilAnalyticsError');
+                const soilDebugDiv = document.getElementById('soilAnalyticsDebug');
+                if (soilErrorDiv) soilErrorDiv.textContent = 'Exception updating soil analytics: ' + err.message;
+                if (soilDebugDiv) soilDebugDiv.textContent = '[SoilAnalytics] Exception: ' + err.message;
+                alert('Exception updating soil analytics: ' + err.message);
+            }
+        }
+        // Fetch soil analytics from store-owner table
+        async function updateSoilAnalyticsFromDB() {
+            try {
+                const { data: stores, error } = await supabaseClient
+                    .from('store-owner')
+                    .select('soil_type');
+                const soilErrorDiv = document.getElementById('soilAnalyticsError');
+                const soilDebugDiv = document.getElementById('soilAnalyticsDebug');
+                if (error) {
+                    console.error('Error fetching stores for soil analytics:', error);
+                    if (soilErrorDiv) soilErrorDiv.textContent = 'Error fetching soil analytics: ' + error.message;
+                    if (soilDebugDiv) soilDebugDiv.textContent = '';
+                    return;
+                }
+                if (!stores || stores.length === 0) {
+                    if (soilErrorDiv) soilErrorDiv.textContent = 'No soil data found in the database.';
+                    if (soilDebugDiv) soilDebugDiv.textContent = '';
+                } else {
+                    if (soilErrorDiv) soilErrorDiv.textContent = '';
+                    if (soilDebugDiv) soilDebugDiv.textContent = 'Fetched soil_type data: ' + JSON.stringify(stores);
+                }
+                // Count occurrences of each soil_type
+                const soilTypeMap = {};
+                stores.forEach(store => {
+                    const soil = store.soil_type ? store.soil_type.trim() : 'Unknown';
+                    if (!soilTypeMap[soil]) soilTypeMap[soil] = 0;
+                    soilTypeMap[soil] += 1;
+                });
+                analyticsData.soil.type.labels = Object.keys(soilTypeMap);
+                analyticsData.soil.type.data = Object.values(soilTypeMap);
+                analyticsData.soil.type.counts = Object.values(soilTypeMap);
+                // Optionally trim or repeat colors array to match soil types
+                const baseColors = analyticsData.soil.type.colors;
+                analyticsData.soil.type.colors = analyticsData.soil.type.labels.map((_, i) => baseColors[i % baseColors.length]);
+                // Refresh the chart if already initialized
+                if (typeof soilChart !== 'undefined' && soilChart) {
+                    soilChart.data.labels = analyticsData.soil.type.labels;
+                    soilChart.data.datasets[0].data = analyticsData.soil.type.data;
+                    soilChart.data.datasets[0].backgroundColor = analyticsData.soil.type.colors;
+                    soilChart.update();
+                }
+                console.log('Soil analytics updated from DB:', analyticsData.soil.type);
+            } catch (err) {
+                console.error('Exception updating soil analytics:', err);
+                const soilErrorDiv = document.getElementById('soilAnalyticsError');
+                if (soilErrorDiv) soilErrorDiv.textContent = 'Exception updating soil analytics: ' + err.message;
+            }
+        }
+        // Fetch soil analytics from store-owner table
+        async function updateSoilAnalyticsFromDB() {
+            try {
+                const { data: stores, error } = await supabaseClient
+                    .from('store-owner')
+                    .select('soil_type');
+                if (error) {
+                    console.error('Error fetching stores for soil analytics:', error);
+                    return;
+                }
+                // Count occurrences of each soil_type
+                const soilTypeMap = {};
+                stores.forEach(store => {
+                    const soil = store.soil_type || 'Unknown';
+                    if (!soilTypeMap[soil]) soilTypeMap[soil] = 0;
+                    soilTypeMap[soil] += 1;
+                });
+                analyticsData.soil.type.labels = Object.keys(soilTypeMap);
+                analyticsData.soil.type.data = Object.values(soilTypeMap);
+                // Optionally trim or repeat colors array to match soil types
+                const baseColors = analyticsData.soil.type.colors;
+                analyticsData.soil.type.colors = analyticsData.soil.type.labels.map((_, i) => baseColors[i % baseColors.length]);
+                // Refresh the chart if already initialized
+                if (typeof soilChart !== 'undefined' && soilChart) {
+                    soilChart.data.labels = analyticsData.soil.type.labels;
+                    soilChart.data.datasets[0].data = analyticsData.soil.type.data;
+                    soilChart.data.datasets[0].backgroundColor = analyticsData.soil.type.colors;
+                    soilChart.update();
+                }
+                console.log('Soil analytics updated from DB:', analyticsData.soil.type);
+            } catch (err) {
+                console.error('Exception updating soil analytics:', err);
+            }
+        }
+            try {
+                const { data: products, error } = await supabaseClient
+                    .from('my_products')
+                    .select('category, quantity');
+                // Store for export
+                window.lastFetchedProductsForExport = products;
+                if (error) {
+                    console.error('Error fetching products for stock analytics:', error);
+                    return;
+                }
+                // Group and sum quantities by category, and count products per category
+                const categoryMap = {};
+                const categoryCountMap = {};
+                // Group by status (Available, Low Stock, Out of Stock)
+                const statusMap = { 'Available': 0, 'Low Stock': 0, 'Out of Stock': 0 };
+                products.forEach(product => {
+                    const cat = product.category || 'Uncategorized';
+                    const qty = parseInt(product.quantity, 10) || 0;
+                    if (!categoryMap[cat]) categoryMap[cat] = 0;
+                    if (!categoryCountMap[cat]) categoryCountMap[cat] = 0;
+                    categoryMap[cat] += qty;
+                    categoryCountMap[cat] += 1;
+                    // Status logic like inventory_records.html
+                    let status = 'Available';
+                    if (qty === 0) status = 'Out of Stock';
+                    else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                    statusMap[status] += 1;
+                });
+                // Update category analytics
+                analyticsData.stocks.category.labels = Object.keys(categoryMap);
+                analyticsData.stocks.category.data = Object.values(categoryMap);
+                analyticsData.stocks.category.counts = Object.values(categoryCountMap);
+                const baseColors = analyticsData.stocks.category.colors;
+                analyticsData.stocks.category.colors = analyticsData.stocks.category.labels.map((_, i) => baseColors[i % baseColors.length]);
+                // Update status analytics
+                analyticsData.stocks.status.labels = Object.keys(statusMap);
+                analyticsData.stocks.status.data = Object.values(statusMap);
+                const statusColors = analyticsData.stocks.status.colors;
+                analyticsData.stocks.status.colors = analyticsData.stocks.status.labels.map((_, i) => statusColors[i % statusColors.length]);
+                // Refresh the chart if already initialized and status view is selected
+                const stocksFilter = document.getElementById('stocksFilter');
+                if (typeof stocksChart !== 'undefined' && stocksChart && stocksFilter) {
+                    const view = stocksFilter.value;
+                    if (view === 'category') {
+                        stocksChart.data.labels = analyticsData.stocks.category.labels;
+                        stocksChart.data.datasets[0].data = analyticsData.stocks.category.data;
+                        stocksChart.data.datasets[0].backgroundColor = analyticsData.stocks.category.colors;
+                    } else if (view === 'status') {
+                        stocksChart.data.labels = analyticsData.stocks.status.labels;
+                        stocksChart.data.datasets[0].data = analyticsData.stocks.status.data;
+                        stocksChart.data.datasets[0].backgroundColor = analyticsData.stocks.status.colors;
+                    }
+                    stocksChart.update();
+                }
+                console.log('Stock analytics updated from DB:', analyticsData.stocks);
+            } catch (err) {
+                console.error('Exception updating stock analytics:', err);
+            }
+        }
+
         // Initialize Charts
         function initializeCharts() {
             initSalesChart();
             initStocksChart();
             initSoilChart();
             initHectareChart();
+            updateStockAnalyticsFromDB();
+            updateSoilAnalyticsFromDB();
         }
 
         // Sales Chart (Line Graph)
@@ -1409,8 +1627,16 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const percentage = ((context.parsed / context.dataset.data.reduce((a, b) => a + b)) * 100).toFixed(1);
-                                    return context.label + ': ' + context.parsed + '% (' + percentage + '%)';
+                                    // Show count and stock for each category
+                                    const label = context.label;
+                                    const stock = context.parsed;
+                                    const idx = context.dataIndex;
+                                    const count = analyticsData.stocks.category.counts ? analyticsData.stocks.category.counts[idx] : undefined;
+                                    if (typeof count !== 'undefined') {
+                                        return `${label}: ${stock} (Products: ${count})`;
+                                    } else {
+                                        return `${label}: ${stock}`;
+                                    }
                                 }
                             }
                         }
@@ -1455,8 +1681,11 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const percentage = ((context.parsed / context.dataset.data.reduce((a, b) => a + b)) * 100).toFixed(1);
-                                    return context.label + ': ' + percentage + '%';
+                                    // Show soil type and count for each type
+                                    const label = context.label;
+                                    const count = context.parsed;
+                                    const idx = context.dataIndex;
+                                    return `${label}: ${count} data`;
                                 }
                             }
                         }
@@ -1594,11 +1823,26 @@
                     });
                     break;
                 case 'stocks':
-                    data = analyticsData.stocks[document.getElementById('stocksFilter').value];
-                    csv = 'Category,Percentage\n';
-                    data.labels.forEach((label, index) => {
-                        csv += label + ',' + data.data[index] + '\n';
-                    });
+                    // Always export as Category, Stock, Status for all products
+                    csv = 'Category,Stock,Status\n';
+                    // Fetch all products from analytics (or cache, or refetch if needed)
+                    // We'll use the last fetched products from updateStockAnalyticsFromDB if available
+                    if (window.lastFetchedProductsForExport && Array.isArray(window.lastFetchedProductsForExport)) {
+                        window.lastFetchedProductsForExport.forEach(product => {
+                            const cat = product.category || 'Uncategorized';
+                            const qty = parseInt(product.quantity, 10) || 0;
+                            let status = 'Available';
+                            if (qty === 0) status = 'Out of Stock';
+                            else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                            csv += `${cat},${qty},${status}\n`;
+                        });
+                    } else {
+                        // fallback: use analyticsData.stocks.category/status (less detail)
+                        data = analyticsData.stocks[document.getElementById('stocksFilter').value];
+                        data.labels.forEach((label, index) => {
+                            csv += label + ',' + data.data[index] + ',\n';
+                        });
+                    }
                     break;
                 case 'soil':
                     data = analyticsData.soil.type;
