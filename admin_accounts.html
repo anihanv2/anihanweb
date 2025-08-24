@@ -247,6 +247,7 @@
                                         <th>CONTACT NUMBER</th>
                                         <th>EMAIL</th>
                                         <th>ADDRESS</th>
+                                        <th>ROLE</th>
                                         <th>ACTION</th>
                                     </tr>
                                 </thead>
@@ -873,47 +874,110 @@
             
             // Test upload
             console.log('Testing upload...');
-            const imageUrl = await uploadImage(file);
+            const imageUrl = await uploadImageToSupabase(file, 'admin-images');
             
             if (imageUrl) {
                 console.log('✅ Upload successful!');
                 console.log('Generated URL:', imageUrl);
                 
-                // Test URL accessibility
+                // Test if URL is accessible
                 testImageUrl(imageUrl);
-                
-                // Test database insertion with this URL
-                console.log('Testing database insertion...');
-                const testData = {
-                    name: 'Manual Test DELETE ME',
-                    email: `manual-${Date.now()}@example.com`,
-                    password: hashPassword('testpass123'),
-                    user_type: 'SUB ADMIN',
-                    image_url: imageUrl
-                };
-                
-                const { data, error } = await supabaseClient
-                    .from('admin_accounts')
-                    .insert([testData])
-                    .select('*');
-                
-                if (error) {
-                    console.error('❌ Database insertion failed:', error);
-                } else {
-                    console.log('✅ Database insertion successful!');
-                    console.log('Saved data:', data[0]);
-                    
-                    // Clean up
-                    await supabaseClient
-                        .from('admin_accounts')
-                        .delete()
-                        .eq('id', data[0].id);
-                    console.log('✓ Test record cleaned up');
-                }
             } else {
-                console.error('❌ Upload failed');
+                console.error('❌ Upload failed!');
             }
         };
+
+        // Helper function to test current setup
+        window.testImageUploadSetup = async function() {
+            console.log('=== TESTING IMAGE UPLOAD SETUP ===');
+            
+            // 1. Test Supabase connection
+            console.log('1. Testing Supabase connection...');
+            try {
+                const { data, error } = await supabaseClient.from('admin_accounts').select('count').limit(1);
+                if (error) {
+                    console.error('❌ Supabase connection failed:', error);
+                } else {
+                    console.log('✅ Supabase connection successful');
+                }
+            } catch (e) {
+                console.error('❌ Supabase connection error:', e);
+            }
+            
+            // 2. Test storage bucket
+            console.log('2. Testing storage bucket...');
+            const bucketResult = await testStorageBucket();
+            
+            // 3. Test simple upload
+            console.log('3. Testing simple upload...');
+            const uploadResult = await testSimpleUpload();
+            
+            // 4. Summary
+            console.log('=== SETUP TEST SUMMARY ===');
+            console.log('Supabase connection: ✓');
+            console.log('Storage bucket:', bucketResult ? '✓' : '❌');
+            console.log('Simple upload:', uploadResult ? '✓' : '❌');
+            
+            if (!bucketResult) {
+                console.log('💡 SOLUTION: Create an "admin-images" bucket in Supabase Storage');
+                console.log('💡 Make sure the bucket is set to public if you want public URLs');
+            }
+            
+            return { supabase: true, bucket: bucketResult, upload: uploadResult };
+        };
+
+        // Quick function to create storage bucket (if possible)
+        window.createAdminImagesBucket = async function() {
+            try {
+                console.log('=== CREATING ADMIN-IMAGES BUCKET ===');
+                
+                const { data, error } = await supabaseClient.storage.createBucket('admin-images', {
+                    public: true,
+                    allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'],
+                    fileSizeLimit: 10485760 // 10MB
+                });
+                
+                if (error) {
+                    console.error('❌ Failed to create bucket:', error);
+                    console.log('💡 You may need to create the bucket manually in Supabase dashboard');
+                    return false;
+                } else {
+                    console.log('✅ admin-images bucket created successfully:', data);
+                    return true;
+                }
+            } catch (e) {
+                console.error('❌ Error creating bucket:', e);
+                return false;
+            }
+        };
+
+        // Make test functions available globally
+        window.testStorageBucket = testStorageBucket;
+        window.testSimpleUpload = testSimpleUpload;
+        window.testImageUrl = testImageUrl;
+
+        // Print usage instructions to console
+        console.log(`
+=== IMAGE UPLOAD DEBUG FUNCTIONS ===
+To debug image upload issues, open your browser console (F12) and use these functions:
+
+1. testImageUploadSetup() - Test complete setup
+2. debugImageUpload() - Test upload with currently selected file  
+3. createAdminImagesBucket() - Create storage bucket if missing
+4. testStorageBucket() - Test if storage bucket exists and is accessible
+5. testSimpleUpload() - Test upload with dummy file
+
+Example:
+1. Select an image file using the upload button
+2. Run: debugImageUpload()
+3. Check console for detailed debug information
+
+Common issues:
+- No "admin-images" bucket in Supabase Storage
+- Bucket permissions not set correctly
+- File too large (max 10MB for storage, 5MB for base64)
+- Network connectivity issues
+        `);
 
         // Manual function to refresh profile from database
         window.refreshProfile = async function() {
@@ -1077,7 +1141,7 @@
                 console.log('No admin accounts to display');
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center py-4">No admin accounts found</td>
+                        <td colspan="7" class="text-center py-4">No admin accounts found</td>
                     </tr>
                 `;
                 document.querySelector('.table-info').textContent = '0 items';
@@ -1127,6 +1191,11 @@
                     <td>${admin.contact_number || ''}</td>
                     <td>${admin.email}</td>
                     <td>${admin.address || ''}</td>
+                    <td>
+                        <span class="badge ${admin.user_type === 'SUPER ADMIN' ? 'bg-danger' : 'bg-primary'}">
+                            ${admin.user_type || 'SUB ADMIN'}
+                        </span>
+                    </td>
                     <td>
                         <button class="btn btn-primary btn-sm me-1" onclick="editAdmin('${admin.id}')">
                             <i class="fas fa-edit"></i> Edit
@@ -1224,17 +1293,27 @@
                 console.log('Image file selected:', imageFile);
                 
                 if (imageFile) {
-                    console.log('Uploading image to Supabase Storage...');
+                    console.log('Processing image upload...');
+                    console.log('Image file details:', {
+                        name: imageFile.name,
+                        size: imageFile.size,
+                        type: imageFile.type
+                    });
+                    
+                    // Try Supabase storage first, with base64 fallback
                     imageUrl = await uploadImageToSupabase(imageFile, 'admin-images');
-                    console.log('Image upload result (public URL):', imageUrl);
+                    
                     if (!imageUrl) {
-                        console.error('❌ Image upload failed - imageUrl is null');
-                        alert('Warning: Image upload failed, but account will be created without image.');
+                        console.error('❌ Image upload failed completely');
+                        alert('Warning: Image upload failed. Account will be created without image.');
                     } else {
-                        console.log('✓ Image upload successful:', imageUrl);
+                        console.log('✅ Image upload successful:', imageUrl);
+                        
+                        // Test if the URL is accessible (for debugging)
+                        testImageUrl(imageUrl);
                     }
                 } else {
-                    console.log('No image file selected');
+                    console.log('No image file selected - proceeding without image');
                 }
                 
                 const insertData = {
@@ -1272,7 +1351,7 @@
                     console.log('Saved email:', data[0].email);
                 }
                 
-                alert('Admin account added successfully!');
+                alert('Admin account added successfully!' + (imageUrl ? ' Image uploaded successfully.' : ' (No image was uploaded)'));
                 
                 // Clear the form
                 document.getElementById('adminForm').reset();
@@ -1502,6 +1581,74 @@
                 console.error('=== IMAGE PROCESSING FAILED ===');
                 console.error('Processing error:', error);
                 return null;
+            }
+        }
+
+        // Function to upload image to Supabase Storage (missing function)
+        async function uploadImageToSupabase(file, bucketName = 'admin-images') {
+            try {
+                console.log('=== UPLOADING IMAGE TO SUPABASE STORAGE ===');
+                console.log('File to upload:', file);
+                console.log('File name:', file.name);
+                console.log('File size:', file.size, 'bytes');
+                console.log('File type:', file.type);
+                console.log('Target bucket:', bucketName);
+                
+                // Check file size (limit to 10MB for storage)
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                if (file.size > maxSize) {
+                    console.error('❌ File too large. Maximum size: 10MB');
+                    alert('Error: Image file is too large. Please choose an image smaller than 10MB.');
+                    return null;
+                }
+                
+                // Generate unique filename
+                const fileExt = file.name.split('.').pop();
+                const fileName = `admin-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                console.log('Generated filename:', fileName);
+                
+                // Upload to Supabase Storage
+                const { data, error } = await supabaseClient.storage
+                    .from(bucketName)
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+                
+                if (error) {
+                    console.error('❌ Upload failed:', error);
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+                    
+                    // If bucket doesn't exist or permission denied, fall back to base64
+                    if (error.code === 'bucket_not_found' || error.code === 'insufficient_permissions') {
+                        console.log('Falling back to base64 storage...');
+                        return await uploadImage(file);
+                    }
+                    
+                    throw error;
+                }
+                
+                console.log('✅ Upload successful:', data);
+                
+                // Get public URL
+                const { data: urlData } = supabaseClient.storage
+                    .from(bucketName)
+                    .getPublicUrl(fileName);
+                
+                const publicUrl = urlData.publicUrl;
+                console.log('✅ Public URL generated:', publicUrl);
+                console.log('=== SUPABASE UPLOAD COMPLETED ===');
+                
+                return publicUrl;
+                
+            } catch (error) {
+                console.error('=== SUPABASE UPLOAD FAILED ===');
+                console.error('Upload error:', error);
+                console.log('Falling back to base64 storage...');
+                
+                // Fallback to base64 if Supabase storage fails
+                return await uploadImage(file);
             }
         }
 

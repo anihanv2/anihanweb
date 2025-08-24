@@ -71,7 +71,9 @@ async function loadCurrentUserProfile() {
                     name: userData.name,
                     email: userData.email,
                     userType: userData.user_type,
-                    image_url: userData.image_url
+                    image_url: userData.image_url,
+                    address: userData.address,
+                    municipality: userData.municipality
                 };
                 sessionStorage.setItem('currentUser', JSON.stringify(userSession));
                 
@@ -80,7 +82,9 @@ async function loadCurrentUserProfile() {
                     name: userData.name,
                     email: userData.email,
                     user_type: userData.user_type,
-                    image_url: userData.image_url
+                    image_url: userData.image_url,
+                    address: userData.address,
+                    municipality: userData.municipality
                 });
             } else {
                 console.log('No user data found for ID:', currentUser.id);
@@ -109,7 +113,9 @@ async function loadFirstUserForTesting() {
                 name: 'Administrator',
                 email: 'admin@anihan.gov.ph',
                 user_type: 'SUPER ADMIN',
-                image_url: null
+                image_url: null,
+                address: null,
+                municipality: null
             });
             return;
         }
@@ -125,7 +131,9 @@ async function loadFirstUserForTesting() {
                 name: 'Administrator',
                 email: 'admin@anihan.gov.ph',
                 user_type: 'SUPER ADMIN',
-                image_url: null
+                image_url: null,
+                address: null,
+                municipality: null
             });
             return;
         }
@@ -134,11 +142,25 @@ async function loadFirstUserForTesting() {
             const user = users[0];
             console.log('Using first user from database:', user);
             
+            // Store user info in session for municipality dashboard
+            const userSession = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                userType: user.user_type,
+                image_url: user.image_url,
+                address: user.address,
+                municipality: user.municipality
+            };
+            sessionStorage.setItem('currentUser', JSON.stringify(userSession));
+            
             updateProfileDisplay({
                 name: user.name,
                 email: user.email,
                 user_type: user.user_type,
-                image_url: user.image_url
+                image_url: user.image_url,
+                address: user.address,
+                municipality: user.municipality
             });
         } else {
             console.log('No users in database, using default');
@@ -146,7 +168,9 @@ async function loadFirstUserForTesting() {
                 name: 'Administrator',
                 email: 'admin@anihan.gov.ph',
                 user_type: 'SUPER ADMIN',
-                image_url: null
+                image_url: null,
+                address: null,
+                municipality: null
             });
         }
         
@@ -156,7 +180,9 @@ async function loadFirstUserForTesting() {
             name: 'Administrator',
             email: 'admin@anihan.gov.ph',
             user_type: 'SUPER ADMIN',
-            image_url: null
+            image_url: null,
+            address: null,
+            municipality: null
         });
     }
 }
@@ -193,6 +219,28 @@ function updateProfileDisplay(userData) {
         console.log('✅ Updated profile role to:', displayRole);
     } else {
         console.log('❌ Profile role element not found');
+    }
+
+    // Update profile access/location
+    const profileAccess = document.getElementById('profileUserAccess');
+    if (profileAccess) {
+        let locationText = 'Location not set';
+        
+        // Check for address and municipality in various formats
+        if (userData.address && userData.municipality) {
+            locationText = `${userData.address}, ${userData.municipality}`;
+        } else if (userData.municipality) {
+            locationText = userData.municipality;
+        } else if (userData.address) {
+            locationText = userData.address;
+        } else if (userData.location) {
+            locationText = userData.location;
+        }
+        
+        profileAccess.textContent = locationText;
+        console.log('✅ Updated profile location to:', locationText);
+    } else {
+        console.log('❌ Profile access element not found');
     }
     
     // Update profile title based on role
@@ -326,12 +374,87 @@ function testProfileUpdate() {
     updateProfileDisplay({
         name: 'Test User',
         email: 'test@anihan.gov.ph',
-        user_type: 'SUPER ADMIN',
-        image_url: null
+        user_type: 'SUB ADMIN',
+        image_url: null,
+        address: 'Barangay Poblacion',
+        municipality: 'Lipa City'
     });
+}
+
+// Function to manually refresh profile from database
+async function refreshProfileFromDatabase() {
+    try {
+        console.log('=== MANUALLY REFRESHING PROFILE FROM DATABASE ===');
+        
+        // Get current user from session
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+        console.log('Current user from session:', currentUser);
+        
+        if (!currentUser.id) {
+            console.log('No user ID found, reloading profile system...');
+            await loadCurrentUserProfile();
+            return;
+        }
+        
+        // Fetch fresh data from admin_accounts table
+        const { data: userData, error } = await supabaseClient
+            .from('admin_accounts')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+        
+        if (error) {
+            console.error('Error fetching profile data:', error);
+            return;
+        }
+        
+        if (userData) {
+            console.log('Fresh profile data from database:', userData);
+            
+            // Update session storage with fresh data
+            const userSession = {
+                id: userData.id,
+                name: userData.name,
+                email: userData.email,
+                userType: userData.user_type,
+                image_url: userData.image_url,
+                address: userData.address,
+                municipality: userData.municipality
+            };
+            sessionStorage.setItem('currentUser', JSON.stringify(userSession));
+            
+            // Update profile display
+            updateProfileDisplay(userData);
+            
+            console.log('✅ Profile refreshed successfully');
+            console.log('Address:', userData.address);
+            console.log('Municipality:', userData.municipality);
+        } else {
+            console.log('No profile data found');
+        }
+        
+    } catch (error) {
+        console.error('Error refreshing profile:', error);
+    }
 }
 
 // Make test function available globally
 window.testProfileUpdate = testProfileUpdate;
+window.refreshProfileFromDatabase = refreshProfileFromDatabase;
 
 console.log('Shared profile system loaded successfully');
+
+console.log(`
+=== PROFILE DEBUG FUNCTIONS ===
+If the profile location is showing "Loading..." try these functions:
+
+1. refreshProfileFromDatabase() - Reload profile from database
+2. testProfileUpdate() - Test with sample address data
+
+Example:
+1. Open browser console (F12)
+2. Run: refreshProfileFromDatabase()
+3. Check if location now shows address + municipality
+
+The location should show in format: "Address, Municipality" or just "Municipality" if no address.
+`);

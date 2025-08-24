@@ -9,6 +9,47 @@
     <link href="fixed-layout.css" rel="stylesheet">
     <link href="profile-dropdown.css" rel="stylesheet">
     <link href="dashboard_super_admin.css" rel="stylesheet">
+    <style>
+        /* All Users Modal Styles */
+        #allUsersModal .modal-dialog {
+            max-width: 95%;
+        }
+        
+        #allUsersModal .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        #allUsersModal .table td {
+            vertical-align: middle;
+        }
+        
+        #userSearchInput {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+        }
+        
+        #userSearchInput:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .badge {
+            font-size: 0.875rem;
+        }
+        
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
 </head>
 <body>
     <!-- Top Navigation -->
@@ -304,7 +345,7 @@
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5>Hectare Analytics</h5>
                                 <div class="chart-controls">
-                                    <select class="form-select form-select-sm me-2" id="hectareFilter" style="width: 100px;">
+                                    <select class="form-select form-select-sm me-2" id="hectareFilter" style="width: 120px;" onchange="updateHectareChart(this.value)">
                                         <option value="monthly">Monthly</option>
                                         <option value="weekly">Weekly</option>
                                         <option value="yearly">Yearly</option>
@@ -424,36 +465,19 @@
                                                 <th>Name</th>
                                                 <th>Email</th>
                                                 <th>Contact Number</th>
+                                                <th>Role</th>
+                                                <th>Date Joined</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>Pluto D. Espijo</td>
-                                                <td>Pluto@Gmail.com</td>
-                                                <td>09455678945</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Pluto D. Espijo</td>
-                                                <td>Pluto@Gmail.com</td>
-                                                <td>09455678945</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Pluto D. Espijo</td>
-                                                <td>Pluto@Gmail.com</td>
-                                                <td>09455678945</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Pluto D. Espijo</td>
-                                                <td>Pluto@Gmail.com</td>
-                                                <td>09455678945</td>
-                                            </tr>
+                                        <tbody id="usersTableBody">
+                                            <!-- Users will be loaded dynamically -->
                                         </tbody>
                                     </table>
                                 </div>
                                 <div class="table-footer">
                                     <div class="table-info-section">
-                                        <span class="table-info">1 to 4 items of 4</span>
-                                        <a href="#" class="view-all">View all ></a>
+                                        <span class="table-info" id="usersTableInfo">Loading users...</span>
+                                        <a href="#" class="view-all" onclick="showAllUsersModal()">View all ></a>
                                     </div>
                                     <div class="pagination-controls">
                                         <button class="btn btn-sm btn-outline-secondary">&lt;</button>
@@ -464,6 +488,58 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Users Modal -->
+    <div class="modal fade" id="allUsersModal" tabindex="-1" aria-labelledby="allUsersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allUsersModalLabel">All Users</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="userSearchInput" placeholder="Search users by name, email, or role...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Contact Number</th>
+                                    <th>Role</th>
+                                    <th>Date Joined</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allUsersTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allUsersCount">0 users found</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" onclick="exportAllUsers('csv')">
+                                <i class="fas fa-file-csv me-1"></i>Export CSV
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="exportAllUsers('pdf')">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -504,6 +580,7 @@
                 loadActiveUsersCount();
                 loadActiveFarmersCount();
                 loadAvailableProductsCount();
+                loadUsersData();
             }, 100);
         });
 
@@ -826,6 +903,393 @@
             }
         }
 
+        // Function to load and display users data in the table
+        async function loadUsersData() {
+            try {
+                console.log('=== LOADING USERS DATA ===');
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    updateUsersTable([]);
+                    return;
+                }
+
+                // Fetch users from the users table (limit to 5 for dashboard display)
+                const { data: users, error } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (error) {
+                    console.error('Database error fetching users:', error);
+                    updateUsersTable([]);
+                    return;
+                }
+
+                console.log('✅ Users data fetched:', users);
+                updateUsersTable(users || []);
+
+            } catch (error) {
+                console.error('Error in loadUsersData:', error);
+                updateUsersTable([]);
+            }
+        }
+
+        // Function to update the users table with real data
+        function updateUsersTable(users) {
+            const tableBody = document.getElementById('usersTableBody');
+            const tableInfo = document.getElementById('usersTableInfo');
+            
+            if (!tableBody) {
+                console.error('❌ Users table body not found');
+                return;
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">No users found</td>
+                    </tr>
+                `;
+                if (tableInfo) {
+                    tableInfo.textContent = '0 items';
+                }
+                return;
+            }
+
+            // Populate table with user data
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const dateJoined = user.created_at ? 
+                    new Date(user.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short', 
+                        day: 'numeric'
+                    }) : 'N/A';
+
+                // Determine role based on available fields
+                let role = 'User';
+                if (user.user_type) {
+                    role = user.user_type;
+                } else if (user.role) {
+                    role = user.role;
+                } else if (user.is_admin) {
+                    role = 'Admin';
+                }
+
+                row.innerHTML = `
+                    <td>${user.full_name || user.name || user.email || 'N/A'}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${user.phone_number || user.phone || 'N/A'}</td>
+                    <td>${role}</td>
+                    <td>${dateJoined}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update table info
+            if (tableInfo) {
+                tableInfo.textContent = `1 to ${users.length} items of ${users.length}`;
+            }
+
+            console.log('✅ Users table updated with', users.length, 'users');
+        }
+
+        // Function to show all users modal
+        function showAllUsersModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allUsersModal'));
+            modal.show();
+            loadAllUsers();
+        }
+
+        // Function to load all users for the modal
+        async function loadAllUsers() {
+            try {
+                console.log('=== LOADING ALL USERS ===');
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    updateAllUsersTable([]);
+                    return;
+                }
+
+                // Fetch all users from the users table
+                const { data: users, error } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Database error fetching all users:', error);
+                    updateAllUsersTable([]);
+                    return;
+                }
+
+                console.log('✅ All users data fetched:', users);
+                updateAllUsersTable(users || []);
+
+            } catch (error) {
+                console.error('Error in loadAllUsers:', error);
+                updateAllUsersTable([]);
+            }
+        }
+
+        // Function to update the all users modal table
+        function updateAllUsersTable(users) {
+            const tableBody = document.getElementById('allUsersTableBody');
+            const usersCount = document.getElementById('allUsersCount');
+            
+            if (!tableBody) {
+                console.error('❌ All users table body not found');
+                return;
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">No users found</td>
+                    </tr>
+                `;
+                if (usersCount) {
+                    usersCount.textContent = '0 users found';
+                }
+                return;
+            }
+
+            // Populate table with user data
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const dateJoined = user.created_at ? 
+                    new Date(user.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short', 
+                        day: 'numeric'
+                    }) : 'N/A';
+
+                // Determine role based on available fields
+                let role = 'User';
+                if (user.user_type) {
+                    role = user.user_type;
+                } else if (user.role) {
+                    role = user.role;
+                } else if (user.is_admin) {
+                    role = 'Admin';
+                }
+
+                // Determine status
+                let status = 'Active';
+                if (user.is_active === false) {
+                    status = 'Inactive';
+                } else if (user.email_verified === false) {
+                    status = 'Unverified';
+                }
+
+                row.innerHTML = `
+                    <td>${user.full_name || user.name || user.email || 'N/A'}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${user.phone_number || user.phone || 'N/A'}</td>
+                    <td><span class="badge bg-primary">${role}</span></td>
+                    <td>${dateJoined}</td>
+                    <td><span class="badge ${status === 'Active' ? 'bg-success' : status === 'Inactive' ? 'bg-danger' : 'bg-warning'}">${status}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update users count
+            if (usersCount) {
+                usersCount.textContent = `${users.length} user${users.length !== 1 ? 's' : ''} found`;
+            }
+
+            console.log('✅ All users table updated with', users.length, 'users');
+            
+            // Store users data for search functionality
+            window.allUsersData = users;
+            setupUserSearch();
+        }
+
+        // Function to setup user search functionality
+        function setupUserSearch() {
+            const searchInput = document.getElementById('userSearchInput');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (!window.allUsersData) return;
+
+                const filteredUsers = window.allUsersData.filter(user => {
+                    const name = (user.full_name || user.name || '').toLowerCase();
+                    const email = (user.email || '').toLowerCase();
+                    const role = (user.user_type || user.role || 'user').toLowerCase();
+                    const phone = (user.phone_number || user.phone || '').toLowerCase();
+                    
+                    return name.includes(searchTerm) || 
+                           email.includes(searchTerm) || 
+                           role.includes(searchTerm) ||
+                           phone.includes(searchTerm);
+                });
+
+                updateAllUsersTable(filteredUsers);
+            });
+        }
+
+        // Function to export all users data
+        function exportAllUsers(format) {
+            if (!window.allUsersData || window.allUsersData.length === 0) {
+                alert('No users data to export');
+                return;
+            }
+
+            if (format === 'csv') {
+                exportUsersToCSV();
+            } else if (format === 'pdf') {
+                exportUsersToPDF();
+            }
+        }
+
+        // Function to export users to CSV
+        function exportUsersToCSV() {
+            const headers = ['Name', 'Email', 'Contact Number', 'Role', 'Date Joined', 'Status'];
+            let csvContent = headers.join(',') + '\n';
+
+            window.allUsersData.forEach(user => {
+                const dateJoined = user.created_at ? 
+                    new Date(user.created_at).toLocaleDateString('en-US') : 'N/A';
+                
+                let role = 'User';
+                if (user.user_type) {
+                    role = user.user_type;
+                } else if (user.role) {
+                    role = user.role;
+                } else if (user.is_admin) {
+                    role = 'Admin';
+                }
+
+                let status = 'Active';
+                if (user.is_active === false) {
+                    status = 'Inactive';
+                } else if (user.email_verified === false) {
+                    status = 'Unverified';
+                }
+
+                const row = [
+                    user.full_name || user.name || user.email || 'N/A',
+                    user.email || 'N/A',
+                    user.phone_number || user.phone || 'N/A',
+                    role,
+                    dateJoined,
+                    status
+                ].map(field => `"${field}"`).join(',');
+                
+                csvContent += row + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `all_users_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Function to export users to PDF
+        function exportUsersToPDF() {
+            // Create a temporary table for PDF export
+            const tempTable = document.createElement('table');
+            tempTable.style.width = '100%';
+            tempTable.style.borderCollapse = 'collapse';
+            
+            const headers = ['Name', 'Email', 'Contact', 'Role', 'Date Joined', 'Status'];
+            const thead = tempTable.createTHead();
+            const headerRow = thead.insertRow();
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                th.style.border = '1px solid #ddd';
+                th.style.padding = '8px';
+                th.style.backgroundColor = '#f5f5f5';
+                headerRow.appendChild(th);
+            });
+
+            const tbody = tempTable.createTBody();
+            window.allUsersData.forEach(user => {
+                const row = tbody.insertRow();
+                
+                const dateJoined = user.created_at ? 
+                    new Date(user.created_at).toLocaleDateString('en-US') : 'N/A';
+                
+                let role = 'User';
+                if (user.user_type) {
+                    role = user.user_type;
+                } else if (user.role) {
+                    role = user.role;
+                } else if (user.is_admin) {
+                    role = 'Admin';
+                }
+
+                let status = 'Active';
+                if (user.is_active === false) {
+                    status = 'Inactive';
+                } else if (user.email_verified === false) {
+                    status = 'Unverified';
+                }
+
+                const data = [
+                    user.full_name || user.name || user.email || 'N/A',
+                    user.email || 'N/A',
+                    user.phone_number || user.phone || 'N/A',
+                    role,
+                    dateJoined,
+                    status
+                ];
+
+                data.forEach(cellData => {
+                    const td = row.insertCell();
+                    td.textContent = cellData;
+                    td.style.border = '1px solid #ddd';
+                    td.style.padding = '8px';
+                });
+            });
+
+            // Use html2canvas and jsPDF to create PDF
+            html2canvas(tempTable).then(canvas => {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
+                
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210;
+                const pageHeight = 295;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                
+                let position = 0;
+                
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save(`all_users_${new Date().toISOString().split('T')[0]}.pdf`);
+            });
+        }
+
         // Function to load active farmers count from database
         async function loadActiveFarmersCount() {
             try {
@@ -995,9 +1459,13 @@
 
         // Filter functions
         function applyFilters() {
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const periodFilter = document.getElementById('periodFilter').value;
-            const searchTerm = document.getElementById('analyticsSearch').value.toLowerCase();
+            const categoryFilterEl = document.getElementById('categoryFilter');
+            const periodFilterEl = document.getElementById('periodFilter');
+            const searchEl = document.getElementById('analyticsSearch');
+            
+            const categoryFilter = categoryFilterEl ? categoryFilterEl.value : '';
+            const periodFilter = periodFilterEl ? periodFilterEl.value : '';
+            const searchTerm = searchEl ? searchEl.value.toLowerCase() : '';
             
             filteredAnalytics = allAnalytics.filter(item => {
                 const matchesCategory = !categoryFilter || item.category === categoryFilter;
@@ -1015,9 +1483,14 @@
         }
 
         function resetFilters() {
-            document.getElementById('categoryFilter').value = '';
-            document.getElementById('periodFilter').value = '';
-            document.getElementById('analyticsSearch').value = '';
+            const categoryFilterEl = document.getElementById('categoryFilter');
+            const periodFilterEl = document.getElementById('periodFilter');
+            const searchEl = document.getElementById('analyticsSearch');
+            
+            if (categoryFilterEl) categoryFilterEl.value = '';
+            if (periodFilterEl) periodFilterEl.value = '';
+            if (searchEl) searchEl.value = '';
+            
             filteredAnalytics = [...allAnalytics];
             updateTable();
         }
@@ -1025,6 +1498,17 @@
         function updateTable() {
             const tbody = document.getElementById('analyticsTableBody');
             const tableInfo = document.getElementById('tableInfo');
+            
+            // Check if elements exist before trying to use them
+            if (!tbody) {
+                console.warn('Analytics table body element (analyticsTableBody) not found in DOM');
+                return;
+            }
+            
+            if (!tableInfo) {
+                console.warn('Table info element (tableInfo) not found in DOM');
+                // Continue without table info if it doesn't exist
+            }
             
             tbody.innerHTML = '';
             
@@ -1050,7 +1534,10 @@
                 tbody.innerHTML += row;
             });
             
-            tableInfo.textContent = `1 to ${filteredAnalytics.length} items of ${filteredAnalytics.length}`;
+            // Update table info if element exists
+            if (tableInfo) {
+                tableInfo.textContent = `1 to ${filteredAnalytics.length} items of ${filteredAnalytics.length}`;
+            }
         }
 
         // Download functions
@@ -1215,30 +1702,50 @@
         }
 
         // Event listeners
+    // Initialize analytics table only if the required elements exist
+    const analyticsTableBody = document.getElementById('analyticsTableBody');
     const categoryFilterEl = document.getElementById('categoryFilter');
-    if (categoryFilterEl) categoryFilterEl.addEventListener('change', applyFilters);
     const periodFilterEl = document.getElementById('periodFilter');
-    if (periodFilterEl) periodFilterEl.addEventListener('change', applyFilters);
     const analyticsSearchEl = document.getElementById('analyticsSearch');
-    if (analyticsSearchEl) analyticsSearchEl.addEventListener('input', applyFilters);
+    
+    if (analyticsTableBody) {
+        // Add event listeners only if elements exist
+        if (categoryFilterEl) categoryFilterEl.addEventListener('change', applyFilters);
+        if (periodFilterEl) periodFilterEl.addEventListener('change', applyFilters);
+        if (analyticsSearchEl) analyticsSearchEl.addEventListener('input', applyFilters);
 
         // Initialize table
         updateTable();
+    } else {
+        console.log('Analytics table functionality disabled - required HTML elements not found');
+        console.log('Missing elements: analyticsTableBody, categoryFilter, periodFilter, analyticsSearch');
+    }
     </script>
     <script>
-        // Tabs for Account Approval
-        document.getElementById('forApprovalTab').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'for_approval.html';
-        });
-        document.getElementById('approvedTab').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'approved_application.html';
-        });
-        document.getElementById('inventoryRecordsTab').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'inventory_records.html';
-        });
+        // Tabs for Account Approval - with error handling
+        const forApprovalTab = document.getElementById('forApprovalTab');
+        if (forApprovalTab) {
+            forApprovalTab.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'for_approval.html';
+            });
+        }
+        
+        const approvedTab = document.getElementById('approvedTab');
+        if (approvedTab) {
+            approvedTab.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'approved_application.html';
+            });
+        }
+        
+        const inventoryRecordsTab = document.getElementById('inventoryRecordsTab');
+        if (inventoryRecordsTab) {
+            inventoryRecordsTab.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'inventory_records.html';
+            });
+        }
 
         // Sidebar navigation
         const sidebarLinks = document.querySelectorAll('.sidebar .nav-link:not(.submenu-link):not(#inventoryRecordsTab)');
@@ -1298,55 +1805,45 @@
             },
             soil: {
                 type: {
-                    labels: [],
-                    data: [],
-                    colors: ['#8B4513', '#F4A460', '#DEB887', '#D2B48C', '#A0522D', '#198754', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14']
+                    labels: ['Clay Soil', 'Sandy Soil', 'Loam Soil', 'Silt Soil', 'Peat Soil', 'Chalk Soil'],
+                    data: [25, 20, 30, 15, 8, 2],
+                    colors: ['#8B4513', '#F4A460', '#DEB887', '#D2B48C', '#A0522D', '#198754']
                 }
             },
             hectare: {
                 monthly: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     data: [120, 135, 150, 168, 180, 195, 210, 225, 240, 255, 270, 285]
+                },
+                weekly: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    data: [65, 72, 68, 80]
+                },
+                yearly: {
+                    labels: ['2020', '2021', '2022', '2023', '2024'],
+                    data: [1200, 1350, 1800, 2100, 2400]
                 }
             }
         };
 
-        // Fetch product stock data from Supabase and update analyticsData.stocks.category
-        async function updateStockAnalyticsFromDB() {
-            // ...existing code...
-    // ...existing code...
-
-        // Move updateSoilAnalyticsFromDB to top-level scope so it is defined before use
+        // Fetch soil analytics from store-owner table
         async function updateSoilAnalyticsFromDB() {
             try {
                 const { data: stores, error } = await supabaseClient
                     .from('store-owner')
                     .select('soil_type');
-                const soilErrorDiv = document.getElementById('soilAnalyticsError');
-                const soilDebugDiv = document.getElementById('soilAnalyticsDebug');
-                console.log('[SoilAnalytics] Raw fetch result:', stores, error);
+                
                 if (error) {
                     console.error('Error fetching stores for soil analytics:', error);
-                    if (soilErrorDiv) soilErrorDiv.textContent = 'Error fetching soil analytics: ' + error.message;
-                    if (soilDebugDiv) soilDebugDiv.textContent = '';
-                    alert('Error fetching soil analytics: ' + error.message);
+                    console.log('Using default soil data instead');
                     return;
                 }
+                
                 if (!stores || stores.length === 0) {
-                    if (soilErrorDiv) soilErrorDiv.textContent = 'No soil data found in the database.';
-                    if (soilDebugDiv) soilDebugDiv.textContent = '[SoilAnalytics] No data returned from Supabase.';
-                    alert('No soil data found in the database.');
-                    // Clear chart if no data
-                    if (typeof soilChart !== 'undefined' && soilChart) {
-                        soilChart.data.labels = [];
-                        soilChart.data.datasets[0].data = [];
-                        soilChart.update();
-                    }
+                    console.log('No soil data found in database, using default data');
                     return;
-                } else {
-                    if (soilErrorDiv) soilErrorDiv.textContent = '';
-                    if (soilDebugDiv) soilDebugDiv.textContent = '[SoilAnalytics] Fetched soil_type data: ' + JSON.stringify(stores);
                 }
+                
                 // Count occurrences of each soil_type
                 const soilTypeMap = {};
                 stores.forEach(store => {
@@ -1354,117 +1851,175 @@
                     if (!soilTypeMap[soil]) soilTypeMap[soil] = 0;
                     soilTypeMap[soil] += 1;
                 });
-                analyticsData.soil.type.labels = Object.keys(soilTypeMap);
-                analyticsData.soil.type.data = Object.values(soilTypeMap);
-                analyticsData.soil.type.counts = Object.values(soilTypeMap);
-                // Optionally trim or repeat colors array to match soil types
-                const baseColors = analyticsData.soil.type.colors;
-                analyticsData.soil.type.colors = analyticsData.soil.type.labels.map((_, i) => baseColors[i % baseColors.length]);
-                // Log chart data to debug div
-                if (soilDebugDiv) {
-                    soilDebugDiv.textContent += '\n[SoilAnalytics] Chart labels: ' + JSON.stringify(analyticsData.soil.type.labels) + '\nChart data: ' + JSON.stringify(analyticsData.soil.type.data);
+                
+                if (Object.keys(soilTypeMap).length > 0) {
+                    analyticsData.soil.type.labels = Object.keys(soilTypeMap);
+                    analyticsData.soil.type.data = Object.values(soilTypeMap);
+                    
+                    // Assign colors
+                    const baseColors = ['#8B4513', '#F4A460', '#DEB887', '#D2B48C', '#A0522D', '#198754', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14'];
+                    analyticsData.soil.type.colors = analyticsData.soil.type.labels.map((_, i) => baseColors[i % baseColors.length]);
+                    
+                    // Update chart if it exists
+                    if (typeof soilChart !== 'undefined' && soilChart) {
+                        soilChart.data.labels = analyticsData.soil.type.labels;
+                        soilChart.data.datasets[0].data = analyticsData.soil.type.data;
+                        soilChart.data.datasets[0].backgroundColor = analyticsData.soil.type.colors;
+                        soilChart.update();
+                    }
                 }
-                // Refresh or initialize the chart
-                if (typeof soilChart !== 'undefined' && soilChart) {
-                    soilChart.data.labels = analyticsData.soil.type.labels;
-                    soilChart.data.datasets[0].data = analyticsData.soil.type.data;
-                    soilChart.data.datasets[0].backgroundColor = analyticsData.soil.type.colors;
-                    soilChart.update();
-                } else {
-                    initSoilChart();
-                }
-                console.log('[SoilAnalytics] Chart updated:', analyticsData.soil.type);
+                
+                console.log('Soil analytics updated from DB:', analyticsData.soil.type);
             } catch (err) {
                 console.error('Exception updating soil analytics:', err);
-                const soilErrorDiv = document.getElementById('soilAnalyticsError');
-                const soilDebugDiv = document.getElementById('soilAnalyticsDebug');
-                if (soilErrorDiv) soilErrorDiv.textContent = 'Exception updating soil analytics: ' + err.message;
-                if (soilDebugDiv) soilDebugDiv.textContent = '[SoilAnalytics] Exception: ' + err.message;
-                alert('Exception updating soil analytics: ' + err.message);
+                console.log('Using default soil data instead');
             }
         }
-        // Fetch soil analytics from store-owner table
-        async function updateSoilAnalyticsFromDB() {
+
+        // Fetch hectare analytics from store-owner table
+        async function updateHectareAnalyticsFromDB() {
             try {
                 const { data: stores, error } = await supabaseClient
                     .from('store-owner')
-                    .select('soil_type');
-                const soilErrorDiv = document.getElementById('soilAnalyticsError');
-                const soilDebugDiv = document.getElementById('soilAnalyticsDebug');
+                    .select('land_size, created_at');
+                
                 if (error) {
-                    console.error('Error fetching stores for soil analytics:', error);
-                    if (soilErrorDiv) soilErrorDiv.textContent = 'Error fetching soil analytics: ' + error.message;
-                    if (soilDebugDiv) soilDebugDiv.textContent = '';
+                    console.error('Error fetching stores for hectare analytics:', error);
+                    console.log('Using default hectare data instead');
                     return;
                 }
+                
                 if (!stores || stores.length === 0) {
-                    if (soilErrorDiv) soilErrorDiv.textContent = 'No soil data found in the database.';
-                    if (soilDebugDiv) soilDebugDiv.textContent = '';
-                } else {
-                    if (soilErrorDiv) soilErrorDiv.textContent = '';
-                    if (soilDebugDiv) soilDebugDiv.textContent = 'Fetched soil_type data: ' + JSON.stringify(stores);
-                }
-                // Count occurrences of each soil_type
-                const soilTypeMap = {};
-                stores.forEach(store => {
-                    const soil = store.soil_type ? store.soil_type.trim() : 'Unknown';
-                    if (!soilTypeMap[soil]) soilTypeMap[soil] = 0;
-                    soilTypeMap[soil] += 1;
-                });
-                analyticsData.soil.type.labels = Object.keys(soilTypeMap);
-                analyticsData.soil.type.data = Object.values(soilTypeMap);
-                analyticsData.soil.type.counts = Object.values(soilTypeMap);
-                // Optionally trim or repeat colors array to match soil types
-                const baseColors = analyticsData.soil.type.colors;
-                analyticsData.soil.type.colors = analyticsData.soil.type.labels.map((_, i) => baseColors[i % baseColors.length]);
-                // Refresh the chart if already initialized
-                if (typeof soilChart !== 'undefined' && soilChart) {
-                    soilChart.data.labels = analyticsData.soil.type.labels;
-                    soilChart.data.datasets[0].data = analyticsData.soil.type.data;
-                    soilChart.data.datasets[0].backgroundColor = analyticsData.soil.type.colors;
-                    soilChart.update();
-                }
-                console.log('Soil analytics updated from DB:', analyticsData.soil.type);
-            } catch (err) {
-                console.error('Exception updating soil analytics:', err);
-                const soilErrorDiv = document.getElementById('soilAnalyticsError');
-                if (soilErrorDiv) soilErrorDiv.textContent = 'Exception updating soil analytics: ' + err.message;
-            }
-        }
-        // Fetch soil analytics from store-owner table
-        async function updateSoilAnalyticsFromDB() {
-            try {
-                const { data: stores, error } = await supabaseClient
-                    .from('store-owner')
-                    .select('soil_type');
-                if (error) {
-                    console.error('Error fetching stores for soil analytics:', error);
+                    console.log('No hectare data found in database, using default data');
                     return;
                 }
-                // Count occurrences of each soil_type
-                const soilTypeMap = {};
-                stores.forEach(store => {
-                    const soil = store.soil_type || 'Unknown';
-                    if (!soilTypeMap[soil]) soilTypeMap[soil] = 0;
-                    soilTypeMap[soil] += 1;
-                });
-                analyticsData.soil.type.labels = Object.keys(soilTypeMap);
-                analyticsData.soil.type.data = Object.values(soilTypeMap);
-                // Optionally trim or repeat colors array to match soil types
-                const baseColors = analyticsData.soil.type.colors;
-                analyticsData.soil.type.colors = analyticsData.soil.type.labels.map((_, i) => baseColors[i % baseColors.length]);
-                // Refresh the chart if already initialized
-                if (typeof soilChart !== 'undefined' && soilChart) {
-                    soilChart.data.labels = analyticsData.soil.type.labels;
-                    soilChart.data.datasets[0].data = analyticsData.soil.type.data;
-                    soilChart.data.datasets[0].backgroundColor = analyticsData.soil.type.colors;
-                    soilChart.update();
+                
+                // Process data for different views
+                updateHectareTimeline(stores);
+                
+                // Update chart if it exists
+                if (typeof hectareChart !== 'undefined' && hectareChart) {
+                    const hectareFilter = document.getElementById('hectareFilter');
+                    const currentView = hectareFilter ? hectareFilter.value : 'monthly';
+                    updateHectareChart(currentView);
                 }
-                console.log('Soil analytics updated from DB:', analyticsData.soil.type);
+                
+                console.log('Hectare analytics updated from DB');
             } catch (err) {
-                console.error('Exception updating soil analytics:', err);
+                console.error('Exception updating hectare analytics:', err);
+                console.log('Using default hectare data instead');
             }
         }
+
+        // Update hectare timeline data based on actual database records
+        function updateHectareTimeline(stores) {
+            const currentYear = new Date().getFullYear();
+            const currentDate = new Date();
+            
+            // Initialize data structures
+            const monthlyTotals = {};
+            const weeklyTotals = {};
+            const yearlyTotals = {};
+            
+            // Initialize months for current year
+            for (let i = 0; i < 12; i++) {
+                const monthName = new Date(currentYear, i).toLocaleDateString('en', {month: 'short'});
+                monthlyTotals[monthName] = 0;
+            }
+            
+            // Initialize weeks for current month (last 4 weeks)
+            for (let i = 1; i <= 4; i++) {
+                weeklyTotals[`Week ${i}`] = 0;
+            }
+            
+            // Initialize years (last 5 years)
+            for (let i = 4; i >= 0; i--) {
+                const year = currentYear - i;
+                yearlyTotals[year.toString()] = 0;
+            }
+            
+            // Process each store record
+            stores.forEach(store => {
+                if (store.created_at && store.land_size) {
+                    const date = new Date(store.created_at);
+                    const landSize = parseFloat(store.land_size) || 0;
+                    const year = date.getFullYear();
+                    
+                    // Monthly data (current year only)
+                    if (year === currentYear) {
+                        const monthName = date.toLocaleDateString('en', {month: 'short'});
+                        if (monthlyTotals.hasOwnProperty(monthName)) {
+                            monthlyTotals[monthName] += landSize;
+                        }
+                    }
+                    
+                    // Weekly data (current month only, distributed across weeks)
+                    if (year === currentYear && date.getMonth() === currentDate.getMonth()) {
+                        const weekOfMonth = Math.ceil(date.getDate() / 7);
+                        const weekKey = `Week ${Math.min(weekOfMonth, 4)}`;
+                        if (weeklyTotals.hasOwnProperty(weekKey)) {
+                            weeklyTotals[weekKey] += landSize;
+                        }
+                    }
+                    
+                    // Yearly data (last 5 years)
+                    if (yearlyTotals.hasOwnProperty(year.toString())) {
+                        yearlyTotals[year.toString()] += landSize;
+                    }
+                }
+            });
+            
+            // Update analytics data
+            analyticsData.hectare.monthly.labels = Object.keys(monthlyTotals);
+            analyticsData.hectare.monthly.data = Object.values(monthlyTotals);
+            
+            analyticsData.hectare.weekly.labels = Object.keys(weeklyTotals);
+            analyticsData.hectare.weekly.data = Object.values(weeklyTotals);
+            
+            analyticsData.hectare.yearly.labels = Object.keys(yearlyTotals);
+            analyticsData.hectare.yearly.data = Object.values(yearlyTotals);
+            
+            console.log('Hectare timeline data updated:', {
+                monthly: analyticsData.hectare.monthly,
+                weekly: analyticsData.hectare.weekly,
+                yearly: analyticsData.hectare.yearly
+            });
+        }
+
+        // Update hectare chart based on selected filter
+        function updateHectareChart(filterValue) {
+            if (typeof hectareChart === 'undefined' || !hectareChart) return;
+            
+            let currentData;
+            let chartLabel = 'Hectares Cultivated';
+            
+            switch(filterValue) {
+                case 'weekly':
+                    currentData = analyticsData.hectare.weekly;
+                    chartLabel = 'Weekly Hectares';
+                    break;
+                case 'yearly':
+                    currentData = analyticsData.hectare.yearly;
+                    chartLabel = 'Yearly Hectares';
+                    break;
+                default:
+                    currentData = analyticsData.hectare.monthly;
+                    chartLabel = 'Monthly Hectares';
+            }
+            
+            // Update chart data (all are bar charts now)
+            hectareChart.data.labels = currentData.labels;
+            hectareChart.data.datasets[0].data = currentData.data;
+            hectareChart.data.datasets[0].label = chartLabel;
+            hectareChart.data.datasets[0].backgroundColor = 'rgba(40, 167, 69, 0.8)';
+            hectareChart.data.datasets[0].borderColor = '#28a745';
+            hectareChart.update();
+            
+            console.log(`Hectare chart updated to ${filterValue} view:`, currentData);
+        }
+
+        // Fetch stock analytics from products table
+        async function updateStockAnalyticsFromDB() {
             try {
                 const { data: products, error } = await supabaseClient
                     .from('my_products')
@@ -1533,6 +2088,7 @@
             initHectareChart();
             updateStockAnalyticsFromDB();
             updateSoilAnalyticsFromDB();
+            updateHectareAnalyticsFromDB();
         }
 
         // Sales Chart (Line Graph)
@@ -1694,7 +2250,7 @@
             });
         }
 
-        // Hectare Chart (Histogram/Bar Chart)
+        // Hectare Chart (Dynamic - Bar or Doughnut)
         function initHectareChart() {
             const canvas = document.getElementById('hectareChart');
             if (!canvas) {
@@ -1740,6 +2296,10 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
+                                    const chartType = hectareChart.config.type;
+                                    if (chartType === 'doughnut') {
+                                        return `${context.label}: ${context.parsed} farms`;
+                                    }
                                     return context.dataset.label + ': ' + context.parsed.y + ' hectares';
                                 }
                             }
@@ -1765,14 +2325,20 @@
             stocksChart.update();
         }
 
-        // Event Listeners for Filters
-        document.getElementById('salesFilter').addEventListener('change', function() {
-            updateSalesChart(this.value);
-        });
+        // Event Listeners for Filters - with error handling
+        const salesFilterEl = document.getElementById('salesFilter');
+        if (salesFilterEl) {
+            salesFilterEl.addEventListener('change', function() {
+                updateSalesChart(this.value);
+            });
+        }
 
-        document.getElementById('stocksFilter').addEventListener('change', function() {
-            updateStocksChart(this.value);
-        });
+        const stocksFilterEl = document.getElementById('stocksFilter');
+        if (stocksFilterEl) {
+            stocksFilterEl.addEventListener('change', function() {
+                updateStocksChart(this.value);
+            });
+        }
 
         // Export Functions
         function exportChart(chartType, format) {

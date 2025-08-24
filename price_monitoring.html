@@ -248,6 +248,47 @@
                     `);
 
                 console.log('Price data query result:', { priceData, error });
+                
+                // Add detailed debugging for image data
+                if (priceData && priceData.length > 0) {
+                    console.log(`Fetched ${priceData.length} products from database`);
+                    console.log('Sample product data structure:', priceData[0]);
+                    
+                    if (priceData[0] && priceData[0].image_url) {
+                        console.log('=== IMAGE DATA DEBUG ===');
+                        console.log('Sample image_url data:');
+                        console.log('- Type:', typeof priceData[0].image_url);
+                        console.log('- Constructor:', priceData[0].image_url.constructor.name);
+                        console.log('- Value:', priceData[0].image_url);
+                        console.log('- Length:', priceData[0].image_url ? priceData[0].image_url.length : 'N/A');
+                        
+                        if (Array.isArray(priceData[0].image_url)) {
+                            console.log('- Is Array: YES');
+                            console.log('- First 10 bytes:', priceData[0].image_url.slice(0, 10));
+                        } else if (typeof priceData[0].image_url === 'string') {
+                            console.log('- Is String: YES');
+                            console.log('- First 100 chars:', priceData[0].image_url.substring(0, 100));
+                            
+                            if (priceData[0].image_url.startsWith('\\x')) {
+                                console.log('- Appears to be PostgreSQL bytea hex format');
+                            } else if (priceData[0].image_url.startsWith('data:')) {
+                                console.log('- Appears to be data URL');
+                            } else if (priceData[0].image_url.startsWith('[')) {
+                                console.log('- Appears to be stringified array');
+                            }
+                        } else if (priceData[0].image_url instanceof Uint8Array) {
+                            console.log('- Is Uint8Array: YES');
+                            console.log('- First 10 bytes:', Array.from(priceData[0].image_url.slice(0, 10)));
+                        } else if (typeof priceData[0].image_url === 'object') {
+                            console.log('- Is Object: YES');
+                            console.log('- Object keys:', Object.keys(priceData[0].image_url));
+                            if (priceData[0].image_url.data) {
+                                console.log('- Has data property:', typeof priceData[0].image_url.data);
+                            }
+                        }
+                        console.log('=== END IMAGE DEBUG ===');
+                    }
+                }
 
                 if (error) {
                     console.error('Error loading price data:', error);
@@ -296,11 +337,15 @@
 
 function populatePriceTable(priceData) {
     console.log('Populating price table with data:', priceData);
+    console.log('Displaying price data. Total products:', priceData.length);
+    
     const tbody = document.querySelector('.price-table tbody');
+    console.log('Found tbody element:', tbody);
     tbody.innerHTML = '';
 
     priceData.forEach((product, index) => {
-        console.log(`Creating row ${index + 1} for product:`, product);
+        console.log(`=== Creating row ${index + 1} for product:`, product.name);
+        console.log('Full product data:', product);
         console.log('Image URL from database:', product.image_url); // Debug log
 
 
@@ -315,8 +360,12 @@ function populatePriceTable(priceData) {
 
         // Image cell
         const imageTd = document.createElement('td');
+        console.log('Created imageTd element:', imageTd);
+        console.log('About to call createImageCellDOM with:', product.image_url, product.name);
         createImageCellDOM(product.image_url, product.name, imageTd);
+        console.log('After createImageCellDOM, imageTd content:', imageTd.innerHTML);
         row.appendChild(imageTd);
+        console.log('Appended imageTd to row');
 
         // Product name cell
         const nameTd = document.createElement('td');
@@ -349,89 +398,219 @@ function populatePriceTable(priceData) {
     row.appendChild(municipalityTd);
 
         tbody.appendChild(row);
+        console.log(`Row ${index + 1} appended to tbody successfully`);
     });
-    console.log('Price table populated successfully');
+    console.log('Price table populated successfully. Total rows added:', priceData.length);
 }
 
 
 // Create image cell as a DOM element for robust error handling
 
-// Updated createImageCellDOM function with proper byte array handling
+// Updated createImageCellDOM function with better byte array handling
 function createImageCellDOM(imageData, productName, tdElement) {
     tdElement.innerHTML = '';
-    console.log('Processing image data:', imageData);
+    console.log('=== createImageCellDOM called ===');
+    console.log('Processing image data for product:', productName);
+    console.log('Image data type:', typeof imageData);
+    console.log('Image data value:', imageData);
+    console.log('Image data length:', imageData ? imageData.length : 'N/A');
     
-    if (!imageData) {
-        tdElement.innerHTML = `<i class="fas fa-image" style="font-size: 24px; color: #ccc;" title="No image available"></i>`;
+    if (!imageData || imageData === null || imageData === undefined) {
+        console.log('No image data provided, showing placeholder');
+        tdElement.innerHTML = `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"><i class="fas fa-image" style="font-size: 16px; color: #6c757d;" title="No image available"></i></div>`;
         return;
     }
 
     try {
-        // Case 1: If imageData is already a valid data URL
-        if (typeof imageData === 'string' && imageData.startsWith('data:image/')) {
-            createImageElement(imageData, productName, tdElement);
-            return;
-        }
-
-        // Case 2: If imageData is a regular URL (http/https)
-        if (typeof imageData === 'string' && (imageData.startsWith('http://') || imageData.startsWith('https://'))) {
-            createImageElement(imageData, productName, tdElement);
-            return;
-        }
-
-        // Case 3: If imageData is a stringified byte array: "[137,80,78,...]"
-        if (typeof imageData === 'string' && imageData.trim().startsWith('[') && imageData.trim().endsWith(']')) {
-            try {
-                const byteArray = JSON.parse(imageData.trim());
-                if (Array.isArray(byteArray)) {
-                    const base64String = bytesToBase64(byteArray);
-                    const dataUrl = `data:image/jpeg;base64,${base64String}`; // Default to JPEG
-                    createImageElement(dataUrl, productName, tdElement);
-                    return;
-                }
-            } catch (parseError) {
-                console.error('Error parsing stringified byte array:', parseError);
+        // Case 1: Handle Supabase byte array data (most common case for database storage)
+        if (imageData && typeof imageData === 'object' && (Array.isArray(imageData) || imageData.constructor === Object)) {
+            console.log('Processing as Supabase byte array or object');
+            
+            // If it's a Supabase response with nested data
+            if (imageData.data && Array.isArray(imageData.data)) {
+                console.log('Found nested data array, processing...');
+                const base64String = bytesToBase64(imageData.data);
+                const dataUrl = detectImageTypeAndCreateDataUrl(base64String, imageData.data);
+                createImageElement(dataUrl, productName, tdElement);
+                return;
+            }
+            
+            // If it's a direct array
+            if (Array.isArray(imageData)) {
+                console.log('Processing direct byte array');
+                const base64String = bytesToBase64(imageData);
+                const dataUrl = detectImageTypeAndCreateDataUrl(base64String, imageData);
+                createImageElement(dataUrl, productName, tdElement);
+                return;
             }
         }
 
-        // Case 4: If imageData is a direct byte array (Array or Uint8Array)
-        if (Array.isArray(imageData)) {
-            const base64String = bytesToBase64(imageData);
-            const dataUrl = `data:image/jpeg;base64,${base64String}`;
-            createImageElement(dataUrl, productName, tdElement);
-            return;
+        // Case 2: Handle PostgreSQL bytea data (when fetched as string)
+        if (typeof imageData === 'string') {
+            // Handle mobile app file URIs (common issue)
+            if (imageData.startsWith('file:///')) {
+                console.log('Detected mobile app file URI - not accessible from web browser');
+                console.log('File URI:', imageData);
+                
+                // Extract filename from URI for display
+                const fileName = imageData.split('/').pop() || 'image';
+                const fileNameWithoutExt = fileName.split('.')[0] || 'IMG';
+                
+                // Create initials from product name for a more personalized placeholder
+                const productInitials = productName 
+                    ? productName.split(' ').map(word => word.charAt(0).toUpperCase()).slice(0, 2).join('')
+                    : 'IMG';
+                
+                tdElement.innerHTML = `
+                    <div style="
+                        width: 40px; 
+                        height: 40px; 
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center; 
+                        justify-content: center; 
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                        border-radius: 8px; 
+                        color: white; 
+                        font-weight: bold; 
+                        font-size: 12px; 
+                        text-align: center; 
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        cursor: help;
+                    " 
+                    title="Product Image: ${productName} (Mobile app file not accessible in browser)">
+                        ${productInitials}
+                        <div style="font-size: 8px; opacity: 0.8;">📷</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // PostgreSQL bytea often comes as hex string starting with \\x
+            if (imageData.startsWith('\\x')) {
+                console.log('Processing PostgreSQL bytea hex string');
+                const hexString = imageData.substring(2); // Remove \\x prefix
+                const byteArray = hexStringToByteArray(hexString);
+                const base64String = bytesToBase64(byteArray);
+                const dataUrl = detectImageTypeAndCreateDataUrl(base64String, byteArray);
+                createImageElement(dataUrl, productName, tdElement);
+                return;
+            }
+            
+            // Handle as data URL
+            if (imageData.startsWith('data:image/')) {
+                console.log('Image data is a data URL');
+                createImageElement(imageData, productName, tdElement);
+                return;
+            }
+
+            // Handle as regular URL
+            if (imageData.startsWith('http://') || imageData.startsWith('https://')) {
+                console.log('Image data is a regular URL');
+                createImageElement(imageData, productName, tdElement);
+                return;
+            }
+
+            // Handle stringified byte array: "[137,80,78,...]"
+            if (imageData.trim().startsWith('[') && imageData.trim().endsWith(']')) {
+                console.log('Processing stringified byte array');
+                try {
+                    const byteArray = JSON.parse(imageData.trim());
+                    if (Array.isArray(byteArray)) {
+                        const base64String = bytesToBase64(byteArray);
+                        const dataUrl = detectImageTypeAndCreateDataUrl(base64String, byteArray);
+                        createImageElement(dataUrl, productName, tdElement);
+                        return;
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing stringified byte array:', parseError);
+                }
+            }
+
+            // Handle as base64 string
+            if (isBase64String(imageData)) {
+                console.log('Processing as base64 string');
+                const dataUrl = `data:image/jpeg;base64,${imageData}`;
+                createImageElement(dataUrl, productName, tdElement);
+                return;
+            }
+
+            // Handle as relative path
+            if (!imageData.startsWith('data:') && !imageData.startsWith('http')) {
+                console.log('Processing as relative path');
+                const possiblePaths = [
+                    imageData,
+                    `images/${imageData}`,
+                    `../images/${imageData}`,
+                    `./images/${imageData}`,
+                    `assets/${imageData}`,
+                    `uploads/${imageData}`,
+                    'https://via.placeholder.com/40x40/f8f9fa/6c757d?text=Product'
+                ];
+                createImageElementWithFallbacks(possiblePaths, productName, tdElement);
+                return;
+            }
         }
 
+        // Case 3: Handle Uint8Array
         if (imageData instanceof Uint8Array) {
-            const base64String = uint8ArrayToBase64(imageData);
-            const dataUrl = `data:image/jpeg;base64,${base64String}`;
-            createImageElement(dataUrl, productName, tdElement);
-            return;
-        }
-
-        // Case 5: If imageData is a Buffer-like object with data property
-        if (typeof imageData === 'object' && imageData.data && Array.isArray(imageData.data)) {
-            const base64String = bytesToBase64(imageData.data);
-            const dataUrl = `data:image/jpeg;base64,${base64String}`;
-            createImageElement(dataUrl, productName, tdElement);
-            return;
-        }
-
-        // Case 6: Try to handle as base64 string without data URL prefix
-        if (typeof imageData === 'string' && isBase64String(imageData)) {
-            const dataUrl = `data:image/jpeg;base64,${imageData}`;
+            console.log('Processing Uint8Array');
+            const byteArray = Array.from(imageData);
+            const base64String = bytesToBase64(byteArray);
+            const dataUrl = detectImageTypeAndCreateDataUrl(base64String, byteArray);
             createImageElement(dataUrl, productName, tdElement);
             return;
         }
 
         // Fallback: Unknown format
         console.warn('Unknown image data format:', typeof imageData, imageData);
-        tdElement.innerHTML = `<i class="fas fa-image" style="font-size: 24px; color: #ccc;" title="Unsupported image format"></i>`;
+        tdElement.innerHTML = `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"><i class="fas fa-question" style="font-size: 16px; color: #ffc107;" title="Unsupported image format"></i></div>`;
 
     } catch (error) {
         console.error('Error processing image data:', error);
-        tdElement.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #dc3545;" title="Image processing error"></i>`;
+        tdElement.innerHTML = `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"><i class="fas fa-exclamation-triangle" style="font-size: 16px; color: #dc3545;" title="Image processing error"></i></div>`;
     }
+}
+
+// Helper function to create image element with fallback paths
+function createImageElementWithFallbacks(pathArray, alt, tdElement) {
+    let currentIndex = 0;
+    
+    function tryNextPath() {
+        if (currentIndex >= pathArray.length) {
+            // All paths failed, show placeholder
+            console.log('All image paths failed, showing placeholder');
+            tdElement.innerHTML = `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"><i class="fas fa-image" style="font-size: 16px; color: #6c757d;" title="Image not found"></i></div>`;
+            return;
+        }
+        
+        const img = document.createElement('img');
+        img.src = pathArray[currentIndex];
+        img.alt = alt || 'Product';
+        img.style.width = '40px';
+        img.style.height = '40px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '4px';
+        img.style.background = '#f8f9fa';
+        img.style.border = '1px solid #dee2e6';
+        
+        img.onerror = function() {
+            console.log(`Failed to load image: ${pathArray[currentIndex]}`);
+            currentIndex++;
+            tryNextPath();
+        };
+        
+        img.onload = function() {
+            console.log(`Image loaded successfully: ${pathArray[currentIndex]}`);
+            tdElement.innerHTML = '';
+            tdElement.appendChild(img);
+        };
+        
+        // Try loading the image
+        // Don't append it yet, wait for onload
+    }
+    
+    tryNextPath();
 }
 
 // Helper function to create image element with error handling
@@ -448,13 +627,14 @@ function createImageElement(src, alt, tdElement) {
     
     img.onerror = function() {
         console.error('Failed to load image:', src);
-        this.outerHTML = `<i class="fas fa-image" style="font-size: 24px; color: #dc3545;" title="Failed to load image"></i>`;
+        tdElement.innerHTML = `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;"><i class="fas fa-exclamation-triangle" style="font-size: 16px; color: #dc3545;" title="Failed to load image"></i></div>`;
     };
     
     img.onload = function() {
-        console.log('Image loaded successfully');
+        console.log('Image loaded successfully:', src);
     };
     
+    tdElement.innerHTML = ''; // Clear any existing content
     tdElement.appendChild(img);
 }
 
@@ -505,6 +685,48 @@ function isBase64String(str) {
     
     // Check pattern and length (base64 length should be divisible by 4)
     return base64Pattern.test(base64Part) && base64Part.length % 4 === 0 && base64Part.length > 10;
+}
+
+// Helper function to detect image type and create proper data URL
+function detectImageTypeAndCreateDataUrl(base64String, byteArray) {
+    if (!base64String || !byteArray || byteArray.length < 8) {
+        return `data:image/jpeg;base64,${base64String}`;
+    }
+
+    // Check file signatures (magic numbers)
+    const firstBytes = byteArray.slice(0, 8);
+    
+    // PNG signature: 137 80 78 71 13 10 26 10
+    if (firstBytes[0] === 137 && firstBytes[1] === 80 && firstBytes[2] === 78 && firstBytes[3] === 71) {
+        return `data:image/png;base64,${base64String}`;
+    }
+    
+    // JPEG signature: 255 216 255
+    if (firstBytes[0] === 255 && firstBytes[1] === 216 && firstBytes[2] === 255) {
+        return `data:image/jpeg;base64,${base64String}`;
+    }
+    
+    // GIF signature: 71 73 70 (GIF)
+    if (firstBytes[0] === 71 && firstBytes[1] === 73 && firstBytes[2] === 70) {
+        return `data:image/gif;base64,${base64String}`;
+    }
+    
+    // WebP signature: 82 73 70 70 ... 87 69 66 80
+    if (firstBytes[0] === 82 && firstBytes[1] === 73 && firstBytes[2] === 70 && firstBytes[3] === 70) {
+        return `data:image/webp;base64,${base64String}`;
+    }
+
+    // Default to JPEG
+    return `data:image/jpeg;base64,${base64String}`;
+}
+
+// Helper function to convert hex string to byte array (for PostgreSQL bytea)
+function hexStringToByteArray(hexString) {
+    const result = [];
+    for (let i = 0; i < hexString.length; i += 2) {
+        result.push(parseInt(hexString.substr(i, 2), 16));
+    }
+    return result;
 }
 
 // Debug function to test image conversion
@@ -700,6 +922,36 @@ async function debugImageUrls() {
             
             checkSharedProfile();
         });
+        
+        /*
+        =================================================================
+        IMPORTANT NOTE ABOUT IMAGE DISPLAY ISSUE:
+        =================================================================
+        
+        The images in your database are stored as mobile app file URIs like:
+        "file:///data/user/0/host.exp.exponent/cache/ExperienceData/..."
+        
+        These are local file paths from a mobile device/app and cannot be 
+        displayed in a web browser. To fix this permanently, you need to:
+        
+        1. OPTION 1 - Upload images to a web server:
+           - Modify your mobile app to upload images to a web server
+           - Store the web URL (like "https://yoursite.com/images/photo.jpg") 
+             in the database instead of the local file path
+        
+        2. OPTION 2 - Use a cloud storage service:
+           - Upload images to services like Supabase Storage, Firebase Storage,
+             AWS S3, or Cloudinary
+           - Store the public URL in the database
+        
+        3. OPTION 3 - Store as base64:
+           - Convert images to base64 in your mobile app
+           - Store the base64 data URL in the database
+           - This will increase database size but work immediately
+        
+        Current behavior: Mobile file URIs show a mobile icon placeholder
+        =================================================================
+        */
     </script>
 </body>
 </html>

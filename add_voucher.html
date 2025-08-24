@@ -8,6 +8,60 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="profile-dropdown.css" rel="stylesheet">
     <link href="add_voucher.css" rel="stylesheet">
+    <style>
+        /* Success Toast Styles */
+        #successToast {
+            min-width: 350px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+        
+        #successToast .toast-header {
+            border-bottom: none;
+        }
+        
+        #successToast .toast-body {
+            padding: 1rem;
+        }
+        
+        #successToast .badge {
+            font-size: 0.875rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        
+        /* Toast Animation */
+        .toast.showing {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Button Styles in Toast */
+        #successToast .btn {
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        #successToast .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+    </style>
 </head>
 <body>
     <!-- Top Navigation -->
@@ -163,34 +217,38 @@
                                 <form id="addVoucherForm">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="voucherType" class="form-label">Voucher Type</label>
-                                            <input type="text" class="form-control" id="voucherType" placeholder="Voucher Type">
+                                            <label for="voucherType" class="form-label">Voucher Type <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="voucherType" placeholder="e.g., Percentage Discount" required>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="voucherName" class="form-label">Voucher Name</label>
-                                            <input type="text" class="form-control" id="voucherName" placeholder="Name">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="stocks" class="form-label">Stocks</label>
-                                            <input type="number" class="form-control" id="stocks" placeholder="Stocks">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="minimumSpend" class="form-label">Minimum Spend</label>
-                                            <input type="number" class="form-control" id="minimumSpend" placeholder="Minimum Spend">
+                                            <label for="voucherName" class="form-label">Voucher Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="voucherName" placeholder="e.g., Summer Sale 2025" required>
                                         </div>
                                     </div>
                                     
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="dateEnd" class="form-label">Date End</label>
-                                            <input type="date" class="form-control" id="dateEnd">
+                                            <label for="stocks" class="form-label">Stocks <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="stocks" name="stocks" placeholder="Number of vouchers" min="1" max="99999" step="1" required autocomplete="off">
+                                            <small class="form-text text-muted">Enter the number of vouchers to create</small>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="voucherFile" class="form-label">File</label>
+                                            <label for="minimumSpend" class="form-label">Minimum Spend (₱) <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="minimumSpend" name="minimumSpend" placeholder="0.00" min="0" max="999999.99" step="0.01" required autocomplete="off">
+                                            <small class="form-text text-muted">Minimum amount required to use this voucher</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="dateEnd" class="form-label">End Date <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control" id="dateEnd" required>
+                                            <small class="form-text text-muted">Voucher expiration date</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="voucherFile" class="form-label">File (Optional)</label>
                                             <input type="file" class="form-control" id="voucherFile" accept="image/*,.pdf">
+                                            <small class="form-text text-muted">Upload voucher image or terms document</small>
                                         </div>
                                     </div>
                                     
@@ -203,6 +261,35 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast Notification -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong class="me-auto">Success!</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-ticket-alt text-success me-2"></i>
+                    <strong id="successVoucherName">Voucher Created!</strong>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Voucher Code:</small><br>
+                    <span class="badge bg-primary" id="successVoucherCode">LOADING...</span>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="viewVouchersBtn">
+                        <i class="fas fa-list me-1"></i>View All
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" id="createAnotherBtn">
+                        <i class="fas fa-plus me-1"></i>Create Another
+                    </button>
                 </div>
             </div>
         </div>
@@ -236,13 +323,64 @@
         });
     </script>
     <script>
-        // Form submission handler
-        document.getElementById('addVoucherForm').addEventListener('submit', function(e) {
+        // Use shared supabaseClient instance to avoid multiple GoTrueClient instances
+        let voucherSupabaseClient;
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== ADD VOUCHER PAGE LOADED ===');
+            
+            // Initialize Supabase connection
+            initializeSupabase();
+            
+            // Add form submission handler
+            document.getElementById('addVoucherForm').addEventListener('submit', handleFormSubmit);
+        });
+        
+        function initializeSupabase() {
+            try {
+                // Always prefer the shared Supabase client if available
+                if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
+                    voucherSupabaseClient = window.supabaseClient;
+                    console.log('✅ Using existing shared Supabase client');
+                    return;
+                }
+                
+                // Check if there's already a global supabase client
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    // Only create if no existing client found
+                    console.log('⚠️ No shared client found, creating new instance...');
+                    const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co';
+                    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE';
+                    
+                    voucherSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                        auth: {
+                            persistSession: false, // Avoid storage conflicts
+                            autoRefreshToken: false,
+                            detectSessionInUrl: false
+                        }
+                    });
+                    console.log('✅ Supabase client created with minimal auth config');
+                } else {
+                    console.error('❌ Supabase library not loaded');
+                    setTimeout(initializeSupabase, 1000); // Retry after 1 second
+                }
+            } catch (error) {
+                console.error('❌ Error initializing Supabase:', error);
+            }
+        }
+        
+        async function handleFormSubmit(e) {
             e.preventDefault();
             
+            if (!voucherSupabaseClient) {
+                alert('Database connection not available. Please refresh the page.');
+                return;
+            }
+            
             // Get form values
-            const voucherType = document.getElementById('voucherType').value;
-            const voucherName = document.getElementById('voucherName').value;
+            const voucherType = document.getElementById('voucherType').value.trim();
+            const voucherName = document.getElementById('voucherName').value.trim();
             const stocks = document.getElementById('stocks').value;
             const minimumSpend = document.getElementById('minimumSpend').value;
             const dateEnd = document.getElementById('dateEnd').value;
@@ -254,12 +392,92 @@
                 return;
             }
             
-            // Here you would typically send the data to a server
-            alert('Voucher added successfully!');
+            // Validate date is in the future
+            const selectedDate = new Date(dateEnd);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
-            // Reset form
-            this.reset();
-        });
+            if (selectedDate <= today) {
+                alert('End date must be in the future.');
+                return;
+            }
+            
+            // Show loading state
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Adding Voucher...';
+            
+            try {
+                // Prepare data for database insertion
+                const voucherData = {
+                    voucher_type: voucherType,
+                    voucher_name: voucherName,
+                    stocks: parseFloat(stocks),
+                    minimum_spent: parseFloat(minimumSpend),
+                    date_end: dateEnd,
+                    file: voucherFile ? voucherFile.name : null
+                };
+                
+                console.log('Inserting voucher data:', voucherData);
+                
+                // Insert into database
+                const { data, error } = await voucherSupabaseClient
+                    .from('vouchers')
+                    .insert([voucherData])
+                    .select();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                console.log('✅ Voucher saved successfully:', data);
+                
+                // Show success notification
+                showSuccessToast(data[0]);
+                
+                // Reset form
+                resetForm();
+                
+            } catch (error) {
+                console.error('❌ Error saving voucher:', error);
+                alert('Error saving voucher: ' + error.message);
+            } finally {
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        }
+        
+        function showSuccessToast(voucherData) {
+            // Update toast content
+            document.getElementById('successVoucherName').textContent = voucherData.voucher_name;
+            document.getElementById('successVoucherCode').textContent = `ID: ${voucherData.id}`;
+            
+            // Show toast
+            const successToast = new bootstrap.Toast(document.getElementById('successToast'), {
+                delay: 5000 // Show for 5 seconds
+            });
+            successToast.show();
+            
+            // Add event listeners for toast buttons
+            document.getElementById('viewVouchersBtn').onclick = () => {
+                window.location.href = 'voucher_records.html';
+            };
+            
+            document.getElementById('createAnotherBtn').onclick = () => {
+                successToast.hide();
+                resetForm();
+            };
+        }
+        
+        function resetForm() {
+            document.getElementById('addVoucherForm').reset();
+            console.log('Form reset successfully');
+        }
+        
+        // Make resetForm globally accessible for the Reset button
+        window.resetForm = resetForm;
     </script>
 </body>
 </html>

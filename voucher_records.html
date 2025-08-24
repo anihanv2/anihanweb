@@ -166,38 +166,29 @@
                         <table class="voucher-table">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
                                     <th>Voucher Type</th>
-                                    <th>User Redeem</th>
-                                    <th>Date Expiration</th>
+                                    <th>Voucher Name</th>
+                                    <th>Stocks</th>
+                                    <th>Minimum Spend</th>
+                                    <th>Date End</th>
+                                    <th>Created At</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <!-- Data rows will be populated here -->
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                            <tbody id="voucherTableBody">
+                                <!-- Loading indicator -->
+                                <tr id="loadingRow">
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        Loading vouchers...
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                             </tbody>
                         </table>
                     </div>
@@ -220,6 +211,171 @@
     <!-- Add Shared Profile System -->
     <script src="shared-profile.js"></script>
     <script>
+        // Initialize Supabase client
+        let voucherSupabaseClient;
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== VOUCHER RECORDS PAGE LOADED ===');
+            initializeSupabase();
+            loadVoucherData();
+        });
+        
+        function initializeSupabase() {
+            try {
+                // Use the shared Supabase client if available
+                if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
+                    voucherSupabaseClient = window.supabaseClient;
+                    console.log('✅ Using existing shared Supabase client');
+                } else {
+                    // Create new client if shared one not available
+                    if (typeof window.supabase !== 'undefined') {
+                        const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co';
+                        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE';
+                        
+                        voucherSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                            auth: {
+                                persistSession: false,
+                                autoRefreshToken: false,
+                                detectSessionInUrl: false
+                            }
+                        });
+                        console.log('✅ Supabase client created for voucher records');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error initializing Supabase:', error);
+            }
+        }
+        
+        async function loadVoucherData() {
+            if (!voucherSupabaseClient) {
+                console.error('❌ Supabase client not available');
+                showError('Database connection not available');
+                return;
+            }
+            
+            try {
+                console.log('🔍 Fetching voucher data...');
+                
+                // Fetch all vouchers ordered by created_at descending (newest first)
+                const { data: vouchers, error } = await voucherSupabaseClient
+                    .from('vouchers')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                console.log('✅ Voucher data loaded:', vouchers);
+                displayVouchers(vouchers);
+                
+            } catch (error) {
+                console.error('❌ Error loading vouchers:', error);
+                showError('Error loading voucher data: ' + error.message);
+            }
+        }
+        
+        function displayVouchers(vouchers) {
+            const tableBody = document.getElementById('voucherTableBody');
+            
+            if (!vouchers || vouchers.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="fas fa-inbox text-muted" style="font-size: 2rem;"></i>
+                            <div class="mt-2">No vouchers found</div>
+                            <a href="add_voucher.html" class="btn btn-primary btn-sm mt-2">
+                                <i class="fas fa-plus me-1"></i>Add Your First Voucher
+                            </a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Generate table rows
+            const rows = vouchers.map(voucher => {
+                const createdDate = new Date(voucher.created_at).toLocaleDateString();
+                const endDate = new Date(voucher.date_end).toLocaleDateString();
+                const currentDate = new Date();
+                const voucherEndDate = new Date(voucher.date_end);
+                
+                // Determine voucher status
+                const isExpired = voucherEndDate < currentDate;
+                const isOutOfStock = voucher.stocks <= 0;
+                
+                let statusBadge = '';
+                let statusText = '';
+                
+                if (isExpired) {
+                    statusBadge = 'bg-danger';
+                    statusText = 'Expired';
+                } else if (isOutOfStock) {
+                    statusBadge = 'bg-warning text-dark';
+                    statusText = 'Out of Stock';
+                } else {
+                    statusBadge = 'bg-success';
+                    statusText = 'Available';
+                }
+                
+                return `
+                    <tr>
+                        <td>${voucher.id}</td>
+                        <td>${voucher.voucher_type || '-'}</td>
+                        <td><strong>${voucher.voucher_name || '-'}</strong></td>
+                        <td>${voucher.stocks || 0}</td>
+                        <td>₱${parseFloat(voucher.minimum_spent || 0).toFixed(2)}</td>
+                        <td>${endDate}</td>
+                        <td>${createdDate}</td>
+                        <td>
+                            <span class="badge ${statusBadge}" style="font-size: 0.75rem;">
+                                <i class="fas ${isExpired ? 'fa-clock' : isOutOfStock ? 'fa-exclamation-triangle' : 'fa-check-circle'} me-1"></i>
+                                ${statusText}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            tableBody.innerHTML = rows;
+        }
+        
+        function showError(message) {
+            const tableBody = document.getElementById('voucherTableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="mt-2">${message}</div>
+                        <button class="btn btn-outline-primary btn-sm mt-2" onclick="loadVoucherData()">
+                            <i class="fas fa-refresh me-1"></i>Retry
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const rows = document.querySelectorAll('#voucherTableBody tr');
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        }
+        
+        // Initialize search when DOM is loaded
+        document.addEventListener('DOMContentLoaded', setupSearch);
+        
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
