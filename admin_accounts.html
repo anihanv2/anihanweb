@@ -260,8 +260,8 @@
                         <!-- Table Footer -->
                         <div class="table-footer">
                             <div class="table-info-section">
-                                <span class="table-info">Loading...</span>
-                                <a href="#" class="view-all">View all ></a>
+                                <span id="adminItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
+                                <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllAdminsModal()">View all &gt;</a>
                             </div>
                             <div class="pagination-controls">
                                 <button class="btn btn-sm btn-outline-secondary">&lt;</button>
@@ -1144,10 +1144,14 @@ Common issues:
                         <td colspan="7" class="text-center py-4">No admin accounts found</td>
                     </tr>
                 `;
-                document.querySelector('.table-info').textContent = '0 items';
+                const itemsCount = document.getElementById('adminItemsCount');
+                if (itemsCount) itemsCount.textContent = '0 to 0 items of 0';
                 updatePaginationControls();
                 return;
             }
+
+            // Store all admins globally for modal use
+            window.allAdminAccounts = allAdmins;
             
             let adminsToShow;
             let startIndex, endIndex;
@@ -1209,10 +1213,13 @@ Common issues:
             });
             
             // Update table info
-            if (showAllMode) {
-                document.querySelector('.table-info').textContent = `Showing all ${totalItems} items`;
-            } else {
-                document.querySelector('.table-info').textContent = `${startIndex} to ${endIndex} items of ${totalItems}`;
+            const itemsCount = document.getElementById('adminItemsCount');
+            if (itemsCount) {
+                if (showAllMode) {
+                    itemsCount.textContent = `1 to ${totalItems} items of ${totalItems}`;
+                } else {
+                    itemsCount.textContent = `${startIndex} to ${endIndex} items of ${totalItems}`;
+                }
             }
             
             updatePaginationControls();
@@ -1279,6 +1286,174 @@ Common issues:
                 currentPage = 1; // Reset to first page when exiting view all mode
             }
             displayAdminAccounts();
+        }
+
+        // Function to show all admins modal
+        function showAllAdminsModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allAdminsModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (window.allAdminAccounts && window.allAdminAccounts.length > 0) {
+                updateAllAdminsTable(window.allAdminAccounts);
+            } else {
+                updateAllAdminsTable([]);
+            }
+        }
+
+        // Function to update the all admins modal table
+        function updateAllAdminsTable(adminsData) {
+            const tableBody = document.getElementById('allAdminsTableBody');
+            const countElement = document.getElementById('allAdminsCount');
+            
+            if (!tableBody) {
+                console.error('❌ All admins table body not found');
+                return;
+            }
+
+            if (!adminsData || adminsData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted p-4">
+                            <i class="fas fa-users me-2"></i>
+                            No admin accounts found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 accounts found';
+                return;
+            }
+
+            // Generate all table rows
+            tableBody.innerHTML = adminsData.map(admin => {
+                let imageCell = '';
+                const url = admin.image_url ? admin.image_url.trim() : '';
+                let showImage = false;
+                
+                if (url) {
+                    if (url.startsWith('data:image/') || url.startsWith('http://') || url.startsWith('https://') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
+                        showImage = true;
+                    }
+                }
+                
+                if (showImage) {
+                    imageCell = `<img src="${escapeHtml(url)}" alt="Admin Image" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; background: #f8f9fa;" onerror="this.style.display='none';">`;
+                } else {
+                    imageCell = `<i class='fas fa-image' style='font-size: 24px; color: #ccc;'></i>`;
+                }
+                
+                return `
+                    <tr>
+                        <td>${imageCell}</td>
+                        <td>${escapeHtml(admin.name || 'N/A')}</td>
+                        <td>${escapeHtml(admin.contact_number || 'N/A')}</td>
+                        <td>${escapeHtml(admin.email || 'N/A')}</td>
+                        <td>${escapeHtml(admin.address || 'N/A')}</td>
+                        <td>
+                            <span class="badge ${admin.user_type === 'SUPER ADMIN' ? 'bg-danger' : 'bg-primary'}">
+                                ${escapeHtml(admin.user_type || 'SUB ADMIN')}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary btn-sm me-1" onclick="editAdmin('${admin.id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteAdmin('${admin.id}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${adminsData.length} account${adminsData.length !== 1 ? 's' : ''} found`;
+            }
+
+            // Add search functionality
+            const searchInput = document.getElementById('adminSearchInput');
+            if (searchInput) {
+                searchInput.oninput = function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredData = adminsData.filter(admin => 
+                        (admin.name || '').toLowerCase().includes(searchTerm) ||
+                        (admin.email || '').toLowerCase().includes(searchTerm) ||
+                        (admin.user_type || '').toLowerCase().includes(searchTerm) ||
+                        (admin.contact_number || '').toLowerCase().includes(searchTerm) ||
+                        (admin.address || '').toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="text-center text-muted p-4">
+                                    <i class="fas fa-search me-2"></i>
+                                    No accounts found matching "${searchTerm}"
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = filteredData.map(admin => {
+                            let imageCell = '';
+                            const url = admin.image_url ? admin.image_url.trim() : '';
+                            let showImage = false;
+                            
+                            if (url) {
+                                if (url.startsWith('data:image/') || url.startsWith('http://') || url.startsWith('https://') || url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
+                                    showImage = true;
+                                }
+                            }
+                            
+                            if (showImage) {
+                                imageCell = `<img src="${escapeHtml(url)}" alt="Admin Image" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; background: #f8f9fa;" onerror="this.style.display='none';">`;
+                            } else {
+                                imageCell = `<i class='fas fa-image' style='font-size: 24px; color: #ccc;'></i>`;
+                            }
+                            
+                            return `
+                                <tr>
+                                    <td>${imageCell}</td>
+                                    <td>${escapeHtml(admin.name || 'N/A')}</td>
+                                    <td>${escapeHtml(admin.contact_number || 'N/A')}</td>
+                                    <td>${escapeHtml(admin.email || 'N/A')}</td>
+                                    <td>${escapeHtml(admin.address || 'N/A')}</td>
+                                    <td>
+                                        <span class="badge ${admin.user_type === 'SUPER ADMIN' ? 'bg-danger' : 'bg-primary'}">
+                                            ${escapeHtml(admin.user_type || 'SUB ADMIN')}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm me-1" onclick="editAdmin('${admin.id}')">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteAdmin('${admin.id}')">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                    
+                    if (countElement) {
+                        countElement.textContent = `${filteredData.length} account${filteredData.length !== 1 ? 's' : ''} found`;
+                    }
+                };
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
         }
 
         // Function to add new admin account - ADDED PASSWORD
@@ -1814,5 +1989,50 @@ Common issues:
             }
         });
     </script>
+
+    <!-- All Admin Accounts Modal -->
+    <div class="modal fade" id="allAdminsModal" tabindex="-1" aria-labelledby="allAdminsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allAdminsModalLabel">All Admin Accounts</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="adminSearchInput" placeholder="Search by name, email, role...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>IMAGE</th>
+                                    <th>NAME</th>
+                                    <th>CONTACT NUMBER</th>
+                                    <th>EMAIL</th>
+                                    <th>ADDRESS</th>
+                                    <th>ROLE</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allAdminsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading admin accounts...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allAdminsCount">0 accounts found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
