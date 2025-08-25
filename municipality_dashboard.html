@@ -9,6 +9,28 @@
     <link rel="stylesheet" href="fixed-layout.css">
     <link href="profile-dropdown.css" rel="stylesheet">
     <link rel="stylesheet" href="municipality_dashboard.css">
+    <style>
+        .status-filters {
+            transition: all 0.3s ease;
+        }
+        
+        .status-filter-btn {
+            transition: all 0.2s ease;
+            border-width: 1px;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .status-filter-btn.active {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .status-filter-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -90,7 +112,7 @@
                                     <i class="fas fa-users"></i>
                                 </div>
                                 <div class="stats-info">
-                                    <div class="stats-number">21 Users</div>
+                                    <div class="stats-number" id="activeUsersCount">Loading...</div>
                                     <div class="stats-label">Active Users</div>
                                 </div>
                             </div>
@@ -101,8 +123,8 @@
                                     <i class="fas fa-boxes"></i>
                                 </div>
                                 <div class="stats-info">
-                                    <div class="stats-number">7 Products</div>
-                                    <div class="stats-label">Available</div>
+                                    <div class="stats-number" id="productsCount">Loading...</div>
+                                    <div class="stats-label">Available Products</div>
                                 </div>
                             </div>
                         </div>
@@ -112,7 +134,7 @@
                                     <i class="fas fa-tractor"></i>
                                 </div>
                                 <div class="stats-info">
-                                    <div class="stats-number">12 Farmers</div>
+                                    <div class="stats-number" id="activeFarmersCount">Loading...</div>
                                     <div class="stats-label">Active Farmers</div>
                                 </div>
                             </div>
@@ -165,7 +187,6 @@
                                         <select class="form-select form-select-sm me-2" id="stocksFilter" style="width: 100px;">
                                             <option value="category">Category</option>
                                             <option value="status">Status</option>
-                                            <option value="supplier">Supplier</option>
                                         </select>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
@@ -189,7 +210,14 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="stocksChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                    <!-- Chart Container with Fixed Height -->
+                                    <div class="chart-container" style="position: relative; height: 200px;">
+                                        <!-- Category Chart -->
+                                        <canvas id="stocksChart" width="400" height="200" style="position: absolute; top: 0; left: 0; display: block; max-width: 100%; height: 200px;"></canvas>
+                                        
+                                        <!-- Status Chart (initially hidden) -->
+                                        <canvas id="statusChart" width="400" height="200" style="position: absolute; top: 0; left: 0; display: none; max-width: 100%; height: 200px;"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -204,8 +232,6 @@
                                     <div class="chart-controls">
                                         <select class="form-select form-select-sm me-2" id="soilFilter" style="width: 100px;">
                                             <option value="type">Soil Type</option>
-                                            <option value="region">Region</option>
-                                            <option value="season">Season</option>
                                         </select>
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
@@ -239,7 +265,7 @@
                                     <h5>Hectare Analytics</h5>
                                     <div class="chart-controls">
                                         <select class="form-select form-select-sm me-2" id="hectareFilter" style="width: 100px;">
-                                            <option value="monthly">Monthly</option>
+                                            <option value="monthly" selected>Monthly</option>
                                             <option value="weekly">Weekly</option>
                                             <option value="yearly">Yearly</option>
                                         </select>
@@ -271,10 +297,10 @@
                         </div>
                     </div>
 
-                    <!-- Farmers Management -->
+                    <!-- User Management -->
                     <div class="price-card shadow-sm mt-4">
                         <div class="price-card-header d-flex justify-content-between align-items-center">
-                            <span>Farmers Management</span>
+                            <span>User Management</span>
                         </div>
                         <div class="table-responsive">
                             <table class="price-table">
@@ -283,48 +309,24 @@
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Contact Number</th>
-                                        <th>Location</th>
-                                        <th>Status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="userManagementTable">
                                     <tr>
-                                        <td>Pluto D. Espijo</td>
-                                        <td>pluto.espejo@gmail.com</td>
-                                        <td>09455678945</td>
-                                        <td>Quezon Province</td>
-                                        <td><span class="badge bg-warning text-dark">Pending</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Maria Santos</td>
-                                        <td>maria.santos@gmail.com</td>
-                                        <td>09123456789</td>
-                                        <td>Bataan Province</td>
-                                        <td><span class="badge bg-success">Approved</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Juan Cruz</td>
-                                        <td>juan.cruz@gmail.com</td>
-                                        <td>09987654321</td>
-                                        <td>Pampanga Province</td>
-                                        <td><span class="badge bg-danger">Rejected</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Carmen Reyes</td>
-                                        <td>carmen.reyes@gmail.com</td>
-                                        <td>09654321789</td>
-                                        <td>Tarlac Province</td>
-                                        <td><span class="badge bg-success">Approved</span></td>
+                                        <td colspan="3" class="text-center">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                            Loading users...
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         <div class="price-card-footer">
-                            <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
-                            <div class="price-pagination">
-                                <button class="btn">&lt;</button>
-                                <button class="btn active">1</button>
-                                <button class="btn">&gt;</button>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;" id="viewAllUsersLink">View all &gt;</a>
+                            <div class="price-pagination" id="userPagination">
+                                <button class="btn" onclick="changePage(-1)">&lt;</button>
+                                <button class="btn active" id="currentPageBtn">1</button>
+                                <button class="btn" onclick="changePage(1)">&gt;</button>
                             </div>
                         </div>
                     </div>
@@ -345,10 +347,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         // Chart variables
-        let salesChart, stocksChart, soilChart, hectareChart;
+        let salesChart, stocksChart, soilChart, hectareChart, statusChart;
 
-        // Chart Data for Municipality Dashboard
-        const analyticsData = {
+        // Use the Supabase client from shared-profile.js
+        console.log('Municipality dashboard using shared Supabase client');
+
+        // Chart Data for Municipality Dashboard - Initialize with empty structure
+        let analyticsData = {
             sales: {
                 monthly: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -365,14 +370,22 @@
             },
             stocks: {
                 category: {
-                    labels: ['Rice', 'Corn', 'Vegetables', 'Fruits', 'Herbs'],
-                    data: [35, 25, 20, 15, 5],
-                    colors: ['#28a745', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14']
+                    labels: ['Loading...'],
+                    data: [1],
+                    colors: ['#6c757d'],
+                    products: {
+                        'Loading...': [{ name: 'Loading...', quantity: 0, status: 'Loading...' }]
+                    }
                 },
                 status: {
-                    labels: ['In Stock', 'Low Stock', 'Out of Stock', 'Pending'],
-                    data: [45, 30, 15, 10],
-                    colors: ['#28a745', '#ffc107', '#dc3545', '#6c757d']
+                    labels: ['Available', 'To be Out of Stock', 'Out of Stock'],
+                    data: [0, 0, 0],
+                    colors: ['#28a745', '#ffc107', '#dc3545'],
+                    products: {
+                        'Available': [],
+                        'To be Out of Stock': [],
+                        'Out of Stock': []
+                    }
                 },
                 supplier: {
                     labels: ['Local Farmers', 'Cooperatives', 'Direct Import', 'Distributors'],
@@ -382,9 +395,9 @@
             },
             soil: {
                 type: {
-                    labels: ['Loamy', 'Clay', 'Sandy', 'Silty', 'Peaty'],
-                    data: [40, 25, 20, 10, 5],
-                    colors: ['#8b4513', '#d2691e', '#daa520', '#bc8f8f', '#556b2f']
+                    labels: ['Loading...'],
+                    data: [1],
+                    colors: ['#6c757d']
                 },
                 region: {
                     labels: ['North District', 'South District', 'East District', 'West District'],
@@ -400,7 +413,7 @@
             hectare: {
                 monthly: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    data: [450, 480, 520, 490, 540, 580, 620, 600, 650, 680, 720, 750]
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 },
                 weekly: {
                     labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
@@ -415,21 +428,1133 @@
 
         // Initialize Charts
         function initializeCharts() {
+            // Destroy existing charts if they exist to prevent canvas reuse errors
+            if (window.salesChart && typeof window.salesChart.destroy === 'function') {
+                window.salesChart.destroy();
+                window.salesChart = null;
+            }
+            if (window.stocksChart && typeof window.stocksChart.destroy === 'function') {
+                window.stocksChart.destroy();
+                window.stocksChart = null;
+            }
+            if (window.statusChart && typeof window.statusChart.destroy === 'function') {
+                window.statusChart.destroy();
+                window.statusChart = null;
+            }
+            if (window.soilChart && typeof window.soilChart.destroy === 'function') {
+                window.soilChart.destroy();
+                window.soilChart = null;
+            }
+            if (window.hectareChart && typeof window.hectareChart.destroy === 'function') {
+                window.hectareChart.destroy();
+                window.hectareChart = null;
+            }
+            
+            console.log('🔄 Initializing charts...');
             initSalesChart();
             initStocksChart();
+            initStatusChart(); // Initialize the separate status chart
             initSoilChart();
             initHectareChart();
+            console.log('✅ Charts initialized successfully');
+        }
+
+        // Load municipality-specific statistics for Sub Admin
+        window.loadMunicipalityStats = async function() {
+            try {
+                console.log('=== LOADING MUNICIPALITY STATISTICS ===');
+                
+                // Check if Supabase client is available
+                if (!window.supabaseClient && !supabaseClient) {
+                    console.error('❌ Supabase client not available');
+                    alert('Database connection not available. Please check your internet connection.');
+                    return;
+                }
+                
+                const client = window.supabaseClient || supabaseClient;
+                console.log('✅ Supabase client available');
+                
+                // Get current user from session storage
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                console.log('🔍 Current user for stats:', currentUser);
+                console.log('🔍 Session storage contents:', sessionStorage.getItem('currentUser'));
+                
+                if (!currentUser.id) {
+                    console.log('❌ No current user found for stats');
+                    console.log('🔍 Available session storage keys:', Object.keys(sessionStorage));
+                    return;
+                }
+                
+                // Get the admin's full data to access their address (municipality)
+                console.log('🔍 Fetching admin data for ID:', currentUser.id);
+                const { data: adminData, error: adminError } = await client
+                    .from('admin_accounts')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (adminError) {
+                    console.error('❌ Error fetching admin data:', adminError);
+                    console.log('🔍 Trying to fetch first admin for testing...');
+                    
+                    // Try to get any admin for testing
+                    const { data: testAdmins, error: testError } = await client
+                        .from('admin_accounts')
+                        .select('*')
+                        .limit(5);
+                    
+                    console.log('🔍 Available admins in database:', testAdmins);
+                    if (testError) {
+                        console.error('❌ Error fetching test admins:', testError);
+                    }
+                    return;
+                }
+                
+                console.log('✅ Admin data found:', adminData);
+                
+                // Check if user is Sub Admin
+                if (adminData.user_type !== 'SUB ADMIN') {
+                    console.log('ℹ️ User is not Sub Admin, user type:', adminData.user_type);
+                    console.log('ℹ️ Available user types should include: SUB ADMIN');
+                    // For Super Admin, could show aggregate data or different view
+                    
+                    // Show some sample data for testing
+                    document.getElementById('activeUsersCount').textContent = 'N/A (Super Admin)';
+                    document.getElementById('productsCount').textContent = 'N/A (Super Admin)';
+                    document.getElementById('activeFarmersCount').textContent = 'N/A (Super Admin)';
+                    return;
+                }
+                
+                console.log('✅ User is Sub Admin');
+                
+                const municipalityAddress = adminData.address;
+                console.log('🔍 Sub Admin municipality/address:', municipalityAddress);
+                console.log('🔍 Address type:', typeof municipalityAddress);
+                console.log('🔍 Address length:', municipalityAddress ? municipalityAddress.length : 'null');
+                
+                if (!municipalityAddress || municipalityAddress.trim() === '') {
+                    console.log('❌ No municipality address found for Sub Admin');
+                    alert('No municipality assigned to this Sub Admin account. Please contact administrator.');
+                    document.getElementById('activeUsersCount').textContent = '0';
+                    document.getElementById('productsCount').textContent = '0';
+                    document.getElementById('activeFarmersCount').textContent = '0';
+                    return;
+                }
+                
+                // Update profile access info
+                const profileAccess = document.getElementById('profileUserAccess');
+                if (profileAccess) {
+                    profileAccess.textContent = `Access: ${municipalityAddress}`;
+                }
+                
+                // 1. Get users whose municipality matches Sub Admin's address
+                console.log('🔍 Searching for users with municipality:', municipalityAddress);
+                
+                // First, let's see what municipalities exist in the database
+                const { data: allMunicipalities, error: municError } = await client
+                    .from('users')
+                    .select('municipality')
+                    .not('municipality', 'is', null);
+                
+                if (!municError && allMunicipalities) {
+                    const uniqueMunicipalities = [...new Set(allMunicipalities.map(u => u.municipality))].filter(m => m);
+                    console.log('🔍 Available municipalities in users table:', uniqueMunicipalities);
+                    console.log('🔍 Looking for exact match with:', municipalityAddress);
+                    
+                    // Check for case-insensitive matches
+                    const caseInsensitiveMatches = uniqueMunicipalities.filter(m => 
+                        m && m.toLowerCase() === municipalityAddress.toLowerCase()
+                    );
+                    console.log('🔍 Case-insensitive matches:', caseInsensitiveMatches);
+                }
+                
+                const { data: municipalityUsers, error: usersError } = await client
+                    .from('users')
+                    .select('id, municipality, address, full_name')
+                    .eq('municipality', municipalityAddress);
+                
+                if (usersError) {
+                    console.error('❌ Error fetching users by municipality:', usersError);
+                    return;
+                }
+                
+                console.log(`🔍 Query result: Found ${municipalityUsers ? municipalityUsers.length : 0} users in municipality: ${municipalityAddress}`);
+                console.log('🔍 User details:', municipalityUsers);
+                
+                // Get all user IDs for further queries
+                const userIds = municipalityUsers ? municipalityUsers.map(user => user.id) : [];
+                const totalUsers = municipalityUsers ? municipalityUsers.length : 0;
+                
+                console.log('🔍 User IDs for store owner check:', userIds);
+                
+                // 2. Get farmers (users who became store owners) in the municipality
+                let totalFarmers = 0;
+                let storeOwnerUserIds = [];
+                
+                if (userIds.length > 0) {
+                    // Try both possible table name formats for store owner
+                    let farmers = null;
+                    let farmersError = null;
+                    
+                    try {
+                        console.log('🔍 Trying store-owner table...');
+                        const result = await client
+                            .from('store-owner')
+                            .select('user_id, id')
+                            .in('user_id', userIds);
+                        farmers = result.data;
+                        farmersError = result.error;
+                        console.log('✅ store-owner table result:', { data: farmers, error: farmersError });
+                    } catch (error) {
+                        console.log('❌ store-owner table failed, trying store_owner...');
+                        try {
+                            const result = await client
+                                .from('store_owner')
+                                .select('user_id, id')
+                                .in('user_id', userIds);
+                            farmers = result.data;
+                            farmersError = result.error;
+                            console.log('✅ store_owner table result:', { data: farmers, error: farmersError });
+                        } catch (error2) {
+                            console.error('❌ Could not access store owner table with either name format:', error2);
+                            farmersError = error2;
+                        }
+                    }
+                    
+                    if (!farmersError && farmers) {
+                        // Get unique store owner user IDs
+                        storeOwnerUserIds = [...new Set(farmers.map(farmer => farmer.user_id))];
+                        totalFarmers = storeOwnerUserIds.length;
+                        console.log(`Found ${totalFarmers} active farmers (store owners) in ${municipalityAddress}`);
+                    } else {
+                        console.log('No farmers found or error accessing farmer data:', farmersError);
+                    }
+                }
+                
+                // 3. Get available products from users in the municipality who are also store owners
+                let totalProducts = 0;
+                if (storeOwnerUserIds.length > 0) {
+                    console.log('🔍 Searching for products from store owners:', storeOwnerUserIds);
+                    const { data: products, error: productsError } = await client
+                        .from('my_products')
+                        .select('id, user_id, name')
+                        .in('user_id', storeOwnerUserIds);
+                    
+                    if (!productsError && products) {
+                        totalProducts = products.length;
+                        console.log(`✅ Found ${totalProducts} products from store owners in ${municipalityAddress}`);
+                        console.log('🔍 Product details:', products);
+                    } else {
+                        console.log('❌ No products found or error accessing products:', productsError);
+                    }
+                } else {
+                    console.log('❌ No store owners found, so no products to count');
+                }
+                
+                // Update the UI with the counts
+                document.getElementById('activeUsersCount').textContent = `${totalUsers}`;
+                document.getElementById('productsCount').textContent = `${totalProducts}`;
+                document.getElementById('activeFarmersCount').textContent = `${totalFarmers}`;
+                
+                console.log('=== MUNICIPALITY STATS LOADED ===');
+                console.log(`Municipality: ${municipalityAddress}`);
+                console.log(`Active Users (in municipality): ${totalUsers}`);
+                console.log(`Active Farmers (users who became store owners): ${totalFarmers}`);
+                console.log(`Available Products (from store owners): ${totalProducts}`);
+                console.log('Matching criteria: Sub Admin address = Users municipality + Users must be store owners');
+                
+            } catch (error) {
+                console.error('Error loading municipality stats:', error);
+                
+                // Show error state
+                document.getElementById('activeUsersCount').textContent = 'Error';
+                document.getElementById('productsCount').textContent = 'Error';
+                document.getElementById('activeFarmersCount').textContent = 'Error';
+            }
+        }
+
+        // Function to load real analytics data based on municipality
+        window.loadMunicipalityAnalytics = async function() {
+            try {
+                console.log('=== LOADING MUNICIPALITY ANALYTICS ===');
+                
+                const client = window.supabaseClient || supabaseClient;
+                if (!client) {
+                    console.error('❌ Supabase client not available');
+                    return;
+                }
+                
+                // Get current user from session
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                if (!currentUser.id) {
+                    console.log('❌ No current user found');
+                    return;
+                }
+                
+                // Get Sub Admin's address
+                const { data: adminData, error: adminError } = await client
+                    .from('admin_accounts')
+                    .select('address, user_type')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (adminError || !adminData || adminData.user_type !== 'SUB ADMIN') {
+                    console.log('ℹ️ Not a Sub Admin or no address, using dummy data');
+                    return;
+                }
+                
+                const municipalityAddress = adminData.address;
+                if (!municipalityAddress) {
+                    console.log('❌ No municipality address found');
+                    return;
+                }
+                
+                console.log('🔍 Loading analytics for municipality:', municipalityAddress);
+                
+                // Get users in the municipality
+                const { data: municipalityUsers, error: usersError } = await client
+                    .from('users')
+                    .select('id')
+                    .eq('municipality', municipalityAddress);
+                
+                if (usersError || !municipalityUsers) {
+                    console.error('❌ Error fetching users:', usersError);
+                    return;
+                }
+                
+                const userIds = municipalityUsers.map(user => user.id);
+                console.log('🔍 User IDs for analytics:', userIds);
+                
+                // Load Stock Analytics (from my_products)
+                await loadStockAnalytics(client, userIds);
+                
+                // Load Soil Analytics (from store-owner)
+                await loadSoilAnalytics(client, userIds);
+                
+                // Load Hectare Analytics (from store-owner)
+                await loadHectareAnalytics(client, userIds);
+                
+                console.log('✅ Municipality analytics loaded successfully');
+                
+            } catch (error) {
+                console.error('❌ Error loading municipality analytics:', error);
+            }
+        }
+
+        // Load Stock Analytics from my_products
+        async function loadStockAnalytics(client, userIds) {
+            try {
+                console.log('🔍 Loading stock analytics...');
+                console.log('🔍 User IDs for stock analysis:', userIds);
+                
+                if (userIds.length === 0) {
+                    console.log('❌ No users to analyze');
+                    // Set "No Data" instead of loading
+                    analyticsData.stocks.category = {
+                        labels: ['No Data'],
+                        data: [1],
+                        colors: ['#6c757d'],
+                        products: [{ name: 'No Data', quantity: 0, status: 'No Data' }]
+                    };
+                    return;
+                }
+                
+                const { data: products, error: productsError } = await client
+                    .from('my_products')
+                    .select('category, quantity, name, id')
+                    .in('user_id', userIds);
+                
+                if (productsError) {
+                    console.error('❌ Error fetching products:', productsError);
+                    return;
+                }
+                
+                console.log('🔍 Products data found:', products);
+                console.log('🔍 Number of products:', products ? products.length : 0);
+                
+                if (!products || products.length === 0) {
+                    console.log('❌ No products found for these users');
+                    analyticsData.stocks.category = {
+                        labels: ['No Products'],
+                        data: [1],
+                        colors: ['#6c757d'],
+                        products: [{ name: 'No Products', quantity: 0, status: 'No Data' }]
+                    };
+                    
+                    // Update chart immediately
+                    if (window.stocksChart && window.stocksChart.data) {
+                        window.stocksChart.data.labels = ['No Products'];
+                        window.stocksChart.data.datasets[0].data = [1];
+                        window.stocksChart.data.datasets[0].backgroundColor = ['#6c757d'];
+                        window.stocksChart.update();
+                    }
+                    return;
+                }
+                
+                // Function to determine stock status
+                function getStockStatus(quantity) {
+                    if (quantity === 0) return 'Out of Stock';
+                    if (quantity <= 5) return 'To be Out of Stock';
+                    return 'Available';
+                }
+                
+                // Process category data with detailed product information
+                const categoryStats = {};
+                const categoryProducts = {};
+                const statusStats = { 'Available': 0, 'To be Out of Stock': 0, 'Out of Stock': 0 };
+                const statusProducts = { 'Available': [], 'To be Out of Stock': [], 'Out of Stock': [] };
+                
+                products.forEach(product => {
+                    console.log('🔍 Processing product:', product);
+                    const category = (product.category && product.category.trim() !== '') 
+                        ? product.category.trim() 
+                        : 'Uncategorized';
+                    
+                    const productStatus = getStockStatus(product.quantity || 0);
+                    const productInfo = {
+                        name: product.name || 'Unnamed Product',
+                        quantity: product.quantity || 0,
+                        status: productStatus,
+                        category: category
+                    };
+                    
+                    // Count by category
+                    categoryStats[category] = (categoryStats[category] || 0) + 1;
+                    
+                    // Count by status
+                    statusStats[productStatus] = (statusStats[productStatus] || 0) + 1;
+                    
+                    // Store detailed product information by category
+                    if (!categoryProducts[category]) {
+                        categoryProducts[category] = [];
+                    }
+                    categoryProducts[category].push(productInfo);
+                    
+                    // Store detailed product information by status
+                    statusProducts[productStatus].push(productInfo);
+                });
+                
+                console.log('📊 Category stats calculated:', categoryStats);
+                console.log('📊 Status stats calculated:', statusStats);
+                console.log('📊 Category products:', categoryProducts);
+                console.log('📊 Status products:', statusProducts);
+                
+                // Convert to arrays for chart
+                const categories = Object.keys(categoryStats);
+                const categoryData = Object.values(categoryStats);
+                const statusData = Object.values(statusStats);
+                const colors = ['#28a745', '#ffc107', '#17a2b8', '#6f42c1', '#fd7e14', '#dc3545', '#6c757d'];
+                
+                console.log('📊 Final chart data:');
+                console.log('   Labels:', categories);
+                console.log('   Category Data:', categoryData);
+                console.log('   Status Data:', statusData);
+                
+                // Update analyticsData with detailed product information
+                analyticsData.stocks.category = {
+                    labels: categories,
+                    data: categoryData,
+                    colors: colors.slice(0, categories.length),
+                    products: categoryProducts
+                };
+                
+                // Update status analytics with product details
+                analyticsData.stocks.status = {
+                    labels: ['Available', 'To be Out of Stock', 'Out of Stock'],
+                    data: statusData,
+                    colors: ['#28a745', '#ffc107', '#dc3545'],
+                    products: statusProducts
+                };
+                
+                console.log('✅ Updated analyticsData.stocks.category:', analyticsData.stocks.category);
+                console.log('✅ Updated analyticsData.stocks.status:', analyticsData.stocks.status);
+                
+                // Update the charts if they exist
+                if (window.stocksChart && window.stocksChart.data) {
+                    console.log('🔄 Updating stocks chart with real data');
+                    console.log('   Chart before update:', {
+                        labels: window.stocksChart.data.labels,
+                        data: window.stocksChart.data.datasets[0].data
+                    });
+                    
+                    window.stocksChart.data.labels = categories;
+                    window.stocksChart.data.datasets[0].data = categoryData;
+                    window.stocksChart.data.datasets[0].backgroundColor = colors.slice(0, categories.length);
+                    window.stocksChart.update();
+                    
+                    console.log('   Chart after update:', {
+                        labels: window.stocksChart.data.labels,
+                        data: window.stocksChart.data.datasets[0].data
+                    });
+                } else {
+                    console.log('⚠️ Stocks chart not yet initialized, data saved for later use');
+                }
+                
+                // Update the status chart if it exists
+                if (window.statusChart && window.statusChart.data) {
+                    console.log('🔄 Updating status chart with real data');
+                    window.statusChart.data.labels = ['Available', 'To be Out of Stock', 'Out of Stock'];
+                    window.statusChart.data.datasets[0].data = statusData;
+                    window.statusChart.data.datasets[0].backgroundColor = ['#28a745', '#ffc107', '#dc3545'];
+                    window.statusChart.update();
+                    console.log('✅ Status chart updated with real data');
+                } else {
+                    console.log('⚠️ Status chart not yet initialized, data saved for later use');
+                }
+                
+                console.log('✅ Stock analytics completed');
+                
+            } catch (error) {
+                console.error('❌ Error in loadStockAnalytics:', error);
+            }
+        }
+
+        // Load Soil Analytics from store-owner
+        async function loadSoilAnalytics(client, userIds) {
+            try {
+                console.log('🔍 Loading soil analytics...');
+                
+                if (userIds.length === 0) {
+                    console.log('❌ No users to analyze');
+                    return;
+                }
+                
+                // Try both table name formats
+                let storeOwners = null;
+                try {
+                    const result = await client
+                        .from('store-owner')
+                        .select('soil_type')
+                        .in('user_id', userIds);
+                    storeOwners = result.data;
+                } catch (error) {
+                    try {
+                        const result = await client
+                            .from('store_owner')
+                            .select('soil_type')
+                            .in('user_id', userIds);
+                        storeOwners = result.data;
+                    } catch (error2) {
+                        console.error('❌ Could not access store owner table:', error2);
+                        return;
+                    }
+                }
+                
+                if (!storeOwners) {
+                    console.log('❌ No store owners found');
+                    return;
+                }
+                
+                console.log('🔍 Store owners soil data:', storeOwners);
+                
+                // Process soil type data
+                const soilStats = {};
+                
+                storeOwners.forEach(owner => {
+                    if (owner.soil_type) {
+                        soilStats[owner.soil_type] = (soilStats[owner.soil_type] || 0) + 1;
+                    }
+                });
+                
+                console.log('📊 Soil stats:', soilStats);
+                
+                // Update analyticsData.soil.type with real data
+                const soilTypes = Object.keys(soilStats);
+                const soilData = Object.values(soilStats);
+                const colors = ['#8b4513', '#d2691e', '#daa520', '#bc8f8f', '#556b2f', '#654321', '#8b7355'];
+                
+                analyticsData.soil.type = {
+                    labels: soilTypes,
+                    data: soilData,
+                    colors: colors.slice(0, soilTypes.length)
+                };
+                
+                // Update the chart if it exists
+                if (window.soilChart && window.soilChart.data) {
+                    console.log('🔄 Updating soil chart with real data');
+                    window.soilChart.data.labels = soilTypes;
+                    window.soilChart.data.datasets[0].data = soilData;
+                    window.soilChart.data.datasets[0].backgroundColor = colors.slice(0, soilTypes.length);
+                    window.soilChart.update();
+                } else {
+                    console.log('⚠️ Soil chart not yet initialized, data will be used when chart is created');
+                }
+                
+                console.log('✅ Soil analytics updated');
+                
+            } catch (error) {
+                console.error('❌ Error in loadSoilAnalytics:', error);
+            }
+        }
+
+        // Load Hectare Analytics from store-owner
+        async function loadHectareAnalytics(client, userIds) {
+            try {
+                console.log('🔍 Loading hectare analytics...');
+                
+                if (userIds.length === 0) {
+                    console.log('❌ No users to analyze');
+                    // Set "No Data" for all periods
+                    analyticsData.hectare = {
+                        monthly: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                        },
+                        weekly: {
+                            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                            data: [0, 0, 0, 0]
+                        },
+                        yearly: {
+                            labels: ['2021', '2022', '2023', '2024'],
+                            data: [0, 0, 0, 0]
+                        }
+                    };
+                    return;
+                }
+                
+                // Try both table name formats
+                let storeOwners = null;
+                let storeOwnerError = null;
+                
+                try {
+                    console.log('🔍 Trying store-owner table...');
+                    const result = await client
+                        .from('store-owner')
+                        .select('land_size, created_at, user_id')
+                        .in('user_id', userIds);
+                    storeOwners = result.data;
+                    storeOwnerError = result.error;
+                    console.log('✅ store-owner table result:', { data: storeOwners?.length || 0, error: storeOwnerError });
+                } catch (error) {
+                    console.log('❌ store-owner table failed, trying store_owner...');
+                    try {
+                        const result = await client
+                            .from('store_owner')
+                            .select('land_size, created_at, user_id')
+                            .in('user_id', userIds);
+                        storeOwners = result.data;
+                        storeOwnerError = result.error;
+                        console.log('✅ store_owner table result:', { data: storeOwners?.length || 0, error: storeOwnerError });
+                    } catch (error2) {
+                        console.error('❌ Could not access store owner table with either name format:', error2);
+                        return;
+                    }
+                }
+                
+                if (storeOwnerError || !storeOwners) {
+                    console.log('❌ No store owners found or error:', storeOwnerError);
+                    return;
+                }
+                
+                console.log('🔍 Store owners land size data:', storeOwners);
+                
+                // Process land size data - filter valid numeric values
+                const validLandData = storeOwners
+                    .filter(owner => {
+                        const landSize = parseFloat(owner.land_size);
+                        return owner.land_size && !isNaN(landSize) && landSize > 0;
+                    })
+                    .map(owner => ({
+                        size: parseFloat(owner.land_size),
+                        date: owner.created_at ? new Date(owner.created_at) : new Date(),
+                        userId: owner.user_id
+                    }));
+                
+                console.log('📊 Valid land data with dates:');
+                validLandData.forEach((item, index) => {
+                    console.log(`  ${index + 1}. User ${item.userId}: ${item.size} ha on ${item.date.getFullYear()}-${(item.date.getMonth() + 1).toString().padStart(2, '0')}-${item.date.getDate().toString().padStart(2, '0')}`);
+                });
+                
+                if (validLandData.length === 0) {
+                    console.log('❌ No valid land size data found');
+                    // Set "No Data" state
+                    analyticsData.hectare = {
+                        monthly: {
+                            labels: ['No Data'],
+                            data: [1]
+                        },
+                        weekly: {
+                            labels: ['No Data'],
+                            data: [1]
+                        },
+                        yearly: {
+                            labels: ['No Data'],
+                            data: [1]
+                        }
+                    };
+                    
+                    // Update chart if exists
+                    if (window.hectareChart && window.hectareChart.data) {
+                        window.hectareChart.data.labels = ['No Data'];
+                        window.hectareChart.data.datasets[0].data = [1];
+                        window.hectareChart.update();
+                    }
+                    return;
+                }
+                
+                console.log('📊 Valid land data:', validLandData);
+                console.log('📊 Number of valid entries:', validLandData.length);
+                
+                // Calculate total hectares
+                const totalHectares = validLandData.reduce((sum, item) => sum + item.size, 0);
+                const avgHectares = totalHectares / validLandData.length;
+                
+                console.log('📊 Total hectares:', totalHectares);
+                console.log('📊 Average hectares per farm:', avgHectares);
+                
+                // Current date for calculations
+                const currentDate = new Date();
+                const currentYear = currentDate.getFullYear();
+                const currentMonth = currentDate.getMonth(); // 0-based
+                
+                // MONTHLY DATA - Distribute land data across 12 months based on creation dates
+                const monthlyData = new Array(12).fill(0);
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                // Group by creation month for current year or most recent year with data
+                const yearlyGroups = {};
+                validLandData.forEach(item => {
+                    const year = item.date.getFullYear();
+                    const month = item.date.getMonth();
+                    
+                    if (!yearlyGroups[year]) yearlyGroups[year] = new Array(12).fill(0);
+                    yearlyGroups[year][month] += item.size;
+                });
+                
+                // Use current year data if available, otherwise use the most recent year
+                const availableYears = Object.keys(yearlyGroups).map(y => parseInt(y)).sort((a, b) => b - a);
+                const targetYear = availableYears.includes(currentYear) ? currentYear : availableYears[0];
+                
+                if (targetYear && yearlyGroups[targetYear]) {
+                    for (let i = 0; i < 12; i++) {
+                        monthlyData[i] = yearlyGroups[targetYear][i];
+                    }
+                } else {
+                    // Fallback: distribute evenly if no specific year data
+                    const monthlyAvg = totalHectares / 12;
+                    for (let i = 0; i < 12; i++) {
+                        const variation = (Math.random() - 0.5) * 0.2;
+                        monthlyData[i] = Math.round((monthlyAvg + monthlyAvg * variation) * 100) / 100;
+                    }
+                }
+                
+                // WEEKLY DATA - More accurate weekly distribution based on actual data
+                const weeklyLabels = [];
+                const weeklyData = [];
+                
+                // Get current month's data or data from the month with most activity
+                const currentMonthTotal = monthlyData[currentMonth];
+                const maxMonthIndex = monthlyData.indexOf(Math.max(...monthlyData));
+                const targetMonthTotal = currentMonthTotal > 0 ? currentMonthTotal : monthlyData[maxMonthIndex];
+                
+                // Get current week number for more accurate labeling
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const currentWeek = Math.ceil((now.getDate() + startOfMonth.getDay()) / 7);
+                
+                // Create weekly distribution based on actual farm registration patterns
+                const farmsInTargetMonth = validLandData.filter(item => {
+                    const itemMonth = item.date.getMonth();
+                    return currentMonthTotal > 0 ? itemMonth === currentMonth : itemMonth === maxMonthIndex;
+                });
+                
+                // If we have farms in the target month, distribute by actual weeks
+                if (farmsInTargetMonth.length > 0) {
+                    const weeklyDistribution = [0, 0, 0, 0];
+                    
+                    farmsInTargetMonth.forEach(item => {
+                        const dayOfMonth = item.date.getDate();
+                        const weekOfMonth = Math.min(Math.ceil(dayOfMonth / 7), 4) - 1; // 0-3
+                        weeklyDistribution[weekOfMonth] += item.size;
+                    });
+                    
+                    for (let i = 0; i < 4; i++) {
+                        weeklyLabels.push(`Week ${i + 1}`);
+                        weeklyData.push(Math.round(weeklyDistribution[i] * 100) / 100);
+                    }
+                } else {
+                    // Fallback: distribute target month evenly across weeks
+                    const weeklyBase = targetMonthTotal / 4;
+                    for (let i = 0; i < 4; i++) {
+                        weeklyLabels.push(`Week ${i + 1}`);
+                        const variation = (Math.random() - 0.5) * 0.1;
+                        weeklyData.push(Math.round((weeklyBase + weeklyBase * variation) * 100) / 100);
+                    }
+                }
+                
+                // YEARLY DATA - ONLY use actual database data, no simulation
+                const currentYear2025 = new Date().getFullYear(); // Use actual current year (2025)
+                const yearRange = 4; // Show last 4 years
+                const yearlyLabels = [];
+                const yearlyData = [];
+                
+                // Create year groups based ONLY on actual data - sum ALL land registered in each year
+                const actualYearGroups = {};
+                validLandData.forEach(item => {
+                    const year = item.date.getFullYear();
+                    if (!actualYearGroups[year]) actualYearGroups[year] = 0;
+                    actualYearGroups[year] += item.size; // Sum total land for this year
+                });
+                
+                console.log('📊 Raw year groups from database (ACTUAL DATA ONLY):', actualYearGroups);
+                console.log('📊 Current year detected:', currentYear2025);
+                
+                // Generate data for the last 4 years (2022-2025) - ONLY ACTUAL DATA
+                for (let i = yearRange - 1; i >= 0; i--) {
+                    const year = currentYear2025 - i;
+                    yearlyLabels.push(year.toString());
+                    
+                    if (actualYearGroups[year] && actualYearGroups[year] > 0) {
+                        // Use ONLY actual total land registered in this year
+                        yearlyData.push(Math.round(actualYearGroups[year] * 100) / 100);
+                        console.log(`✅ Year ${year}: ACTUAL DATA = ${actualYearGroups[year]} hectares`);
+                    } else {
+                        // NO SIMULATION - if no actual data, show 0
+                        yearlyData.push(0);
+                        console.log(`❌ Year ${year}: No actual data found, showing 0 hectares`);
+                    }
+                }
+                
+                console.log('📊 Final yearly labels (REAL DATA ONLY):', yearlyLabels);
+                console.log('📊 Final yearly data (REAL DATA ONLY):');
+                yearlyLabels.forEach((year, index) => {
+                    const value = yearlyData[index];
+                    const source = value > 0 ? 'ACTUAL DATABASE' : 'NO DATA';
+                    console.log(`   ${year}: ${value} hectares (${source})`);
+                });
+                
+                console.log('📊 Actual year groups from database:', actualYearGroups);
+                console.log('📊 Monthly hectare data:', monthlyData);
+                console.log('📊 Weekly hectare data (accurate):', weeklyData);
+                console.log('📊 Yearly hectare data (accurate):', yearlyData);
+                
+                // Update analyticsData with comprehensive data
+                analyticsData.hectare = {
+                    monthly: {
+                        labels: monthNames,
+                        data: monthlyData,
+                        totalHectares: totalHectares,
+                        validFarms: validLandData.length
+                    },
+                    weekly: {
+                        labels: weeklyLabels,
+                        data: weeklyData,
+                        totalHectares: targetMonthTotal,
+                        validFarms: validLandData.length
+                    },
+                    yearly: {
+                        labels: yearlyLabels,
+                        data: yearlyData,
+                        totalHectares: totalHectares,
+                        validFarms: validLandData.length
+                    }
+                };
+                
+                console.log('✅ Updated analyticsData.hectare:', analyticsData.hectare);
+                
+                // Update the chart if it exists (default to monthly view)
+                if (window.hectareChart && window.hectareChart.data) {
+                    console.log('🔄 Updating hectare chart with real monthly data');
+                    window.hectareChart.data.labels = monthNames;
+                    window.hectareChart.data.datasets[0].data = monthlyData;
+                    window.hectareChart.update();
+                    console.log('✅ Hectare chart updated successfully');
+                } else {
+                    console.log('⚠️ Hectare chart not yet initialized, data saved for later use');
+                }
+                
+                console.log('✅ Hectare analytics completed');
+                
+            } catch (error) {
+                console.error('❌ Error in loadHectareAnalytics:', error);
+            }
+        }
+
+        // Test function to check database connection and data
+        window.testDatabaseConnection = async function() {
+            try {
+                console.log('=== TESTING DATABASE CONNECTION ===');
+                
+                const client = window.supabaseClient || supabaseClient;
+                if (!client) {
+                    console.error('❌ No Supabase client available');
+                    return;
+                }
+                
+                // Test admin_accounts table
+                console.log('🔍 Testing admin_accounts table...');
+                const { data: admins, error: adminError } = await client
+                    .from('admin_accounts')
+                    .select('*')
+                    .limit(3);
+                
+                console.log('Admin accounts result:', { data: admins, error: adminError });
+                
+                // Test users table
+                console.log('🔍 Testing users table...');
+                const { data: users, error: userError } = await client
+                    .from('users')
+                    .select('id, municipality, address, full_name')
+                    .limit(5);
+                
+                console.log('Users result:', { data: users, error: userError });
+                
+                // Test store owner tables
+                console.log('🔍 Testing store-owner table...');
+                try {
+                    const { data: stores1, error: storeError1 } = await client
+                        .from('store-owner')
+                        .select('*')
+                        .limit(3);
+                    console.log('store-owner result:', { data: stores1, error: storeError1 });
+                } catch (e) {
+                    console.log('store-owner table not accessible');
+                }
+                
+                console.log('🔍 Testing store_owner table...');
+                try {
+                    const { data: stores2, error: storeError2 } = await client
+                        .from('store_owner')
+                        .select('*')
+                        .limit(3);
+                    console.log('store_owner result:', { data: stores2, error: storeError2 });
+                } catch (e) {
+                    console.log('store_owner table not accessible');
+                }
+                
+                // Test products table
+                console.log('🔍 Testing my_products table...');
+                const { data: products, error: productError } = await client
+                    .from('my_products')
+                    .select('*')
+                    .limit(3);
+                
+                console.log('Products result:', { data: products, error: productError });
+                
+                console.log('=== DATABASE TEST COMPLETE ===');
+                
+            } catch (error) {
+                console.error('❌ Error in database test:', error);
+            }
+        }
+
+        // Wait for shared profile to load, then load municipality stats
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Municipality dashboard loaded');
+            
+            // Check if charts are already initialized to prevent duplicates
+            if (window.chartsInitialized) {
+                console.log('⚠️ Charts already initialized, skipping...');
+                return;
+            }
+            
+            // Initialize charts
+            initializeCharts();
+            window.chartsInitialized = true;
+                
+            // Load real data after charts are initialized
+            setTimeout(() => {
+                console.log('🔄 Loading analytics after charts initialization...');
+                window.loadMunicipalityAnalytics();
+            }, 2000);
+            
+            // Wait a bit for profile to load, then load municipality stats
+            setTimeout(() => {
+                console.log('🔍 Starting municipality stats load...');
+                window.testDatabaseConnection(); // Test database first
+                window.loadMunicipalityStats();
+                
+                // Load analytics with additional delay to ensure charts are ready
+                setTimeout(() => {
+                    console.log('🔄 Loading analytics with delay...');
+                    window.loadMunicipalityAnalytics();
+                }, 1000);
+            }, 3000); // Increased timeout to 3 seconds
+        });
+
+        // Filter Functions
+        function updateSalesChart(period) {
+            const data = analyticsData.sales[period];
+            window.salesChart.data.labels = data.labels;
+            window.salesChart.data.datasets[0].data = data.data;
+            window.salesChart.update();
+        }
+
+        function updateStocksChart(view) {
+            console.log('🔄 Updating stocks chart to view:', view);
+            
+            const stocksCanvas = document.getElementById('stocksChart');
+            const statusCanvas = document.getElementById('statusChart');
+            
+            if (!stocksCanvas || !statusCanvas) {
+                console.warn('⚠️ Chart elements not found');
+                return;
+            }
+            
+            if (view === 'status') {
+                // Show status chart, hide category chart
+                stocksCanvas.style.display = 'none';
+                statusCanvas.style.display = 'block';
+                
+                // Update status chart with real data
+                const data = analyticsData.stocks.status;
+                console.log('📊 Status chart data:', data);
+                
+                if (data && data.labels && data.data && window.statusChart && window.statusChart.data) {
+                    window.statusChart.data.labels = data.labels;
+                    window.statusChart.data.datasets[0].data = data.data;
+                    window.statusChart.data.datasets[0].backgroundColor = data.colors;
+                    window.statusChart.update();
+                    console.log('✅ Status chart updated successfully');
+                } else {
+                    console.warn('⚠️ Status chart not ready or missing data');
+                    if (!window.statusChart) console.warn('  - statusChart not initialized');
+                    if (!data) console.warn('  - status data missing');
+                    if (window.statusChart && !window.statusChart.data) console.warn('  - statusChart.data is undefined');
+                }
+                
+            } else {
+                // Show category chart, hide status chart
+                stocksCanvas.style.display = 'block';
+                statusCanvas.style.display = 'none';
+                
+                // Update category chart with real data
+                const data = analyticsData.stocks[view];
+                console.log('📊 Category chart data:', data);
+                
+                if (data && data.labels && data.data && window.stocksChart && window.stocksChart.data) {
+                    window.stocksChart.data.labels = data.labels;
+                    window.stocksChart.data.datasets[0].data = data.data;
+                    window.stocksChart.data.datasets[0].backgroundColor = data.colors;
+                    window.stocksChart.update();
+                    console.log('✅ Category chart updated successfully');
+                } else {
+                    console.warn('⚠️ Category chart not ready or missing data');
+                    if (!window.stocksChart) console.warn('  - stocksChart not initialized');
+                    if (!data) console.warn('  - category data missing');
+                    if (window.stocksChart && !window.stocksChart.data) console.warn('  - stocksChart.data is undefined');
+                }
+            }
+        }
+
+        // Status filtering function
+        function filterByStatus(status) {
+            console.log('🔄 Filtering by status:', status);
+            
+            // Check if statusChart exists
+            if (!window.statusChart || !window.statusChart.data) {
+                console.warn('⚠️ Status chart not ready for filtering');
+                return;
+            }
+            
+            // Update active button
+            document.querySelectorAll('.status-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('btn-success', 'btn-warning', 'btn-danger');
+                btn.classList.add('btn-outline-success', 'btn-outline-warning', 'btn-outline-danger');
+            });
+            
+            const activeBtn = document.querySelector(`[data-status="${status}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                if (status === 'Available') {
+                    activeBtn.classList.remove('btn-outline-success');
+                    activeBtn.classList.add('btn-success');
+                } else if (status === 'To be Out of Stock') {
+                    activeBtn.classList.remove('btn-outline-warning');
+                    activeBtn.classList.add('btn-warning');
+                } else if (status === 'Out of Stock') {
+                    activeBtn.classList.remove('btn-outline-danger');
+                    activeBtn.classList.add('btn-danger');
+                } else {
+                    activeBtn.classList.remove('btn-outline-success');
+                    activeBtn.classList.add('btn-success');
+                }
+            }
+
+            // We're in status view - filter the status chart
+            const statusData = analyticsData.stocks.status;
+            
+            if (!statusData || !statusData.labels || !statusData.data) {
+                console.warn('⚠️ Status data not available for filtering');
+                return;
+            }
+            
+            if (status === 'all') {
+                // Show all status data
+                window.statusChart.data.labels = statusData.labels;
+                window.statusChart.data.datasets[0].data = statusData.data;
+                window.statusChart.data.datasets[0].backgroundColor = statusData.colors;
+            } else {
+                // Show only the selected status
+                const statusIndex = statusData.labels.indexOf(status);
+                if (statusIndex !== -1) {
+                    window.statusChart.data.labels = [status];
+                    window.statusChart.data.datasets[0].data = [statusData.data[statusIndex]];
+                    window.statusChart.data.datasets[0].backgroundColor = [statusData.colors[statusIndex]];
+                } else {
+                    console.warn('⚠️ Status not found in data:', status);
+                    return;
+                }
+            }
+            window.statusChart.update();
+            console.log('✅ Status filter applied successfully');
+        }
+
+        function updateSoilChart(view) {
+            const data = analyticsData.soil[view];
+            window.soilChart.data.labels = data.labels;
+            window.soilChart.data.datasets[0].data = data.data;
+            window.soilChart.data.datasets[0].backgroundColor = data.colors;
+            window.soilChart.update();
+        }
+
+        function updateHectareChart(period) {
+            console.log('🔄 Updating hectare chart to period:', period);
+            
+            if (!window.hectareChart || !window.hectareChart.data) {
+                console.warn('⚠️ Hectare chart not initialized');
+                return;
+            }
+            
+            const data = analyticsData.hectare[period];
+            if (!data || !data.labels || !data.data) {
+                console.warn('⚠️ No hectare data available for period:', period);
+                console.log('Available periods:', Object.keys(analyticsData.hectare));
+                return;
+            }
+            
+            console.log('📊 Updating with data for', period, ':', data);
+            console.log('📊 Labels:', data.labels);
+            console.log('📊 Data:', data.data);
+            
+            window.hectareChart.data.labels = data.labels;
+            window.hectareChart.data.datasets[0].data = data.data;
+            window.hectareChart.update();
+            
+            console.log('✅ Hectare chart updated successfully');
+            console.log('✅ Chart now shows:', window.hectareChart.data.labels);
         }
 
         // Sales Chart (Line Graph)
         function initSalesChart() {
-            const canvas = document.getElementById('salesChart');
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            const currentData = analyticsData.sales.monthly;
-            
-            salesChart = new Chart(ctx, {
+            try {
+                // Destroy existing chart if it exists
+                if (window.salesChart && typeof window.salesChart.destroy === 'function') {
+                    window.salesChart.destroy();
+                    window.salesChart = null;
+                }
+                
+                const canvas = document.getElementById('salesChart');
+                if (!canvas) {
+                    console.warn('⚠️ Sales chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                const currentData = analyticsData.sales.monthly;
+                
+                window.salesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: currentData.labels,
@@ -468,17 +1593,30 @@
                     }
                 }
             });
+            } catch (error) {
+                console.error('❌ Error initializing sales chart:', error);
+            }
         }
 
         // Stocks Chart (Pie Chart)
         function initStocksChart() {
-            const canvas = document.getElementById('stocksChart');
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
+            try {
+                // Destroy existing chart if it exists
+                if (window.stocksChart && typeof window.stocksChart.destroy === 'function') {
+                    window.stocksChart.destroy();
+                    window.stocksChart = null;
+                }
+                
+                const canvas = document.getElementById('stocksChart');
+                if (!canvas) {
+                    console.warn('⚠️ Stocks chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
             const currentData = analyticsData.stocks.category;
             
-            stocksChart = new Chart(ctx, {
+            window.stocksChart = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: currentData.labels,
@@ -495,21 +1633,194 @@
                     plugins: {
                         legend: {
                             position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    // Get current filter view
+                                    const currentFilter = document.getElementById('stocksFilter').value;
+                                    const label = context.label;
+                                    const count = context.parsed;
+                                    
+                                    if (currentFilter === 'status') {
+                                        // Status view - show products by status
+                                        const products = analyticsData.stocks.status.products;
+                                        
+                                        if (!products || !products[label]) {
+                                            return `Products: ${count}`;
+                                        }
+                                        
+                                        const statusProducts = products[label];
+                                        let tooltipLines = [`${label}: ${count} products`];
+                                        
+                                        // Add individual product details
+                                        statusProducts.forEach(product => {
+                                            const statusColor = product.status === 'Available' ? '🟢' : 
+                                                              product.status === 'To be Out of Stock' ? '🟡' : '🔴';
+                                            tooltipLines.push(`${statusColor} ${product.name}: ${product.quantity} stocks (${product.category})`);
+                                        });
+                                        
+                                        return tooltipLines;
+                                    } else {
+                                        // Category view - show products by category
+                                        const products = analyticsData.stocks.category.products;
+                                        
+                                        if (!products || !products[label]) {
+                                            return `Products: ${count}`;
+                                        }
+                                        
+                                        const categoryProducts = products[label];
+                                        let tooltipLines = [`${label}: ${count} products`];
+                                        
+                                        // Add individual product details
+                                        categoryProducts.forEach(product => {
+                                            const statusColor = product.status === 'Available' ? '🟢' : 
+                                                              product.status === 'To be Out of Stock' ? '🟡' : '🔴';
+                                            tooltipLines.push(`${statusColor} ${product.name}: ${product.quantity} stocks (${product.status})`);
+                                        });
+                                        
+                                        return tooltipLines;
+                                    }
+                                },
+                                labelColor: function(context) {
+                                    return {
+                                        borderColor: context.dataset.backgroundColor[context.dataIndex],
+                                        backgroundColor: context.dataset.backgroundColor[context.dataIndex]
+                                    };
+                                }
+                            },
+                            displayColors: true,
+                            bodySpacing: 4,
+                            titleSpacing: 6,
+                            footerSpacing: 4,
+                            bodyFont: {
+                                size: 12
+                            },
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            }
                         }
                     }
                 }
             });
+            } catch (error) {
+                console.error('❌ Error initializing stocks chart:', error);
+            }
+        }
+
+        // Status Chart (Separate Pie Chart for Status View)
+        function initStatusChart() {
+            try {
+                // Destroy existing chart if it exists
+                if (window.statusChart && typeof window.statusChart.destroy === 'function') {
+                    window.statusChart.destroy();
+                    window.statusChart = null;
+                }
+                
+                const canvas = document.getElementById('statusChart');
+                if (!canvas) {
+                    console.warn('⚠️ Status chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                const currentData = analyticsData.stocks.status;
+                
+                window.statusChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: currentData.labels,
+                        datasets: [{
+                            data: currentData.data,
+                            backgroundColor: currentData.colors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label;
+                                    },
+                                    label: function(context) {
+                                        // Status view - show products by status
+                                        const label = context.label;
+                                        const count = context.parsed;
+                                        const products = analyticsData.stocks.status.products;
+                                        
+                                        if (!products || !products[label]) {
+                                            return `Products: ${count}`;
+                                        }
+                                        
+                                        const statusProducts = products[label];
+                                        let tooltipLines = [`${label}: ${count} products`];
+                                        
+                                        // Add individual product details
+                                        statusProducts.forEach(product => {
+                                            const statusColor = product.status === 'Available' ? '🟢' : 
+                                                              product.status === 'To be Out of Stock' ? '🟡' : '🔴';
+                                            tooltipLines.push(`${statusColor} ${product.name}: ${product.quantity} stocks (${product.category})`);
+                                        });
+                                        
+                                        return tooltipLines;
+                                    },
+                                    labelColor: function(context) {
+                                        return {
+                                            borderColor: context.dataset.backgroundColor[context.dataIndex],
+                                            backgroundColor: context.dataset.backgroundColor[context.dataIndex]
+                                        };
+                                    }
+                                },
+                                displayColors: true,
+                                bodySpacing: 4,
+                                titleSpacing: 6,
+                                footerSpacing: 4,
+                                bodyFont: {
+                                    size: 12
+                                },
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error initializing status chart:', error);
+            }
         }
 
         // Soil Chart (Donut Chart)
         function initSoilChart() {
-            const canvas = document.getElementById('soilChart');
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
+            try {
+                // Destroy existing chart if it exists
+                if (window.soilChart && typeof window.soilChart.destroy === 'function') {
+                    window.soilChart.destroy();
+                    window.soilChart = null;
+                }
+                
+                const canvas = document.getElementById('soilChart');
+                if (!canvas) {
+                    console.warn('⚠️ Soil chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
             const currentData = analyticsData.soil.type;
             
-            soilChart = new Chart(ctx, {
+            window.soilChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: currentData.labels,
@@ -530,53 +1841,146 @@
                     }
                 }
             });
+            } catch (error) {
+                console.error('❌ Error initializing soil chart:', error);
+            }
         }
 
         // Hectare Chart (Bar Chart)
         function initHectareChart() {
-            const canvas = document.getElementById('hectareChart');
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            const currentData = analyticsData.hectare.monthly;
-            
-            hectareChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: currentData.labels,
-                    datasets: [{
-                        label: 'Hectares',
-                        data: currentData.data,
-                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
-                        borderColor: '#28a745',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                boxWidth: 40,
-                                usePointStyle: false
-                            }
-                        }
+            try {
+                // Destroy existing chart if it exists
+                if (window.hectareChart && typeof window.hectareChart.destroy === 'function') {
+                    window.hectareChart.destroy();
+                    window.hectareChart = null;
+                }
+                
+                const canvas = document.getElementById('hectareChart');
+                if (!canvas) {
+                    console.warn('⚠️ Hectare chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                const currentData = analyticsData.hectare.monthly;
+                
+                window.hectareChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: currentData.labels,
+                        datasets: [{
+                            label: 'Hectares',
+                            data: currentData.data,
+                            backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                            borderColor: '#28a745',
+                            borderWidth: 1
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + ' ha';
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 40,
+                                    usePointStyle: false
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        const period = document.getElementById('hectareFilter')?.value || 'monthly';
+                                        return `${context[0].label} - ${period.charAt(0).toUpperCase() + period.slice(1)} View`;
+                                    },
+                                    label: function(context) {
+                                        const hectares = context.parsed.y;
+                                        const period = document.getElementById('hectareFilter')?.value || 'monthly';
+                                        const hectareData = analyticsData.hectare[period];
+                                        const label = context.label;
+                                        
+                                        let tooltipText = [`🌾 Hectares: ${hectares.toFixed(2)} ha`];
+                                        
+                                        // Add contextual information based on period
+                                        if (hectareData.totalHectares && hectareData.totalHectares > 0) {
+                                            const percentage = ((hectares / hectareData.totalHectares) * 100).toFixed(1);
+                                            tooltipText.push(`📊 Percentage: ${percentage}%`);
+                                        }
+                                        
+                                        if (hectareData.validFarms) {
+                                            tooltipText.push(`🏪 Active Farms: ${hectareData.validFarms}`);
+                                        }
+                                        
+                                        // Period-specific information
+                                        if (period === 'monthly') {
+                                            if (hectareData.validFarms > 0) {
+                                                const avgPerFarm = (hectares / hectareData.validFarms).toFixed(2);
+                                                tooltipText.push(`📏 Avg per Farm: ${avgPerFarm} ha`);
+                                            }
+                                            tooltipText.push(`📅 Month: ${label}`);
+                                        } else if (period === 'weekly') {
+                                            tooltipText.push(`📅 Current Month Distribution`);
+                                            if (hectares > 0) {
+                                                tooltipText.push(`🗓️ ${label} of Month`);
+                                            }
+                                        } else if (period === 'yearly') {
+                                            tooltipText.push(`📅 Year: ${label}`);
+                                            
+                                            if (hectares > 0) {
+                                                tooltipText.push(`🌾 Total Land in ${label}: ${hectares.toFixed(2)} ha`);
+                                                tooltipText.push(`📊 ACTUAL DATABASE DATA`);
+                                                
+                                                if (hectareData.validFarms > 0) {
+                                                    const avgPerFarm = (hectares / hectareData.validFarms).toFixed(2);
+                                                    tooltipText.push(`📏 Est. Avg per Farm: ${avgPerFarm} ha`);
+                                                }
+                                            } else {
+                                                tooltipText.push(`❌ No farms registered in ${label}`);
+                                                tooltipText.push(`📊 NO DATA AVAILABLE`);
+                                            }
+                                        }
+                                        
+                                        return tooltipText;
+                                    },
+                                    footer: function(context) {
+                                        const period = document.getElementById('hectareFilter')?.value || 'monthly';
+                                        const hectareData = analyticsData.hectare[period];
+                                        
+                                        if (hectareData.totalHectares) {
+                                            return `Total Land: ${hectareData.totalHectares.toFixed(2)} hectares`;
+                                        }
+                                        return '';
+                                    }
+                                },
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                footerColor: '#ccc',
+                                borderColor: '#28a745',
+                                borderWidth: 1,
+                                cornerRadius: 6,
+                                displayColors: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + ' ha';
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+                
+                console.log('✅ Hectare chart initialized successfully');
+                
+            } catch (error) {
+                console.error('❌ Error initializing hectare chart:', error);
+            }
         }
 
         // Filter Functions
@@ -587,14 +1991,6 @@
             salesChart.update();
         }
 
-        function updateStocksChart(view) {
-            const data = analyticsData.stocks[view];
-            stocksChart.data.labels = data.labels;
-            stocksChart.data.datasets[0].data = data.data;
-            stocksChart.data.datasets[0].backgroundColor = data.colors;
-            stocksChart.update();
-        }
-
         function updateSoilChart(view) {
             const data = analyticsData.soil[view];
             soilChart.data.labels = data.labels;
@@ -603,19 +1999,50 @@
             soilChart.update();
         }
 
-        function updateHectareChart(period) {
-            const data = analyticsData.hectare[period];
-            hectareChart.data.labels = data.labels;
-            hectareChart.data.datasets[0].data = data.data;
-            hectareChart.update();
-        }
 
+        // Event Listeners
         // Event Listeners for Filters
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Municipality dashboard loaded');
+            
             // Initialize charts
             if (typeof Chart !== 'undefined') {
                 initializeCharts();
+                
+                // Load real data after charts are initialized
+                setTimeout(() => {
+                    console.log('🔄 Loading analytics after charts initialization...');
+                    window.loadMunicipalityAnalytics();
+                }, 2000);
             }
+            
+            // Wait a bit for profile to load, then load municipality stats
+            setTimeout(() => {
+                console.log('🔍 Starting municipality stats load...');
+                window.testDatabaseConnection(); // Test database first
+                window.loadMunicipalityStats();
+                
+                // Load analytics with additional delay to ensure charts are ready
+                setTimeout(() => {
+                    console.log('🔄 Loading analytics with delay...');
+                    window.loadMunicipalityAnalytics();
+                }, 1000);
+                
+                // Load municipality users for User Management table
+                setTimeout(() => {
+                    console.log('🔄 Loading municipality users...');
+                    // Check if DOM elements are ready
+                    const tableBody = document.getElementById('userManagementTable');
+                    if (!tableBody) {
+                        console.warn('⚠️ User table not ready, retrying in 2 seconds...');
+                        setTimeout(() => {
+                            window.loadMunicipalityUsers();
+                        }, 2000);
+                    } else {
+                        window.loadMunicipalityUsers();
+                    }
+                }, 1500);
+            }, 3000); // Increased timeout to 3 seconds
             
             // Add event listeners for filters
             const salesFilter = document.getElementById('salesFilter');
@@ -773,6 +2200,185 @@
         function signOut() {
             if (confirm('Are you sure you want to sign out?')) {
                 window.location.href = 'sign_in_form.html';
+            }
+        }
+
+        // Load municipality-specific users for User Management table
+        window.loadMunicipalityUsers = async function() {
+            try {
+                console.log('=== LOADING MUNICIPALITY USERS ===');
+                
+                const client = window.supabaseClient || supabaseClient;
+                if (!client) {
+                    console.error('❌ Supabase client not available');
+                    updateUserTable([], 'Database connection not available');
+                    return;
+                }
+                
+                // Get current admin user
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                if (!currentUser.id) {
+                    console.log('❌ No current user found');
+                    updateUserTable([], 'User not logged in');
+                    return;
+                }
+                
+                // Get Sub Admin's municipality/address
+                const { data: adminData, error: adminError } = await client
+                    .from('admin_accounts')
+                    .select('address, user_type')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (adminError || !adminData || adminData.user_type !== 'SUB ADMIN') {
+                    console.log('ℹ️ Not a Sub Admin or no address');
+                    updateUserTable([], 'Access restricted to Sub Admins');
+                    return;
+                }
+                
+                const municipalityAddress = adminData.address;
+                if (!municipalityAddress || municipalityAddress.trim() === '') {
+                    console.log('❌ No municipality address found');
+                    updateUserTable([], 'No municipality assigned');
+                    return;
+                }
+                
+                console.log('🔍 Loading users for municipality:', municipalityAddress);
+                
+                // Get users from the same municipality
+                const { data: users, error: usersError } = await client
+                    .from('users')
+                    .select('full_name, email, phone_number, municipality, address')
+                    .eq('municipality', municipalityAddress)
+                    .order('full_name', { ascending: true });
+                
+                if (usersError) {
+                    console.error('❌ Error fetching users:', usersError);
+                    updateUserTable([], 'Error loading users');
+                    return;
+                }
+                
+                console.log(`✅ Found ${users ? users.length : 0} users in ${municipalityAddress}`);
+                console.log('🔍 User details:', users);
+                
+                updateUserTable(users || [], null, municipalityAddress);
+                
+            } catch (error) {
+                console.error('❌ Error in loadMunicipalityUsers:', error);
+                updateUserTable([], 'Error loading users');
+            }
+        }
+        
+        // Pagination variables
+        let currentUserPage = 1;
+        let usersPerPage = 10;
+        let allMunicipalityUsers = [];
+        
+        // Update User Management table with real data
+        function updateUserTable(users, errorMessage, municipality) {
+            const tableBody = document.getElementById('userManagementTable');
+            const viewAllLink = document.getElementById('viewAllUsersLink');
+            
+            if (!tableBody) {
+                console.warn('⚠️ User table element (userManagementTable) not found. Retrying in 1 second...');
+                setTimeout(() => updateUserTable(users, errorMessage, municipality), 1000);
+                return;
+            }
+            
+            console.log('✅ User table elements found, updating table...');
+            
+            // Store users for pagination
+            allMunicipalityUsers = users;
+            currentUserPage = 1;
+            
+            if (errorMessage) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${errorMessage}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            if (!users || users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">
+                            <i class="fas fa-users me-2"></i>
+                            No users found in ${municipality || 'this municipality'}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            console.log(`📊 Displaying ${users.length} users from ${municipality}`);
+            
+            // Update view all link
+            if (viewAllLink) {
+                viewAllLink.textContent = `View all ${users.length} users >`;
+            }
+            
+            // Display paginated users
+            displayUsersPage(currentUserPage);
+        }
+        
+        // Display users for current page
+        function displayUsersPage(page) {
+            const tableBody = document.getElementById('userManagementTable');
+            const currentPageBtn = document.getElementById('currentPageBtn');
+            
+            if (!tableBody) {
+                console.warn('⚠️ User table element not found in displayUsersPage');
+                return;
+            }
+            
+            console.log(`📄 Displaying page ${page} of users`);
+            
+            const startIndex = (page - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const pageUsers = allMunicipalityUsers.slice(startIndex, endIndex);
+            
+            if (pageUsers.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">
+                            No users on this page
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = pageUsers.map(user => `
+                <tr>
+                    <td>${user.full_name || 'N/A'}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${user.phone_number || 'N/A'}</td>
+                </tr>
+            `).join('');
+            
+            console.log(`✅ Successfully displayed ${pageUsers.length} users on page ${page}`);
+            
+            // Update pagination
+            if (currentPageBtn) {
+                currentPageBtn.textContent = page;
+            }
+            
+            console.log(`📄 Displaying page ${page}: ${pageUsers.length} users`);
+        }
+        
+        // Pagination function
+        function changePage(direction) {
+            const totalPages = Math.ceil(allMunicipalityUsers.length / usersPerPage);
+            const newPage = currentUserPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentUserPage = newPage;
+                displayUsersPage(currentUserPage);
             }
         }
 
