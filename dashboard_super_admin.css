@@ -279,6 +279,9 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-bottom: 1rem;
     overflow: hidden;
+    height: 350px; /* Fixed height for consistent layout */
+    display: flex;
+    flex-direction: column;
 }
 
 .analytics-card .card-header {
@@ -287,6 +290,7 @@ body {
     padding: 1.25rem 1.5rem;
     font-weight: 600;
     color: #333;
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .analytics-card .card-header h5 {
@@ -295,7 +299,26 @@ body {
 }
 
 .analytics-card .card-body {
-    padding: 1.5rem;
+    padding: 0;
+    flex: 1; /* Take remaining space */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Chart Section Styling */
+.chart-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sales Summary Section */
+.sales-summary-section {
+    flex-shrink: 0; /* Prevent summary from shrinking */
+    height: 60px; /* Fixed height for summary */
+    display: flex;
+    align-items: center;
 }
 
 /* Chart Placeholders */

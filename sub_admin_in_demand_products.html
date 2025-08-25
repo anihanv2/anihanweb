@@ -97,32 +97,19 @@
                     <div class="table-responsive">
                             <table class="demand-table">
                                 <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Contact Number</th>
-                                    </tr>
+                                <tr>
+                                    <th>Store Location</th>
+                                    <th>Most Bought Products</th>
+                                    <th>Quantity</th>
+                                </tr>
                                 </thead>
                                 <tbody id="tableBody">
+                                    <!-- Data will be loaded dynamically -->
                                     <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
+                                        <td colspan="3" class="text-center text-muted p-4">
+                                            <i class="fas fa-spinner fa-spin me-2"></i>
+                                            Loading in-demand products...
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -178,6 +165,329 @@
         document.getElementById('searchInput').addEventListener('input', function() {
             // Search functionality will be implemented when data is added
             console.log('Searching:', this.value);
+        });
+
+        // Function to extract municipality from address (fallback)
+        function extractMunicipality(address) {
+            if (!address) return 'Unknown';
+            
+            // Clean the address and split by common separators
+            const cleanAddress = address.trim();
+            
+            // Split by comma, semicolon, or pipe and get parts
+            const parts = cleanAddress.split(/[,;|]/).map(part => part.trim()).filter(part => part.length > 0);
+            
+            // Look for common municipality patterns
+            for (const part of parts) {
+                const lowerPart = part.toLowerCase();
+                
+                // Check if it contains municipality keywords
+                if (lowerPart.includes('city') || 
+                    lowerPart.includes('municipality') || 
+                    lowerPart.includes('town') ||
+                    lowerPart.includes('metro') ||
+                    lowerPart.includes('provincial')) {
+                    return part;
+                }
+                
+                // Check for specific known municipalities/cities
+                if (lowerPart.includes('lipa') || 
+                    lowerPart.includes('batangas') ||
+                    lowerPart.includes('manila') ||
+                    lowerPart.includes('quezon') ||
+                    lowerPart.includes('makati') ||
+                    lowerPart.includes('taguig') ||
+                    lowerPart.includes('pasig') ||
+                    lowerPart.includes('marikina') ||
+                    lowerPart.includes('caloocan') ||
+                    lowerPart.includes('valenzuela')) {
+                    return part;
+                }
+            }
+            
+            // If no specific municipality found, try to get the largest/most significant part
+            if (parts.length > 0) {
+                // Usually the municipality is one of the longer parts or the last part
+                const longestPart = parts.reduce((a, b) => a.length > b.length ? a : b);
+                
+                // If the longest part is reasonable length, use it
+                if (longestPart.length >= 4 && longestPart.length <= 25) {
+                    return longestPart;
+                }
+                
+                // Otherwise use the last part (often the broader location)
+                return parts[parts.length - 1];
+            }
+            
+            // Fallback to first 20 characters of address
+            return cleanAddress.substring(0, 20) + (cleanAddress.length > 20 ? '...' : '');
+        }
+
+        // Function to get municipality from user data
+        function getMunicipality(user) {
+            if (!user) return 'Unknown';
+            
+            // Use municipality field if available, fallback to address
+            if (user.municipality) {
+                return user.municipality;
+            }
+            
+            // If no municipality field, try to extract from address
+            if (user.address) {
+                return extractMunicipality(user.address);
+            }
+            
+            return 'Unknown';
+        }
+
+        // Function to load municipality in-demand products
+        async function loadMunicipalityInDemandProducts() {
+            try {
+                console.log('=== LOADING MUNICIPALITY IN-DEMAND PRODUCTS ===');
+                
+                // Check if supabaseClient is available from shared-profile.js
+                if (!window.supabaseClient && !supabaseClient) {
+                    console.error('Supabase client not available');
+                    updateInDemandTable([], 'Database connection not available');
+                    return;
+                }
+
+                // Use the global supabaseClient
+                const client = window.supabaseClient || supabaseClient;
+                
+                // Get current user data from session storage
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                if (!currentUser) {
+                    console.error('No current user found');
+                    updateInDemandTable([], 'Please sign in to view in-demand products data');
+                    return;
+                }
+
+                console.log('Current user:', currentUser);
+                
+                // Get sub admin's municipality (use municipality field if available, fallback to address)
+                let userMunicipality = currentUser.municipality || currentUser.address;
+                
+                if (!userMunicipality) {
+                    console.error('No municipality or address found for current user');
+                    updateInDemandTable([], 'No municipality found for current user');
+                    return;
+                }
+
+                console.log('🔍 Sub admin municipality:', userMunicipality);
+
+                // Try different matching strategies for municipality
+                console.log('🔍 Trying different municipality matching strategies...');
+                
+                // Strategy 1: Exact municipality match
+                let { data: municipalityUsers, error: usersError } = await client
+                    .from('users')
+                    .select('id, full_name, address, municipality')
+                    .eq('municipality', userMunicipality);
+
+                console.log('📍 Strategy 1 (exact municipality match) results:', municipalityUsers);
+
+                // Strategy 2: Case-insensitive municipality contains match
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    ({ data: municipalityUsers, error: usersError } = await client
+                        .from('users')
+                        .select('id, full_name, address, municipality')
+                        .ilike('municipality', `%${userMunicipality}%`));
+
+                    console.log('📍 Strategy 2 (ilike municipality contains) results:', municipalityUsers);
+                }
+
+                // Strategy 3: Try matching by address if municipality doesn't work
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    ({ data: municipalityUsers, error: usersError } = await client
+                        .from('users')
+                        .select('id, full_name, address, municipality')
+                        .ilike('address', `%${userMunicipality}%`));
+
+                    console.log('📍 Strategy 3 (address contains) results:', municipalityUsers);
+                }
+
+                // Strategy 4: Try matching just "Lipa" if municipality contains "Lipa City"
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    if (userMunicipality.toLowerCase().includes('lipa')) {
+                        ({ data: municipalityUsers, error: usersError } = await client
+                            .from('users')
+                            .select('id, full_name, address, municipality')
+                            .ilike('municipality', '%lipa%'));
+
+                        console.log('📍 Strategy 4 (lipa municipality) results:', municipalityUsers);
+                    }
+                }
+
+                // Strategy 5: If still no users, try to find users with products
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    console.log('📍 Strategy 5: Finding users who have products...');
+                    
+                    ({ data: municipalityUsers, error: usersError } = await client
+                        .from('users')
+                        .select(`
+                            id, 
+                            full_name, 
+                            address,
+                            municipality,
+                            my_products!inner(id)
+                        `));
+
+                    console.log('📍 Strategy 5 (users with products) results:', municipalityUsers);
+                }
+
+                if (usersError) {
+                    console.error('❌ Error fetching municipality users:', usersError);
+                    updateInDemandTable([], 'Error loading municipality users');
+                    return;
+                }
+
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    console.log('⚠️ No users found with any strategy');
+                    updateInDemandTable([], `No users found. Sub admin municipality: "${userMunicipality}". Please check if this municipality matches users in the database.`);
+                    return;
+                }
+
+                console.log(`✅ Found ${municipalityUsers.length} users:`, municipalityUsers);
+
+                // Get user IDs for products query
+                const userIds = municipalityUsers.map(user => user.id);
+                console.log('👥 User IDs to search for products:', userIds);
+
+                // Fetch products from these users and calculate in-demand data
+                const { data: products, error: productsError } = await client
+                    .from('my_products')
+                    .select(`
+                        id,
+                        name,
+                        price,
+                        quantity,
+                        category,
+                        image_url,
+                        user_id,
+                        users!inner(full_name, address, municipality)
+                    `)
+                    .in('user_id', userIds);
+
+                if (productsError) {
+                    console.error('❌ Error fetching products:', productsError);
+                    updateInDemandTable([], 'Error loading products data');
+                    return;
+                }
+
+                console.log(`📦 Found ${products?.length || 0} products from municipality users:`, products);
+
+                // Process products to calculate in-demand metrics
+                const inDemandData = processInDemandProducts(products);
+                
+                console.log('📊 Processed in-demand data:', inDemandData);
+                updateInDemandTable(inDemandData);
+
+            } catch (error) {
+                console.error('❌ Error in loadMunicipalityInDemandProducts:', error);
+                updateInDemandTable([], 'Error loading in-demand products data');
+            }
+        }
+
+        // Function to process products and calculate in-demand metrics
+        function processInDemandProducts(products) {
+            if (!products || products.length === 0) {
+                return [];
+            }
+
+            // Group products by store (user) and calculate most popular product per store
+            const storeData = {};
+
+            products.forEach(product => {
+                const userId = product.user_id;
+                const storeName = product.users?.full_name || 'Unknown Store';
+                const storeLocation = getMunicipality(product.users) || 'Unknown Location';
+                
+                if (!storeData[userId]) {
+                    storeData[userId] = {
+                        storeName,
+                        storeLocation,
+                        products: []
+                    };
+                }
+                
+                storeData[userId].products.push({
+                    name: product.name,
+                    quantity: parseInt(product.quantity) || 0
+                });
+            });
+
+            // Calculate most bought product for each store
+            const inDemandResults = [];
+
+            Object.keys(storeData).forEach(userId => {
+                const store = storeData[userId];
+                
+                if (store.products.length > 0) {
+                    // Find the product with highest quantity (most in stock = most popular)
+                    // You can modify this logic based on your business requirements
+                    const mostPopular = store.products.reduce((max, product) => 
+                        product.quantity > max.quantity ? product : max
+                    );
+
+                    inDemandResults.push({
+                        storeLocation: store.storeLocation,
+                        mostBoughtProduct: mostPopular.name,
+                        quantity: mostPopular.quantity
+                    });
+                }
+            });
+
+            // Sort by quantity (descending)
+            return inDemandResults.sort((a, b) => b.quantity - a.quantity);
+        }
+
+        // Function to update the in-demand products table
+        function updateInDemandTable(inDemandData, errorMessage = null) {
+            const tableBody = document.getElementById('tableBody');
+            
+            if (errorMessage) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted p-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${errorMessage}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            if (!inDemandData || inDemandData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted p-4">
+                            <i class="fas fa-inbox me-2"></i>
+                            No in-demand products data found for your municipality
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Generate table rows
+            tableBody.innerHTML = inDemandData.map((item, index) => `
+                <tr>
+                    <td>${item.storeLocation}</td>
+                    <td>${item.mostBoughtProduct}</td>
+                    <td>${item.quantity}</td>
+                </tr>
+            `).join('');
+
+            console.log(`✅ Updated table with ${inDemandData.length} in-demand products`);
+        }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for shared-profile.js to load
+            setTimeout(() => {
+                loadMunicipalityInDemandProducts();
+            }, 100);
         });
     </script>
 </body>

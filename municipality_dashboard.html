@@ -30,6 +30,245 @@
             transform: translateY(-1px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+
+        /* Municipality Chart Styles */
+        .municipality-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .municipality-item:hover {
+            border-color: #dee2e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .municipality-item.top-municipality {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .municipality-item.top-municipality::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #f39c12;
+        }
+
+        .municipality-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .municipality-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .municipality-sales {
+            font-weight: 700;
+            color: #27ae60;
+            font-size: 16px;
+        }
+
+        .municipality-bar {
+            width: 100%;
+            height: 12px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .municipality-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 6px;
+            transition: width 0.8s ease-in-out;
+            position: relative;
+        }
+
+        .municipality-progress.top-performer {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .municipality-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .municipality-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        /* Users Table Styles */
+        .users-table-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .users-table-header {
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .users-table-header h5 {
+            margin: 0;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .users-table-body {
+            padding: 0;
+        }
+
+        .users-table-body .table {
+            margin: 0;
+        }
+
+        .users-table-body .table thead th {
+            background: #f8f9fa;
+            border: none;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .users-table-body .table tbody td {
+            padding: 12px 20px;
+            border: none;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .users-table-body .table tbody tr {
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .users-table-body .table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .users-table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .table-info-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .table-info {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .view-all-link {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .view-all-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .pagination-controls .btn {
+            border-radius: 4px;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        .pagination-controls .active-page {
+            background: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        /* All Users Modal Styles */
+        #allUsersModal .modal-dialog {
+            max-width: 95%;
+        }
+        
+        #allUsersModal .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        #allUsersModal .table td {
+            vertical-align: middle;
+        }
+        
+        #userSearchInput {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+        }
+        
+        #userSearchInput:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        
+        .badge {
+            font-size: 0.875rem;
+        }
+        
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
@@ -298,12 +537,12 @@
                     </div>
 
                     <!-- User Management -->
-                    <div class="price-card shadow-sm mt-4">
-                        <div class="price-card-header d-flex justify-content-between align-items-center">
-                            <span>User Management</span>
+                    <div class="users-table-card mt-4">
+                        <div class="users-table-header">
+                            <h5>User Management</h5>
                         </div>
-                        <div class="table-responsive">
-                            <table class="price-table">
+                        <div class="users-table-body">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -311,7 +550,7 @@
                                         <th>Contact Number</th>
                                     </tr>
                                 </thead>
-                                <tbody id="userManagementTable">
+                                <tbody id="usersTableBody">
                                     <tr>
                                         <td colspan="3" class="text-center">
                                             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
@@ -321,12 +560,15 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="price-card-footer">
-                            <a href="#" style="color:#2563eb;font-size:0.95rem;" id="viewAllUsersLink">View all &gt;</a>
-                            <div class="price-pagination" id="userPagination">
-                                <button class="btn" onclick="changePage(-1)">&lt;</button>
-                                <button class="btn active" id="currentPageBtn">1</button>
-                                <button class="btn" onclick="changePage(1)">&gt;</button>
+                        <div class="users-table-footer">
+                            <div class="table-info-section">
+                                <span class="table-info" id="usersTableInfo">1 to 4 items of 0</span>
+                                <a href="#" class="view-all-link" onclick="showAllUsersModal()">View all ></a>
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="btn btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
+                                <button class="btn active-page" id="currentPageBtn">1</button>
+                                <button class="btn btn-outline-secondary" onclick="changePage(1)">&gt;</button>
                             </div>
                         </div>
                     </div>
@@ -352,20 +594,20 @@
         // Use the Supabase client from shared-profile.js
         console.log('Municipality dashboard using shared Supabase client');
 
-        // Chart Data for Municipality Dashboard - Initialize with empty structure
+        // Chart Data for Municipality Dashboard - Initialize with default structure
         let analyticsData = {
             sales: {
                 monthly: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    data: [12000, 15500, 18000, 16800, 22500, 25000, 28000, 26500, 29000, 32000, 35000, 38000]
+                    data: new Array(12).fill(0)
                 },
                 weekly: {
                     labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    data: [7500, 8200, 9500, 11000]
+                    data: new Array(4).fill(0)
                 },
                 yearly: {
                     labels: ['2021', '2022', '2023', '2024'],
-                    data: [180000, 220000, 280000, 320000]
+                    data: new Array(4).fill(0)
                 }
             },
             stocks: {
@@ -522,6 +764,7 @@
                     document.getElementById('activeUsersCount').textContent = 'N/A (Super Admin)';
                     document.getElementById('productsCount').textContent = 'N/A (Super Admin)';
                     document.getElementById('activeFarmersCount').textContent = 'N/A (Super Admin)';
+                    document.getElementById('totalRevenueCount').textContent = 'N/A (Super Admin)';
                     return;
                 }
                 
@@ -676,34 +919,55 @@
         // Function to load real analytics data based on municipality
         window.loadMunicipalityAnalytics = async function() {
             try {
-                console.log('=== LOADING MUNICIPALITY ANALYTICS ===');
+                console.log('🚀 === STARTING MUNICIPALITY ANALYTICS LOAD ===');
                 
                 const client = window.supabaseClient || supabaseClient;
                 if (!client) {
                     console.error('❌ Supabase client not available');
                     return;
                 }
+                console.log('✅ Supabase client found');
                 
                 // Get current user from session
                 const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                console.log('👤 Current user from session:', currentUser);
+                
                 if (!currentUser.id) {
-                    console.log('❌ No current user found');
+                    console.error('❌ No current user found');
+                    console.log('🔍 Session storage contents:', sessionStorage.getItem('currentUser'));
                     return;
                 }
                 
                 // Get Sub Admin's address
+                console.log('🔍 Fetching admin data for user ID:', currentUser.id);
                 const { data: adminData, error: adminError } = await client
                     .from('admin_accounts')
                     .select('address, user_type')
                     .eq('id', currentUser.id)
                     .single();
                 
-                if (adminError || !adminData || adminData.user_type !== 'SUB ADMIN') {
-                    console.log('ℹ️ Not a Sub Admin or no address, using dummy data');
+                if (adminError) {
+                    console.error('❌ Error fetching admin data:', adminError);
+                    console.log('🔍 Trying to fetch any admin data for debugging...');
+                    
+                    const { data: allAdmins, error: allError } = await client
+                        .from('admin_accounts')
+                        .select('id, address, user_type')
+                        .limit(5);
+                    
+                    console.log('🔍 Available admins:', allAdmins);
+                    return;
+                }
+                
+                console.log('✅ Admin data found:', adminData);
+                
+                if (!adminData || adminData.user_type !== 'SUB ADMIN') {
+                    console.log('ℹ️ Not a Sub Admin or no admin data, user type:', adminData?.user_type);
                     return;
                 }
                 
                 const municipalityAddress = adminData.address;
+                console.log('🏛️ Municipality address:', municipalityAddress);
                 if (!municipalityAddress) {
                     console.log('❌ No municipality address found');
                     return;
@@ -725,6 +989,9 @@
                 const userIds = municipalityUsers.map(user => user.id);
                 console.log('🔍 User IDs for analytics:', userIds);
                 
+                // Load Sales Analytics (from orders matching municipality)
+                await loadSalesAnalytics(client, municipalityAddress, adminData);
+                
                 // Load Stock Analytics (from my_products)
                 await loadStockAnalytics(client, userIds);
                 
@@ -738,6 +1005,475 @@
                 
             } catch (error) {
                 console.error('❌ Error loading municipality analytics:', error);
+            }
+        }
+
+        // Load Sales Analytics from orders matching municipality
+        async function loadSalesAnalytics(client, municipalityAddress, adminData) {
+            try {
+                console.log('� STARTING SALES ANALYTICS LOAD');
+                console.log('�🔍 Loading sales analytics for municipality:', municipalityAddress);
+                console.log('🔍 Admin data:', adminData);
+                console.log('🔍 Client available:', !!client);
+                
+                // Step 1: Get all store owners
+                console.log('📡 Step 1: Fetching store owners...');
+                const { data: storeOwners, error: storeOwnersError } = await client
+                    .from('store-owner')
+                    .select('user_id');
+                
+                if (storeOwnersError) {
+                    console.error('❌ Error fetching store owners:', storeOwnersError);
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                const storeOwnerIds = storeOwners?.map(so => so.user_id) || [];
+                console.log(`📦 Found ${storeOwnerIds.length} store owners`);
+                
+                // Step 2: Get products from store owners in the same municipality
+                console.log('📡 Step 2: Fetching products from store owners in municipality...');
+                const { data: municipalityProducts, error: productsError } = await client
+                    .from('my_products')
+                    .select(`
+                        id, 
+                        name, 
+                        user_id,
+                        users!inner (
+                            id,
+                            full_name,
+                            municipality,
+                            address
+                        )
+                    `)
+                    .in('user_id', storeOwnerIds);
+                
+                if (productsError) {
+                    console.error('❌ Error fetching products:', productsError);
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                console.log(`📦 Found ${municipalityProducts?.length || 0} products from store owners`);
+                
+                // Filter products by store owner municipality matching admin's address
+                const matchingProducts = municipalityProducts?.filter(product => {
+                    if (!product.users || (!product.users.municipality && !product.users.address)) return false;
+                    
+                    const adminMunicipality = municipalityAddress.toLowerCase();
+                    const storeOwnerMunicipality = (product.users.municipality || product.users.address || '').toLowerCase();
+                    
+                    // Try multiple matching strategies
+                    const exactMatch = storeOwnerMunicipality === adminMunicipality;
+                    const containsMatch = storeOwnerMunicipality.includes(adminMunicipality) || adminMunicipality.includes(storeOwnerMunicipality);
+                    const lipaMatch = adminMunicipality.includes('lipa') && storeOwnerMunicipality.includes('lipa');
+                    
+                    const matches = exactMatch || containsMatch || lipaMatch;
+                    
+                    if (matches) {
+                        console.log(`✅ Product ${product.name} (${product.id}) from store owner ${product.users.full_name} matches municipality:`, {
+                            storeOwnerMunicipality: product.users.municipality || product.users.address,
+                            adminMunicipality: municipalityAddress,
+                            matchType: exactMatch ? 'exact' : containsMatch ? 'contains' : 'lipa'
+                        });
+                    }
+                    
+                    return matches;
+                }) || [];
+                
+                console.log(`📍 Found ${matchingProducts.length} products from store owners in municipality "${municipalityAddress}"`);
+                
+                // Step 3: Get all orders (like dashboard_super_admin) and filter for municipality relevance
+                if (matchingProducts.length === 0) {
+                    console.warn('⚠️ No products found from store owners in municipality - showing empty analytics');
+                    analyticsData.sales = {
+                        monthly: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], data: new Array(12).fill(0) },
+                        weekly: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: new Array(4).fill(0) },
+                        yearly: { labels: [new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map(y => y.toString()), data: new Array(4).fill(0) }
+                    };
+                    updateSalesChart();
+                    return;
+                }
+                
+                // Get unique store owner user IDs who have products in the municipality
+                const municipalityStoreOwnerIds = [...new Set(matchingProducts.map(p => p.user_id))];
+                console.log('� Step 3: Fetching all orders to filter for municipality relevance...');
+                console.log('📍 Municipality store owner IDs:', municipalityStoreOwnerIds);
+                
+                // Get all orders (following dashboard_super_admin pattern)
+                const { data: allOrders, error: ordersError } = await client
+                    .from('orders')
+                    .select('id, total, user_id, created_at, status, address')
+                    .not('total', 'is', null);
+                
+                if (ordersError) {
+                    console.error('❌ Error fetching orders:', ordersError);
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                console.log(`📦 Found ${allOrders?.length || 0} total orders in system`);
+                
+                // Filter orders that are relevant to the municipality (either from store owners or delivered to municipality)
+                const municipalityOrders = allOrders?.filter(order => {
+                    // Check if order is from a municipality store owner
+                    const isFromMunicipalityStoreOwner = municipalityStoreOwnerIds.includes(order.user_id);
+                    
+                    // Check if order is delivered to the municipality
+                    let isDeliveredToMunicipality = false;
+                    if (order.address) {
+                        const adminMunicipality = municipalityAddress.toLowerCase();
+                        const orderAddress = order.address.toLowerCase();
+                        
+                        isDeliveredToMunicipality = orderAddress.includes(adminMunicipality) || 
+                                                  adminMunicipality.includes(orderAddress) ||
+                                                  (adminMunicipality.includes('lipa') && orderAddress.includes('lipa'));
+                    }
+                    
+                    const matches = isFromMunicipalityStoreOwner || isDeliveredToMunicipality;
+                    
+                    if (matches) {
+                        console.log(`✅ Order ${order.id} matches municipality:`, {
+                            total: `₱${parseFloat(order.total).toFixed(2)}`,
+                            isFromStoreOwner: isFromMunicipalityStoreOwner,
+                            isDeliveredToMunicipality: isDeliveredToMunicipality,
+                            orderAddress: order.address
+                        });
+                    }
+                    
+                    return matches;
+                }) || [];
+                
+                console.log(`📦 Found ${municipalityOrders.length} orders related to municipality`);
+                if (municipalityOrders && municipalityOrders.length > 0) {
+                    const totalRevenue = municipalityOrders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
+                    console.log('💰 Municipality orders details:', municipalityOrders.slice(0, 5).map(o => ({
+                        id: o.id,
+                        total: `₱${parseFloat(o.total).toFixed(2)}`,
+                        user_id: o.user_id,
+                        address: o.address,
+                        date: new Date(o.created_at).toLocaleDateString()
+                    })));
+                    console.log(`💰 Total revenue from municipality-related orders: ₱${totalRevenue.toFixed(2)}`);
+                }
+                
+                // Process the filtered orders using dashboard_super_admin approach
+                const chartData = processOrdersForChart(municipalityOrders || []);
+                console.log('📊 Processed chart data:', chartData);
+                
+                // Update analytics data with multiple periods
+                analyticsData.sales = generateMultiPeriodData(municipalityOrders || []);
+                console.log('✅ Sales analytics updated with municipality store owner data');
+                
+                // Update the chart
+                updateSalesChart();
+                
+            } catch (error) {
+                console.error('❌ Error loading sales analytics:', error);
+            }
+        }
+
+        // Helper function to update sales chart
+        function updateSalesChart() {
+            if (window.salesChart && window.salesChart.data) {
+                try {
+                    console.log('📊 Updating sales chart with new data...');
+                    const currentFilter = document.getElementById('salesFilter')?.value || 'monthly';
+                    const currentData = analyticsData.sales[currentFilter];
+                    
+                    console.log('📊 Current filter:', currentFilter);
+                    console.log('📊 Data to update chart with:', currentData);
+                    
+                    if (currentData && currentData.labels && currentData.data) {
+                        window.salesChart.data.labels = currentData.labels;
+                        window.salesChart.data.datasets[0].data = currentData.data;
+                        window.salesChart.update();
+                        console.log('✅ Sales chart updated successfully with real data');
+                    } else {
+                        console.error('❌ Invalid chart data structure:', currentData);
+                    }
+                } catch (chartError) {
+                    console.error('❌ Error updating sales chart:', chartError);
+                }
+            } else {
+                console.warn('⚠️ Sales chart not available for update');
+                console.log('🔍 window.salesChart exists:', !!window.salesChart);
+                console.log('🔍 window.salesChart.data exists:', !!(window.salesChart && window.salesChart.data));
+            }
+        }
+
+        // Function to process orders data for chart display (copied from dashboard_super_admin)
+        function processOrdersForChart(orders) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const currentYear = new Date().getFullYear();
+            
+            // Initialize monthly data
+            const monthlyData = {};
+            monthNames.forEach(month => {
+                monthlyData[month] = 0;
+            });
+
+            // Group orders by month
+            orders.forEach(order => {
+                if (order.created_at && order.total) {
+                    const orderDate = new Date(order.created_at);
+                    if (orderDate.getFullYear() === currentYear) {
+                        const monthName = monthNames[orderDate.getMonth()];
+                        const orderTotal = parseFloat(order.total) || 0;
+                        monthlyData[monthName] += orderTotal;
+                    }
+                }
+            });
+
+            console.log('Monthly sales data:', monthlyData);
+
+            return {
+                labels: monthNames,
+                data: monthNames.map(month => monthlyData[month])
+            };
+        }
+        
+        // Function to generate data for multiple periods (monthly, weekly, yearly)
+        function generateMultiPeriodData(orders) {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            
+            // Monthly data for current year
+            const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthlyData = new Array(12).fill(0);
+            
+            // Weekly data for current month
+            const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+            const weeklyData = new Array(4).fill(0);
+            
+            // Yearly data for last 4 years
+            const yearLabels = [currentYear - 3, currentYear - 2, currentYear - 1, currentYear].map(y => y.toString());
+            const yearlyData = new Array(4).fill(0);
+            
+            orders.forEach(order => {
+                if (!order.created_at || !order.total) return;
+                
+                const orderDate = new Date(order.created_at);
+                const orderTotal = parseFloat(order.total) || 0;
+                const orderYear = orderDate.getFullYear();
+                const orderMonth = orderDate.getMonth();
+                
+                // Monthly data (current year only)
+                if (orderYear === currentYear) {
+                    monthlyData[orderMonth] += orderTotal;
+                }
+                
+                // Weekly data (current month only)
+                if (orderYear === currentYear && orderMonth === currentMonth) {
+                    const weekOfMonth = Math.floor((orderDate.getDate() - 1) / 7);
+                    if (weekOfMonth >= 0 && weekOfMonth < 4) {
+                        weeklyData[weekOfMonth] += orderTotal;
+                    }
+                }
+                
+                // Yearly data
+                const yearIndex = yearLabels.indexOf(orderYear.toString());
+                if (yearIndex !== -1) {
+                    yearlyData[yearIndex] += orderTotal;
+                }
+            });
+            
+            return {
+                monthly: { labels: monthLabels, data: monthlyData },
+                weekly: { labels: weekLabels, data: weeklyData },
+                yearly: { labels: yearLabels, data: yearlyData }
+            };
+        }
+        
+        // Fallback function for when there are errors (similar to dashboard_super_admin)
+        function updateSalesChartWithFallback() {
+            if (!window.salesChart) return;
+            
+            const period = document.getElementById('salesFilter')?.value || 'monthly';
+            let fallbackData;
+            
+            switch (period) {
+                case 'weekly':
+                    fallbackData = {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        data: [0, 0, 0, 0]
+                    };
+                    break;
+                case 'yearly':
+                    fallbackData = {
+                        labels: [new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map(y => y.toString()),
+                        data: [0, 0, 0, 0]
+                    };
+                    break;
+                case 'monthly':
+                default:
+                    fallbackData = {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        data: new Array(12).fill(0)
+                    };
+                    break;
+            }
+            
+            window.salesChart.data.labels = fallbackData.labels;
+            window.salesChart.data.datasets[0].data = fallbackData.data;
+            window.salesChart.data.datasets[0].label = period === 'weekly' ? 'Weekly Sales' : 
+                                                     period === 'yearly' ? 'Annual Sales' : 'Monthly Sales';
+            window.salesChart.update();
+            console.log(`⚠️ Sales chart updated with empty ${period} data (no municipality data found)`);
+        }
+
+        // Test function to check municipality products sales
+        window.testMunicipalityProductsSales = async function() {
+            try {
+                console.log('🧪 === TESTING MUNICIPALITY PRODUCTS SALES LOGIC ===');
+                const client = window.supabaseClient || supabaseClient;
+                const adminData = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                
+                if (!adminData.address) {
+                    console.error('❌ No admin address found in session');
+                    return;
+                }
+                
+                await loadSalesAnalytics(client, adminData.address, adminData);
+                console.log('🧪 Test completed - check console logs above for details');
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+            }
+        };
+
+        // Test function to check orders table
+        window.testOrdersTable = async function() {
+            try {
+                console.log('🧪 === TESTING ORDERS TABLE ACCESS ===');
+                const client = window.supabaseClient || supabaseClient;
+                
+                if (!client) {
+                    console.error('❌ No Supabase client');
+                    return;
+                }
+                
+                // Test basic table access
+                console.log('🧪 Step 1: Testing basic orders table access...');
+                const { data: orders, error } = await client
+                    .from('orders')
+                    .select('*')
+                    .limit(10);
+                
+                console.log('🧪 Orders test result:', { 
+                    ordersCount: orders?.length || 0, 
+                    error: error,
+                    sampleData: orders?.slice(0, 2)
+                });
+                
+                if (error) {
+                    console.error('❌ Orders table error:', error);
+                    return;
+                }
+                
+                if (!orders || orders.length === 0) {
+                    console.warn('⚠️ No orders found in database');
+                    console.log('💡 Try creating some test orders first');
+                    return;
+                }
+                
+                console.log('✅ Orders table accessible');
+                console.log('📦 Total orders in database:', orders.length);
+                console.log('📦 Sample orders:');
+                orders.forEach((order, index) => {
+                    console.log(`  ${index + 1}. ID: ${order.id?.slice(0, 8)}, Total: ₱${order.total}, Address: "${order.address}", Date: ${new Date(order.created_at).toLocaleDateString()}`);
+                });
+                
+                // Test current user
+                console.log('🧪 Step 2: Testing current user...');
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                console.log('👤 Current user:', currentUser);
+                
+                if (!currentUser.id) {
+                    console.error('❌ No current user found');
+                    return;
+                }
+                
+                // Test admin data
+                console.log('🧪 Step 3: Testing admin data...');
+                const { data: adminData, error: adminError } = await client
+                    .from('admin_accounts')
+                    .select('address, user_type')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                console.log('👨‍💼 Admin data:', { data: adminData, error: adminError });
+                
+                if (adminError) {
+                    console.error('❌ Admin data error:', adminError);
+                    return;
+                }
+                
+                if (!adminData.address) {
+                    console.warn('⚠️ Admin has no address set');
+                    return;
+                }
+                
+                // Test address matching
+                console.log('🧪 Step 4: Testing address matching...');
+                const adminAddress = adminData.address.toLowerCase();
+                console.log('🏛️ Admin address:', adminData.address);
+                
+                const matchingOrders = orders.filter(order => {
+                    if (!order.address) return false;
+                    
+                    const orderAddress = order.address.toLowerCase();
+                    const exactMatch = orderAddress === adminAddress;
+                    const containsMatch = orderAddress.includes(adminAddress);
+                    const reverseContains = adminAddress.includes(orderAddress);
+                    const lipaMatch = adminAddress.includes('lipa') && orderAddress.includes('lipa');
+                    
+                    return exactMatch || containsMatch || reverseContains || lipaMatch;
+                });
+                
+                console.log('🎯 Matching orders found:', matchingOrders.length);
+                if (matchingOrders.length > 0) {
+                    console.log('💰 Matching orders:');
+                    matchingOrders.forEach((order, index) => {
+                        console.log(`  ${index + 1}. Total: ₱${order.total}, Address: "${order.address}"`);
+                    });
+                    
+                    const totalRevenue = matchingOrders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
+                    console.log(`💰 Total revenue: ₱${totalRevenue.toFixed(2)}`);
+                } else {
+                    console.warn('⚠️ No orders match the admin address');
+                    console.log('🔍 All order addresses:');
+                    orders.forEach((order, index) => {
+                        console.log(`  ${index + 1}. "${order.address}"`);
+                    });
+                    console.log('🔍 Admin address to match:', `"${adminData.address}"`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Test error:', error);
+            }
+        }
+
+        // Simple test to manually trigger sales analytics
+        window.testSalesAnalytics = async function() {
+            console.log('🧪 === MANUAL SALES ANALYTICS TEST ===');
+            try {
+                const client = window.supabaseClient || supabaseClient;
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                
+                const { data: adminData } = await client
+                    .from('admin_accounts')
+                    .select('address, user_type')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (adminData && adminData.address) {
+                    await loadSalesAnalytics(client, adminData.address, adminData);
+                } else {
+                    console.error('❌ No admin data or address found');
+                }
+            } catch (error) {
+                console.error('❌ Manual test error:', error);
             }
         }
 
@@ -1539,20 +2275,26 @@
         // Sales Chart (Line Graph)
         function initSalesChart() {
             try {
+                console.log('🚀 Initializing Sales Chart...');
+                
                 // Destroy existing chart if it exists
                 if (window.salesChart && typeof window.salesChart.destroy === 'function') {
+                    console.log('🗑️ Destroying existing sales chart');
                     window.salesChart.destroy();
                     window.salesChart = null;
                 }
                 
                 const canvas = document.getElementById('salesChart');
                 if (!canvas) {
-                    console.warn('⚠️ Sales chart canvas not found');
+                    console.error('❌ Sales chart canvas not found');
                     return;
                 }
+                console.log('✅ Sales chart canvas found');
                 
                 const ctx = canvas.getContext('2d');
                 const currentData = analyticsData.sales.monthly;
+                
+                console.log('📊 Initial chart data:', currentData);
                 
                 window.salesChart = new Chart(ctx, {
                 type: 'line',
@@ -1593,6 +2335,10 @@
                     }
                 }
             });
+            
+            console.log('✅ Sales chart initialized successfully');
+            console.log('📊 Chart object:', window.salesChart);
+            
             } catch (error) {
                 console.error('❌ Error initializing sales chart:', error);
             }
@@ -1985,10 +2731,25 @@
 
         // Filter Functions
         function updateSalesChart(period) {
-            const data = analyticsData.sales[period];
-            salesChart.data.labels = data.labels;
-            salesChart.data.datasets[0].data = data.data;
-            salesChart.update();
+            try {
+                if (!window.salesChart || !window.salesChart.data) {
+                    console.warn('⚠️ Sales chart not initialized yet');
+                    return;
+                }
+                
+                const data = analyticsData.sales[period];
+                if (!data || !data.labels || !data.data) {
+                    console.warn('⚠️ No sales data available for period:', period);
+                    return;
+                }
+                
+                window.salesChart.data.labels = data.labels;
+                window.salesChart.data.datasets[0].data = data.data;
+                window.salesChart.update();
+                console.log('✅ Sales chart updated for period:', period);
+            } catch (error) {
+                console.error('❌ Error updating sales chart:', error);
+            }
         }
 
         function updateSoilChart(view) {
@@ -2032,7 +2793,7 @@
                 setTimeout(() => {
                     console.log('🔄 Loading municipality users...');
                     // Check if DOM elements are ready
-                    const tableBody = document.getElementById('userManagementTable');
+                    const tableBody = document.getElementById('usersTableBody');
                     if (!tableBody) {
                         console.warn('⚠️ User table not ready, retrying in 2 seconds...');
                         setTimeout(() => {
@@ -2271,16 +3032,15 @@
         
         // Pagination variables
         let currentUserPage = 1;
-        let usersPerPage = 10;
         let allMunicipalityUsers = [];
         
         // Update User Management table with real data
         function updateUserTable(users, errorMessage, municipality) {
-            const tableBody = document.getElementById('userManagementTable');
+            const tableBody = document.getElementById('usersTableBody');
             const viewAllLink = document.getElementById('viewAllUsersLink');
             
             if (!tableBody) {
-                console.warn('⚠️ User table element (userManagementTable) not found. Retrying in 1 second...');
+                console.warn('⚠️ User table element (usersTableBody) not found. Retrying in 1 second...');
                 setTimeout(() => updateUserTable(users, errorMessage, municipality), 1000);
                 return;
             }
@@ -2328,8 +3088,9 @@
         
         // Display users for current page
         function displayUsersPage(page) {
-            const tableBody = document.getElementById('userManagementTable');
+            const tableBody = document.getElementById('usersTableBody');
             const currentPageBtn = document.getElementById('currentPageBtn');
+            const tableInfo = document.getElementById('usersTableInfo');
             
             if (!tableBody) {
                 console.warn('⚠️ User table element not found in displayUsersPage');
@@ -2338,8 +3099,8 @@
             
             console.log(`📄 Displaying page ${page} of users`);
             
-            const startIndex = (page - 1) * usersPerPage;
-            const endIndex = startIndex + usersPerPage;
+            const startIndex = (page - 1) * 10; // Use 10 for the existing pagination system
+            const endIndex = startIndex + 10;
             const pageUsers = allMunicipalityUsers.slice(startIndex, endIndex);
             
             if (pageUsers.length === 0) {
@@ -2350,6 +3111,9 @@
                         </td>
                     </tr>
                 `;
+                if (tableInfo) {
+                    tableInfo.textContent = '0 items of 0';
+                }
                 return;
             }
             
@@ -2363,9 +3127,16 @@
             
             console.log(`✅ Successfully displayed ${pageUsers.length} users on page ${page}`);
             
-            // Update pagination
+            // Update pagination info
             if (currentPageBtn) {
                 currentPageBtn.textContent = page;
+            }
+            
+            // Update table info
+            if (tableInfo) {
+                const startItem = startIndex + 1;
+                const endItem = Math.min(endIndex, allMunicipalityUsers.length);
+                tableInfo.textContent = `${startItem} to ${endItem} items of ${allMunicipalityUsers.length}`;
             }
             
             console.log(`📄 Displaying page ${page}: ${pageUsers.length} users`);
@@ -2373,7 +3144,7 @@
         
         // Pagination function
         function changePage(direction) {
-            const totalPages = Math.ceil(allMunicipalityUsers.length / usersPerPage);
+            const totalPages = Math.ceil(allMunicipalityUsers.length / 10); // Use 10 for consistency
             const newPage = currentUserPage + direction;
             
             if (newPage >= 1 && newPage <= totalPages) {
@@ -2391,6 +3162,154 @@
                 dropdown.classList.remove('show');
             }
         });
+
+        // Modal and User Management Functions
+        function showAllUsersModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allUsersModal'));
+            modal.show();
+            // Use the filtered municipality users instead of loading all users
+            loadMunicipalityUsersForModal();
+        }
+
+        // Function to load municipality users for the modal (same data as main table)
+        function loadMunicipalityUsersForModal() {
+            try {
+                console.log('=== LOADING MUNICIPALITY USERS FOR MODAL ===');
+                
+                // Use the existing filtered municipality users
+                if (allMunicipalityUsers && allMunicipalityUsers.length > 0) {
+                    console.log('✅ Using existing municipality users data:', allMunicipalityUsers);
+                    updateAllUsersTable(allMunicipalityUsers);
+                } else {
+                    console.log('⚠️ No municipality users data available');
+                    updateAllUsersTable([]);
+                }
+
+            } catch (error) {
+                console.error('Error in loadMunicipalityUsersForModal:', error);
+                updateAllUsersTable([]);
+            }
+        }
+
+        // Function to update the all users modal table
+        function updateAllUsersTable(users) {
+            const tableBody = document.getElementById('allUsersTableBody');
+            const usersCount = document.getElementById('allUsersCount');
+            const modalTitle = document.getElementById('allUsersModalLabel');
+            
+            if (!tableBody) {
+                console.error('❌ All users table body not found');
+                return;
+            }
+
+            // Update modal title to reflect municipality users
+            if (modalTitle) {
+                modalTitle.textContent = 'All Municipality Users';
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            if (users.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center">No users found in this municipality</td>
+                    </tr>
+                `;
+                if (usersCount) {
+                    usersCount.textContent = '0 users found';
+                }
+                return;
+            }
+
+            // Populate table with user data (simplified to match main table)
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${user.full_name || user.name || user.email || 'N/A'}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${user.phone_number || user.phone || 'N/A'}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update count
+            if (usersCount) {
+                usersCount.textContent = `${users.length} users found`;
+            }
+
+            console.log('✅ All municipality users modal table updated with', users.length, 'users');
+            
+            // Store users data for search functionality
+            window.allUsersData = users;
+            setupUserSearch();
+        }
+
+        // Function to setup user search functionality
+        function setupUserSearch() {
+            const searchInput = document.getElementById('userSearchInput');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (!window.allUsersData) return;
+
+                const filteredUsers = window.allUsersData.filter(user => {
+                    const name = (user.full_name || user.name || '').toLowerCase();
+                    const email = (user.email || '').toLowerCase();
+                    const phone = (user.phone_number || user.phone || '').toLowerCase();
+                    
+                    return name.includes(searchTerm) || 
+                           email.includes(searchTerm) || 
+                           phone.includes(searchTerm);
+                });
+
+                updateAllUsersTable(filteredUsers);
+            });
+        }
     </script>
+
+    <!-- All Users Modal -->
+    <div class="modal fade" id="allUsersModal" tabindex="-1" aria-labelledby="allUsersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allUsersModalLabel">All Users</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="userSearchInput" placeholder="Search users by name, email...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Contact Number</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allUsersTableBody">
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allUsersCount">0 users found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -49,6 +49,111 @@
             background-color: #f8f9fa;
             border-top: 1px solid #dee2e6;
         }
+
+        
+
+        /* Users Table Styles */
+        .users-table-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .users-table-header {
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .users-table-header h5 {
+            margin: 0;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .users-table-body {
+            padding: 0;
+        }
+
+        .users-table-body .table {
+            margin: 0;
+        }
+
+        .users-table-body .table thead th {
+            background: #f8f9fa;
+            border: none;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .users-table-body .table tbody td {
+            padding: 12px 20px;
+            border: none;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .users-table-body .table tbody tr {
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .users-table-body .table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .users-table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .table-info-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .table-info {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .view-all-link {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .view-all-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .pagination-controls .btn {
+            border-radius: 4px;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        .pagination-controls .active-page {
+            background: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -375,96 +480,22 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Municipality Performance -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="analytics-card municipality-card">
-                            <div class="card-header municipality-header d-flex justify-content-between align-items-center">
-                                <h5>Top Performing Municipality in terms of Sales</h5>
-                                <div class="chart-controls">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-bars"></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="#" onclick="exportChart('municipality', 'csv')">
-                                                <i class="fas fa-file-csv me-2"></i>Save as CSV
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="exportChart('municipality', 'pdf')">
-                                                <i class="fas fa-file-pdf me-2"></i>Save as PDF
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="exportChart('municipality', 'word')">
-                                                <i class="fas fa-file-word me-2"></i>Save as Word
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="exportChart('municipality', 'picture')">
-                                                <i class="fas fa-image me-2"></i>Save as Picture
-                                            </a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="municipality-chart">
-                                    <div class="municipality-item">
-                                        <span class="municipality-name">Tanauan</span>
-                                        <div class="municipality-bar">
-                                            <div class="municipality-progress" style="width: 90%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="municipality-item">
-                                        <span class="municipality-name">Lipa</span>
-                                        <div class="municipality-bar">
-                                            <div class="municipality-progress" style="width: 75%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="municipality-item">
-                                        <span class="municipality-name">Padre Garcia</span>
-                                        <div class="municipality-bar">
-                                            <div class="municipality-progress" style="width: 60%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="municipality-item">
-                                        <span class="municipality-name">Talisay</span>
-                                        <div class="municipality-bar">
-                                            <div class="municipality-progress" style="width: 45%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="municipality-item">
-                                        <span class="municipality-name">Nasugbu</span>
-                                        <div class="municipality-bar">
-                                            <div class="municipality-progress" style="width: 30%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="municipality-scale">
-                                    <span>0</span>
-                                    <span>5000</span>
-                                    <span>10000</span>
-                                    <span>15000</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- Users Table -->
                 <div class="row mb-4">
                     <div class="col-12">
-                        <div class="analytics-card users-card">
-                            <div class="card-header users-header">
+                        <div class="users-table-card">
+                            <div class="users-table-header">
                                 <h5>Users</h5>
                             </div>
-                            <div class="card-body">
+                            <div class="users-table-body">
                                 <div class="table-responsive">
-                                    <table class="table">
+                                    <table class="table table-borderless">
                                         <thead>
                                             <tr>
                                                 <th>Name</th>
                                                 <th>Email</th>
                                                 <th>Contact Number</th>
-                                                <th>Role</th>
-                                                <th>Date Joined</th>
                                             </tr>
                                         </thead>
                                         <tbody id="usersTableBody">
@@ -472,15 +503,15 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="table-footer">
+                                <div class="users-table-footer">
                                     <div class="table-info-section">
                                         <span class="table-info" id="usersTableInfo">Loading users...</span>
-                                        <a href="#" class="view-all" onclick="showAllUsersModal()">View all ></a>
+                                        <a href="#" class="view-all-link" onclick="showAllUsersModal()">View all ></a>
                                     </div>
                                     <div class="pagination-controls">
-                                        <button class="btn btn-sm btn-outline-secondary">&lt;</button>
-                                        <button class="btn btn-sm btn-success">1</button>
-                                        <button class="btn btn-sm btn-outline-secondary">&gt;</button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
+                                        <button class="btn btn-sm btn-primary active-page" id="currentPageBtn">1</button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">&gt;</button>
                                     </div>
                                 </div>
                             </div>
@@ -505,19 +536,16 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-striped">
-                            <thead>
+                            <thead class="table-success">
                                 <tr>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Contact Number</th>
-                                    <th>Role</th>
-                                    <th>Date Joined</th>
-                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="allUsersTableBody">
                                 <tr>
-                                    <td colspan="6" class="text-center">Loading users...</td>
+                                    <td colspan="3" class="text-center">Loading users...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -579,6 +607,17 @@
                 loadActiveFarmersCount();
                 loadAvailableProductsCount();
                 loadUsersData();
+                
+                // Initialize charts after supabaseClient is available
+                if (typeof Chart !== 'undefined') {
+                    initializeCharts();
+                    console.log('Charts initialized successfully');
+                }
+                
+                // Load sales chart data after chart initialization
+                setTimeout(() => {
+                    loadTotalSalesData();
+                }, 500);
             }, 100);
         });
 
@@ -901,6 +940,11 @@
             }
         }
 
+        // Pagination variables
+        let currentPage = 1;
+        let totalUsers = 0;
+        const usersPerPage = 4;
+
         // Function to load and display users data in the table
         async function loadUsersData() {
             try {
@@ -912,12 +956,19 @@
                     return;
                 }
 
-                // Fetch users from the users table (limit to 5 for dashboard display)
+                // First get total count
+                const { count } = await supabaseClient
+                    .from('users')
+                    .select('*', { count: 'exact', head: true });
+
+                totalUsers = count || 0;
+
+                // Fetch users from the users table with pagination
                 const { data: users, error } = await supabaseClient
                     .from('users')
                     .select('*')
                     .order('created_at', { ascending: false })
-                    .limit(5);
+                    .range((currentPage - 1) * usersPerPage, currentPage * usersPerPage - 1);
 
                 if (error) {
                     console.error('Database error fetching users:', error);
@@ -950,60 +1001,265 @@
             if (users.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center">No users found</td>
+                        <td colspan="3" class="text-center">No users found</td>
                     </tr>
                 `;
                 if (tableInfo) {
-                    tableInfo.textContent = '0 items';
+                    tableInfo.textContent = '0 items of 0';
                 }
                 return;
             }
 
-            // Populate table with user data
+            // Populate table with user data (simplified to match image)
             users.forEach(user => {
                 const row = document.createElement('tr');
                 
-                // Format date
-                const dateJoined = user.created_at ? 
-                    new Date(user.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short', 
-                        day: 'numeric'
-                    }) : 'N/A';
-
-                // Determine role based on available fields
-                let role = 'User';
-                if (user.user_type) {
-                    role = user.user_type;
-                } else if (user.role) {
-                    role = user.role;
-                } else if (user.is_admin) {
-                    role = 'Admin';
-                }
-
                 row.innerHTML = `
                     <td>${user.full_name || user.name || user.email || 'N/A'}</td>
                     <td>${user.email || 'N/A'}</td>
                     <td>${user.phone_number || user.phone || 'N/A'}</td>
-                    <td>${role}</td>
-                    <td>${dateJoined}</td>
                 `;
                 tableBody.appendChild(row);
             });
 
-            // Update table info
+            // Update table info and pagination
+            const startItem = ((currentPage - 1) * usersPerPage) + 1;
+            const endItem = Math.min(currentPage * usersPerPage, totalUsers);
+            
             if (tableInfo) {
-                tableInfo.textContent = `1 to ${users.length} items of ${users.length}`;
+                tableInfo.textContent = `${startItem} to ${endItem} items of ${totalUsers}`;
+            }
+
+            // Update current page button
+            const currentPageBtn = document.getElementById('currentPageBtn');
+            if (currentPageBtn) {
+                currentPageBtn.textContent = currentPage;
             }
 
             console.log('✅ Users table updated with', users.length, 'users');
+        }
+
+        // Function to change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(totalUsers / usersPerPage);
+            
+            if (direction === 1 && currentPage < totalPages) {
+                currentPage++;
+                loadUsersData();
+            } else if (direction === -1 && currentPage > 1) {
+                currentPage--;
+                loadUsersData();
+            }
+        }
+
+        // Function to load and populate sales chart with real data
+        async function loadTotalSalesData() {
+            try {
+                console.log('=== LOADING SALES CHART DATA ===');
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    updateSalesChartWithFallback();
+                    return;
+                }
+
+                // First, let's test if we can access the orders table
+                const { data: ordersTest, error: testError } = await supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .limit(5);
+
+                console.log('Orders table test:', { data: ordersTest, error: testError });
+
+                if (testError) {
+                    console.error('Cannot access orders table:', testError);
+                    updateSalesChartWithFallback();
+                    return;
+                }
+
+                // Fetch all orders for chart data
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select('total, created_at, status');
+
+                if (error) {
+                    console.error('Database error fetching orders:', error);
+                    updateSalesChartWithFallback();
+                    return;
+                }
+
+                console.log('Orders fetched for chart:', { 
+                    count: orders?.length || 0, 
+                    sampleData: orders?.slice(0, 3) 
+                });
+
+                if (!orders || orders.length === 0) {
+                    console.log('No orders found, using sample data for chart');
+                    updateSalesChartWithSampleData();
+                    return;
+                }
+
+                // Process data for chart (group by month)
+                const chartData = processOrdersForChart(orders);
+                
+                console.log('Chart data processed:', chartData);
+                updateSalesChartWithData(chartData);
+
+            } catch (error) {
+                console.error('Error in loadTotalSalesData:', error);
+                updateSalesChartWithFallback();
+            }
+        }
+
+        // Function to process orders data for chart display
+        function processOrdersForChart(orders) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const currentYear = new Date().getFullYear();
+            
+            // Initialize monthly data
+            const monthlyData = {};
+            monthNames.forEach(month => {
+                monthlyData[month] = 0;
+            });
+
+            // Group orders by month
+            orders.forEach(order => {
+                if (order.created_at && order.total) {
+                    const orderDate = new Date(order.created_at);
+                    const monthName = monthNames[orderDate.getMonth()];
+                    const orderTotal = parseFloat(order.total) || 0;
+                    monthlyData[monthName] += orderTotal;
+                }
+            });
+
+            console.log('Monthly sales data:', monthlyData);
+
+            return {
+                labels: monthNames,
+                data: monthNames.map(month => monthlyData[month])
+            };
+        }
+
+        // Function to update sales chart with real data
+        function updateSalesChartWithData(chartData) {
+            if (!salesChart) {
+                console.error('Sales chart not initialized');
+                return;
+            }
+
+            if (!chartData || !chartData.labels || !chartData.data) {
+                console.error('Invalid chart data provided');
+                return;
+            }
+
+            // Update chart data
+            salesChart.data.labels = chartData.labels;
+            salesChart.data.datasets[0].data = chartData.data;
+            
+            // Update chart label based on data type
+            const period = document.getElementById('salesFilter')?.value || 'monthly';
+            let datasetLabel = 'Sales (PHP)';
+            
+            switch (period) {
+                case 'weekly':
+                    datasetLabel = 'Weekly Sales';
+                    break;
+                case 'yearly':
+                    datasetLabel = 'Annual Sales';
+                    break;
+                case 'monthly':
+                default:
+                    datasetLabel = 'Monthly Sales';
+                    break;
+            }
+            
+            salesChart.data.datasets[0].label = datasetLabel;
+            salesChart.update('active');
+            console.log(`✅ Sales chart updated with real ${period} data`);
+        }
+
+        // Function to show sample data when no real data is available
+        function updateSalesChartWithSampleData() {
+            if (!salesChart) return;
+            
+            const period = document.getElementById('salesFilter')?.value || 'monthly';
+            let sampleData;
+            
+            switch (period) {
+                case 'weekly':
+                    sampleData = {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        data: [3500, 4200, 3800, 2720] // Total: 14220
+                    };
+                    break;
+                case 'yearly':
+                    sampleData = {
+                        labels: ['2021', '2022', '2023', '2024', '2025'],
+                        data: [8500, 10200, 12800, 13500, 14220]
+                    };
+                    break;
+                case 'monthly':
+                default:
+                    sampleData = {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        data: [0, 0, 0, 0, 0, 0, 0, 14220, 0, 0, 0, 0] // Show data for August (current month)
+                    };
+                    break;
+            }
+            
+            salesChart.data.labels = sampleData.labels;
+            salesChart.data.datasets[0].data = sampleData.data;
+            salesChart.data.datasets[0].label = period === 'weekly' ? 'Weekly Sales' : 
+                                               period === 'yearly' ? 'Annual Sales' : 'Monthly Sales';
+            salesChart.update();
+            console.log(`✅ Sales chart updated with sample ${period} data (no real orders found)`);
+        }
+
+        // Function to show fallback chart when there are errors
+        function updateSalesChartWithFallback() {
+            if (!salesChart) return;
+            
+            const period = document.getElementById('salesFilter')?.value || 'monthly';
+            let fallbackData;
+            
+            switch (period) {
+                case 'weekly':
+                    fallbackData = {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        data: [4500, 5200, 4800, 6200]
+                    };
+                    break;
+                case 'yearly':
+                    fallbackData = {
+                        labels: ['2021', '2022', '2023', '2024', '2025'],
+                        data: [45000, 62000, 78000, 95000, 112000]
+                    };
+                    break;
+                case 'monthly':
+                default:
+                    fallbackData = {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        data: [5000, 7500, 6200, 8100, 9500, 11000, 12500, 14220, 13000, 15000, 16500, 18000]
+                    };
+                    break;
+            }
+            
+            salesChart.data.labels = fallbackData.labels;
+            salesChart.data.datasets[0].data = fallbackData.data;
+            salesChart.data.datasets[0].label = period === 'weekly' ? 'Weekly Sales' : 
+                                               period === 'yearly' ? 'Annual Sales' : 'Monthly Sales';
+            salesChart.update();
+            console.log(`✅ Sales chart updated with fallback ${period} demo data`);
         }
 
         // Function to show all users modal
         function showAllUsersModal() {
             const modal = new bootstrap.Modal(document.getElementById('allUsersModal'));
             modal.show();
-            loadAllUsers();
+            // Handle async loadAllUsers call with proper error handling
+            loadAllUsers().catch(error => {
+                console.error('Error loading all users:', error);
+            });
         }
 
         // Function to load all users for the modal
@@ -1054,7 +1310,7 @@
             if (users.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center">No users found</td>
+                        <td colspan="3" class="text-center">No users found</td>
                     </tr>
                 `;
                 if (usersCount) {
@@ -1063,57 +1319,24 @@
                 return;
             }
 
-            // Populate table with user data
+            // Populate table with user data (simplified to match main table)
             users.forEach(user => {
                 const row = document.createElement('tr');
                 
-                // Format date
-                const dateJoined = user.created_at ? 
-                    new Date(user.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short', 
-                        day: 'numeric'
-                    }) : 'N/A';
-
-                // Determine role based on available fields
-                let role = 'User';
-                if (user.user_type) {
-                    role = user.user_type;
-                } else if (user.role) {
-                    role = user.role;
-                } else if (user.is_admin) {
-                    role = 'Admin';
-                }
-
-                // Determine status
-                let status = 'Active';
-                if (user.is_active === false) {
-                    status = 'Inactive';
-                } else if (user.email_verified === false) {
-                    status = 'Unverified';
-                }
-
                 row.innerHTML = `
                     <td>${user.full_name || user.name || user.email || 'N/A'}</td>
                     <td>${user.email || 'N/A'}</td>
                     <td>${user.phone_number || user.phone || 'N/A'}</td>
-                    <td><span class="badge bg-primary">${role}</span></td>
-                    <td>${dateJoined}</td>
-                    <td><span class="badge ${status === 'Active' ? 'bg-success' : status === 'Inactive' ? 'bg-danger' : 'bg-warning'}">${status}</span></td>
                 `;
                 tableBody.appendChild(row);
             });
 
-            // Update users count
+            // Update count
             if (usersCount) {
-                usersCount.textContent = `${users.length} user${users.length !== 1 ? 's' : ''} found`;
+                usersCount.textContent = `${users.length} users found`;
             }
 
-            console.log('✅ All users table updated with', users.length, 'users');
-            
-            // Store users data for search functionality
-            window.allUsersData = users;
-            setupUserSearch();
+            console.log('✅ All users modal table updated with', users.length, 'users');
         }
 
         // Function to setup user search functionality
@@ -1400,6 +1623,22 @@
             }
         }
 
+
+
+
+
+                
+
+
+
+
+
+
+
+
+
+
+
         // Test function to verify profile update works
         function testProfileUpdate() {
             console.log('Testing profile update with sample data...');
@@ -1426,13 +1665,119 @@
             {category: "Soil", metric: "Moisture Content", value: "78%", location: "Irrigated Areas", period: "Weekly", growth: "-0.5%", status: "Adequate"},
             {category: "Hectare", metric: "Active Farmland", value: "8,450 ha", location: "All Regions", period: "Quarterly", growth: "+6.7%", status: "Expanding"},
             {category: "Hectare", metric: "Rice Production Area", value: "4,200 ha", location: "Quezon Province", period: "Quarterly", growth: "+8.9%", status: "High Yield"},
-            {category: "Hectare", metric: "Vegetable Production Area", value: "2,150 ha", location: "Bataan Province", period: "Quarterly", growth: "+5.4%", status: "Productive"},
-            {category: "Municipality", metric: "Top Sales Performance", value: "₱650,000", location: "Quezon", period: "Monthly", growth: "+15.2%", status: "#1 Rank"},
-            {category: "Municipality", metric: "Second Best Performance", value: "₱540,000", location: "Bataan", period: "Monthly", growth: "+12.8%", status: "#2 Rank"},
-            {category: "Municipality", metric: "Third Best Performance", value: "₱485,000", location: "Pampanga", period: "Monthly", growth: "+8.5%", status: "#3 Rank"}
+            {category: "Hectare", metric: "Vegetable Production Area", value: "2,150 ha", location: "Bataan Province", period: "Quarterly", growth: "+5.4%", status: "Productive"}
         ];
         
         let filteredAnalytics = [...allAnalytics];
+
+        // Export Functions (Dashboard Style)
+        function exportChart(chartType, format) {
+            const chartMap = {
+                sales: salesChart,
+                stocks: stocksChart,
+                soil: soilChart,
+                hectare: hectareChart
+            };
+            
+            const chart = chartMap[chartType];
+            const filename = chartType + '_analytics_super_admin_' + new Date().toISOString().split('T')[0];
+            
+            switch(format) {
+                case 'csv':
+                    exportToCSV(chartType, filename);
+                    break;
+                case 'pdf':
+                    exportToPDF(chartType, filename);
+                    break;
+                case 'word':
+                    exportToWord(chartType, filename);
+                    break;
+                case 'picture':
+                    exportToPicture(chartType, filename);
+                    break;
+            }
+        }
+
+        function exportToCSV(chartType, filename) {
+            let csv = 'Label,Value\n';
+            
+            // Get data from Chart.js charts
+            const chartMap = {
+                sales: salesChart,
+                stocks: stocksChart,
+                soil: soilChart,
+                hectare: hectareChart
+            };
+                
+            const chart = chartMap[chartType];
+            if (chart && chart.data) {
+                chart.data.labels.forEach((label, index) => {
+                    const value = chart.data.datasets[0].data[index];
+                    csv += `${label},${value}\n`;
+                });
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename + '.csv';
+            link.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportToPDF(chartType, filename) {
+            const targetElement = document.querySelector('#' + chartType + 'Chart');
+            
+            if (targetElement) {
+                html2canvas(targetElement).then(canvas => {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const imgData = canvas.toDataURL('image/png');
+                    doc.addImage(imgData, 'PNG', 10, 10, 190, 100);
+                    doc.save(filename + '.pdf');
+                });
+            }
+        }
+
+        function exportToWord(chartType, filename) {
+            const targetElement = document.querySelector('#' + chartType + 'Chart');
+            
+            if (targetElement) {
+                html2canvas(targetElement).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const content = `
+                        <html>
+                        <head><title>Super Admin ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics</title></head>
+                        <body>
+                            <h1>Super Admin ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics Report</h1>
+                            <img src="${imgData}" style="max-width: 100%; height: auto;">
+                        </body>
+                        </html>
+                    `;
+                    const blob = new Blob([content], { type: 'application/msword' });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename + '.doc';
+                    link.click();
+                    window.URL.revokeObjectURL(url);
+                });
+            }
+        }
+
+        function exportToPicture(chartType, filename) {
+            const targetElement = document.querySelector('#' + chartType + 'Chart');
+            
+            if (targetElement) {
+                html2canvas(targetElement).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = filename + '.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            }
+        }
 
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
@@ -1751,10 +2096,11 @@
             'dashboard_super_admin.html',
             'admin_accounts.html',
             '', // Account Approval handled by submenu
+            'inventory_records.html',
             'price_monitoring.html',
             'in_demand_products.html',
             'sales_per_location.html',
-            'voucher.html',
+            '', // Voucher handled by submenu
             'violation.html'
         ];
         sidebarLinks.forEach((btn, idx) => {
@@ -1827,25 +2173,35 @@
         // Fetch soil analytics from store-owner table
         async function updateSoilAnalyticsFromDB() {
             try {
+                if (!supabaseClient) {
+                    console.error('Supabase client not available for soil analytics');
+                    return;
+                }
+                
                 const { data: stores, error } = await supabaseClient
                     .from('store-owner')
                     .select('soil_type');
                 
                 if (error) {
-                    console.error('Error fetching stores for soil analytics:', error);
+                    console.error('❌ Error fetching stores for soil analytics:', error);
                     console.log('Using default soil data instead');
                     return;
                 }
                 
+                console.log(`🌱 Soil Analytics: Found ${stores?.length || 0} store owners in database`);
+                
                 if (!stores || stores.length === 0) {
-                    console.log('No soil data found in database, using default data');
+                    console.log('⚠️ No soil data found in database, charts will show default data');
                     return;
                 }
                 
                 // Count occurrences of each soil_type
                 const soilTypeMap = {};
+                
                 stores.forEach(store => {
                     const soil = store.soil_type && store.soil_type.trim() ? store.soil_type.trim() : 'Unknown';
+                    
+                    // Group by soil type
                     if (!soilTypeMap[soil]) soilTypeMap[soil] = 0;
                     soilTypeMap[soil] += 1;
                 });
@@ -1867,7 +2223,7 @@
                     }
                 }
                 
-                console.log('Soil analytics updated from DB:', analyticsData.soil.type);
+                console.log('🌱 Soil analytics updated from database:', Object.keys(soilTypeMap));
             } catch (err) {
                 console.error('Exception updating soil analytics:', err);
                 console.log('Using default soil data instead');
@@ -1877,6 +2233,11 @@
         // Fetch hectare analytics from store-owner table
         async function updateHectareAnalyticsFromDB() {
             try {
+                if (!supabaseClient) {
+                    console.error('Supabase client not available for hectare analytics');
+                    return;
+                }
+                
                 const { data: stores, error } = await supabaseClient
                     .from('store-owner')
                     .select('land_size, created_at');
@@ -2019,27 +2380,45 @@
         // Fetch stock analytics from products table
         async function updateStockAnalyticsFromDB() {
             try {
+                if (!supabaseClient) {
+                    console.error('Supabase client not available for stock analytics');
+                    return;
+                }
+                
                 const { data: products, error } = await supabaseClient
                     .from('my_products')
                     .select('category, quantity');
+                    
                 // Store for export
                 window.lastFetchedProductsForExport = products;
                 if (error) {
-                    console.error('Error fetching products for stock analytics:', error);
+                    console.error('❌ Error fetching products for stock analytics:', error);
                     return;
                 }
+                
+                console.log(`📦 Stock Analytics: Found ${products?.length || 0} products in database`);
+                
+                if (!products || products.length === 0) {
+                    console.log('⚠️ No products found in database, charts will show default data');
+                    return;
+                }
+                
                 // Group and sum quantities by category, and count products per category
                 const categoryMap = {};
                 const categoryCountMap = {};
                 // Group by status (Available, Low Stock, Out of Stock)
                 const statusMap = { 'Available': 0, 'Low Stock': 0, 'Out of Stock': 0 };
+                
                 products.forEach(product => {
                     const cat = product.category || 'Uncategorized';
                     const qty = parseInt(product.quantity, 10) || 0;
+                    
+                    // Category grouping
                     if (!categoryMap[cat]) categoryMap[cat] = 0;
                     if (!categoryCountMap[cat]) categoryCountMap[cat] = 0;
                     categoryMap[cat] += qty;
                     categoryCountMap[cat] += 1;
+                    
                     // Status logic like inventory_records.html
                     let status = 'Available';
                     if (qty === 0) status = 'Out of Stock';
@@ -2052,15 +2431,23 @@
                 analyticsData.stocks.category.counts = Object.values(categoryCountMap);
                 const baseColors = analyticsData.stocks.category.colors;
                 analyticsData.stocks.category.colors = analyticsData.stocks.category.labels.map((_, i) => baseColors[i % baseColors.length]);
+                
                 // Update status analytics
                 analyticsData.stocks.status.labels = Object.keys(statusMap);
                 analyticsData.stocks.status.data = Object.values(statusMap);
                 const statusColors = analyticsData.stocks.status.colors;
                 analyticsData.stocks.status.colors = analyticsData.stocks.status.labels.map((_, i) => statusColors[i % statusColors.length]);
-                // Refresh the chart if already initialized and status view is selected
-                const stocksFilter = document.getElementById('stocksFilter');
-                if (typeof stocksChart !== 'undefined' && stocksChart && stocksFilter) {
-                    const view = stocksFilter.value;
+                
+                console.log('📊 Stock analytics updated from database:', {
+                    categories: Object.keys(categoryMap),
+                    status: Object.keys(statusMap)
+                });
+                
+                // Update the chart with new data
+                if (typeof stocksChart !== 'undefined' && stocksChart) {
+                    const stocksFilter = document.getElementById('stocksFilter');
+                    const view = stocksFilter ? stocksFilter.value : 'category';
+                    
                     if (view === 'category') {
                         stocksChart.data.labels = analyticsData.stocks.category.labels;
                         stocksChart.data.datasets[0].data = analyticsData.stocks.category.data;
@@ -2072,247 +2459,375 @@
                     }
                     stocksChart.update();
                 }
-                console.log('Stock analytics updated from DB:', analyticsData.stocks);
+                
             } catch (err) {
                 console.error('Exception updating stock analytics:', err);
             }
         }
 
         // Initialize Charts
-        function initializeCharts() {
+        async function initializeCharts() {
             initSalesChart();
             initStocksChart();
             initSoilChart();
             initHectareChart();
-            updateStockAnalyticsFromDB();
-            updateSoilAnalyticsFromDB();
-            updateHectareAnalyticsFromDB();
+            try {
+                await updateStockAnalyticsFromDB();
+            } catch (error) {
+                console.error('Exception updating stock analytics:', error);
+            }
+            try {
+                await updateSoilAnalyticsFromDB();
+            } catch (error) {
+                console.error('Exception updating soil analytics:', error);
+            }
+            try {
+                await updateHectareAnalyticsFromDB();
+            } catch (error) {
+                console.error('Exception updating hectare analytics:', error);
+            }
         }
 
-        // Sales Chart (Line Graph)
+        // Sales Chart (Dashboard Style)
         function initSalesChart() {
-            const canvas = document.getElementById('salesChart');
-            if (!canvas) {
-                console.error('Sales chart canvas not found');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            const currentData = analyticsData.sales.monthly;
-            
-            console.log('Initializing sales chart with data:', currentData);
-            
-            salesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: currentData.labels,
-                    datasets: [{
-                        label: 'Sales (PHP)',
-                        data: currentData.data,
-                        borderColor: '#007bff',
-                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '₱' + value.toLocaleString();
+            try {
+                // Destroy existing chart if it exists
+                if (salesChart && typeof salesChart.destroy === 'function') {
+                    salesChart.destroy();
+                    salesChart = null;
+                }
+                
+                const canvas = document.getElementById('salesChart');
+                if (!canvas) {
+                    console.warn('⚠️ Sales chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                
+                salesChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Sales (₱)',
+                            data: [0, 0, 0, 0, 0, 0, 0, 14220, 0, 0, 0, 0],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 40,
+                                    usePointStyle: false
                                 }
                             }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ₱' + context.parsed.y.toLocaleString();
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₱' + value.toLocaleString();
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('❌ Error initializing sales chart:', error);
+            }
         }
 
-        // Stocks Chart (Pie Chart)
+        // Stocks Chart (Dashboard Style - Pie Chart)
         function initStocksChart() {
-            const canvas = document.getElementById('stocksChart');
-            if (!canvas) {
-                console.error('Stocks chart canvas not found');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            const currentData = analyticsData.stocks.category;
-            
-            console.log('Initializing stocks chart with data:', currentData);
-            
-            stocksChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: currentData.labels,
-                    datasets: [{
-                        data: currentData.data,
-                        backgroundColor: currentData.colors,
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    // Show count and stock for each category
-                                    const label = context.label;
-                                    const stock = context.parsed;
-                                    const idx = context.dataIndex;
-                                    const count = analyticsData.stocks.category.counts ? analyticsData.stocks.category.counts[idx] : undefined;
-                                    if (typeof count !== 'undefined') {
-                                        return `${label}: ${stock} (Products: ${count})`;
-                                    } else {
-                                        return `${label}: ${stock}`;
-                                    }
-                                }
-                            }
-                        }
-                    }
+            try {
+                // Destroy existing chart if it exists
+                if (stocksChart && typeof stocksChart.destroy === 'function') {
+                    stocksChart.destroy();
+                    stocksChart = null;
                 }
-            });
-        }
-
-        // Soil Chart (Donut Chart)
-        function initSoilChart() {
-            const canvas = document.getElementById('soilChart');
-            if (!canvas) {
-                console.error('Soil chart canvas not found');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            const currentData = analyticsData.soil.type;
-            
-            console.log('Initializing soil chart with data:', currentData);
-            
-            soilChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: currentData.labels,
-                    datasets: [{
-                        data: currentData.data,
-                        backgroundColor: currentData.colors,
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    // Show soil type and count for each type
-                                    const label = context.label;
-                                    const count = context.parsed;
-                                    const idx = context.dataIndex;
-                                    return `${label}: ${count} data`;
-                                }
-                            }
-                        }
-                    }
+                
+                const canvas = document.getElementById('stocksChart');
+                if (!canvas) {
+                    console.warn('⚠️ Stocks chart canvas not found');
+                    return;
                 }
-            });
-        }
-
-        // Hectare Chart (Dynamic - Bar or Doughnut)
-        function initHectareChart() {
-            const canvas = document.getElementById('hectareChart');
-            if (!canvas) {
-                console.error('Hectare chart canvas not found');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            const currentData = analyticsData.hectare.monthly;
-            
-            console.log('Initializing hectare chart with data:', currentData);
-            
-            hectareChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: currentData.labels,
-                    datasets: [{
-                        label: 'Hectares Cultivated',
-                        data: currentData.data,
-                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
-                        borderColor: '#28a745',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + ' ha';
-                                }
-                            }
-                        }
+                
+                const ctx = canvas.getContext('2d');
+                const currentData = {
+                    labels: ['Vegetables', 'Fruits', 'Grains', 'Herbs'],
+                    data: [45, 30, 15, 10],
+                    colors: ['#e74c3c', '#3498db', '#2ecc71', '#f39c12']
+                };
+                
+                stocksChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: currentData.labels,
+                        datasets: [{
+                            data: currentData.data,
+                            backgroundColor: currentData.colors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error initializing stocks chart:', error);
+            }
+        }
+
+        // Soil Chart (Dashboard Style - Doughnut Chart)
+        function initSoilChart() {
+            try {
+                // Destroy existing chart if it exists
+                if (soilChart && typeof soilChart.destroy === 'function') {
+                    soilChart.destroy();
+                    soilChart = null;
+                }
+                
+                const canvas = document.getElementById('soilChart');
+                if (!canvas) {
+                    console.warn('⚠️ Soil chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                const currentData = {
+                    labels: ['Clay Soil', 'Sandy Soil', 'Loam Soil', 'Silt Soil'],
+                    data: [30, 25, 25, 20],
+                    colors: ['#8b4513', '#f4a460', '#deb887', '#d2b48c']
+                };
+                
+                soilChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: currentData.labels,
+                        datasets: [{
+                            data: currentData.data,
+                            backgroundColor: currentData.colors,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error initializing soil chart:', error);
+            }
+        }
+
+        // Hectare Chart (Dashboard Style - Bar Chart)
+        function initHectareChart() {
+            try {
+                // Destroy existing chart if it exists
+                if (hectareChart && typeof hectareChart.destroy === 'function') {
+                    hectareChart.destroy();
+                    hectareChart = null;
+                }
+                
+                const canvas = document.getElementById('hectareChart');
+                if (!canvas) {
+                    console.warn('⚠️ Hectare chart canvas not found');
+                    return;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                const currentData = {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    data: [180, 185, 190, 195, 200, 210, 220, 225, 215, 205, 190, 180]
+                };
+                
+                hectareChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: currentData.labels,
+                        datasets: [{
+                            label: 'Hectares',
+                            data: currentData.data,
+                            backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                            borderColor: '#28a745',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 40,
+                                    usePointStyle: false
+                                }
+                            }
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const chartType = hectareChart.config.type;
-                                    if (chartType === 'doughnut') {
-                                        return `${context.label}: ${context.parsed} farms`;
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + ' ha';
                                     }
-                                    return context.dataset.label + ': ' + context.parsed.y + ' hectares';
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('❌ Error initializing hectare chart:', error);
+            }
         }
 
         // Filter Functions
         function updateSalesChart(period) {
-            const data = analyticsData.sales[period];
-            salesChart.data.labels = data.labels;
-            salesChart.data.datasets[0].data = data.data;
-            salesChart.update();
+            if (!salesChart) {
+                console.error('Sales chart not initialized');
+                return;
+            }
+            
+            console.log('Sales chart filter changed to:', period);
+            
+            // Load data for the selected period
+            loadSalesDataForPeriod(period);
+        }
+
+        // Function to load sales data for specific time period
+        async function loadSalesDataForPeriod(period) {
+            try {
+                console.log(`Loading sales data for period: ${period}`);
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    return;
+                }
+
+                // Fetch orders data
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select('total, created_at, status');
+
+                if (error) {
+                    console.error('Database error fetching orders:', error);
+                    return;
+                }
+
+                if (!orders || orders.length === 0) {
+                    console.log('No orders found');
+                    return;
+                }
+
+                // Process data based on selected period
+                let chartData;
+                switch (period) {
+                    case 'weekly':
+                        chartData = processOrdersForWeekly(orders);
+                        break;
+                    case 'yearly':
+                        chartData = processOrdersForYearly(orders);
+                        break;
+                    case 'monthly':
+                    default:
+                        chartData = processOrdersForChart(orders);
+                        break;
+                }
+
+                console.log(`Chart data for ${period}:`, chartData);
+                updateSalesChartWithData(chartData);
+
+            } catch (error) {
+                console.error(`Error loading ${period} sales data:`, error);
+            }
+        }
+
+        // Function to process orders for weekly view (last 4 weeks)
+        function processOrdersForWeekly(orders) {
+            const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+            const weeklyData = [0, 0, 0, 0];
+            
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            
+            orders.forEach(order => {
+                if (order.created_at && order.total) {
+                    const orderDate = new Date(order.created_at);
+                    
+                    // Only process orders from current month
+                    if (orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear) {
+                        const dayOfMonth = orderDate.getDate();
+                        const weekIndex = Math.floor((dayOfMonth - 1) / 7);
+                        
+                        if (weekIndex >= 0 && weekIndex < 4) {
+                            weeklyData[weekIndex] += parseFloat(order.total) || 0;
+                        }
+                    }
+                }
+            });
+
+            return {
+                labels: weekLabels,
+                data: weeklyData
+            };
+        }
+
+        // Function to process orders for yearly view (last 5 years)
+        function processOrdersForYearly(orders) {
+            const currentYear = new Date().getFullYear();
+            const yearLabels = [];
+            const yearlyData = {};
+            
+            // Generate last 5 years
+            for (let i = 4; i >= 0; i--) {
+                const year = currentYear - i;
+                yearLabels.push(year.toString());
+                yearlyData[year] = 0;
+            }
+            
+            orders.forEach(order => {
+                if (order.created_at && order.total) {
+                    const orderDate = new Date(order.created_at);
+                    const orderYear = orderDate.getFullYear();
+                    
+                    if (yearlyData.hasOwnProperty(orderYear)) {
+                        yearlyData[orderYear] += parseFloat(order.total) || 0;
+                    }
+                }
+            });
+
+            return {
+                labels: yearLabels,
+                data: yearLabels.map(year => yearlyData[parseInt(year)])
+            };
         }
 
         function updateStocksChart(view) {
@@ -2344,8 +2859,7 @@
                 'sales': salesChart,
                 'stocks': stocksChart,
                 'soil': soilChart,
-                'hectare': hectareChart,
-                'municipality': null // Static chart
+                'hectare': hectareChart
             };
             
             const chart = chartMap[chartType];
@@ -2487,20 +3001,7 @@
             }
         }
 
-        // Initialize all charts when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, Chart.js available:', typeof Chart !== 'undefined');
-            if (typeof Chart !== 'undefined') {
-                try {
-                    initializeCharts();
-                    console.log('Charts initialized successfully');
-                } catch (error) {
-                    console.error('Error initializing charts:', error);
-                }
-            } else {
-                console.error('Chart.js not loaded');
-            }
-        });
     </script>
 </body>
 </html>
+

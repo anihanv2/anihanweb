@@ -104,32 +104,18 @@
                     <div class="table-responsive">
                             <table class="table inventory-table">
                                 <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Contact Number</th>
-                                    </tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Stocks</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
                                 </thead>
-                                <tbody>
+                                <tbody id="inventoryTableBody">
                                     <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Pluto D. Espejo</td>
-                                        <td>Pluto@Gmail.com</td>
-                                        <td>09455678945</td>
+                                        <td colspan="5" class="text-center">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                            Loading inventory data...
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -137,13 +123,13 @@
                         
                         <div class="table-footer">
                             <div class="table-info-section">
-                                <span class="table-info">1 to 1 items of 1</span>
+                                <span class="table-info" id="inventoryTableInfo">0 to 0 items of 0</span>
                                 <a href="#" class="view-all">View all ></a>
                             </div>
                             <div class="pagination-controls">
-                                <button class="btn btn-sm btn-outline-secondary">&lt;</button>
-                                <button class="btn btn-sm btn-success">1</button>
-                                <button class="btn btn-sm btn-outline-secondary">&gt;</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
+                                <button class="btn btn-sm btn-success" id="currentPageBtn">1</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">&gt;</button>
                             </div>
                         </div>
                     </div>
@@ -160,6 +146,12 @@
     <script src="shared-profile.js"></script>
     
     <script>
+        // Pagination variables
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalProducts = 0;
+        let allMunicipalityProducts = [];
+
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
@@ -170,6 +162,348 @@
                 window.location.href = 'sign_in_form.html';
             }
         }
+
+        // Function to get status based on quantity
+        function getProductStatus(quantity) {
+            const qty = parseInt(quantity) || 0;
+            if (qty === 0) {
+                return { status: 'Out of Stock', class: 'bg-danger' };
+            } else if (qty <= 5) {
+                return { status: 'Low Stock', class: 'bg-warning text-dark' };
+            } else {
+                return { status: 'Available', class: 'bg-success' };
+            }
+        }
+
+        // Function to load municipality products
+        async function loadMunicipalityProducts() {
+            try {
+                console.log('=== LOADING MUNICIPALITY PRODUCTS ===');
+                
+                // Check if supabaseClient is available from shared-profile.js
+                if (!window.supabaseClient && !supabaseClient) {
+                    console.error('Supabase client not available');
+                    updateInventoryTable([], 'Database connection not available');
+                    return;
+                }
+
+                // Use the global supabaseClient
+                const client = window.supabaseClient || supabaseClient;
+                
+                // Get current user data from session storage
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                if (!currentUser) {
+                    console.error('No current user found');
+                    updateInventoryTable([], 'Please sign in to view products');
+                    return;
+                }
+
+                console.log('Current user:', currentUser);
+                
+                // Get sub admin's municipality address
+                let municipalityAddress = currentUser.address;
+                
+                if (!municipalityAddress) {
+                    console.error('No address found for current user');
+                    updateInventoryTable([], 'No address found for current user');
+                    return;
+                }
+
+                console.log('🔍 Sub admin address:', municipalityAddress);
+
+                // First, let's check all available products to see what we have
+                console.log('🔍 Checking all available products...');
+                const { data: allProducts, error: allProductsError } = await client
+                    .from('my_products')
+                    .select(`
+                        id,
+                        name,
+                        price,
+                        quantity,
+                        category,
+                        user_id,
+                        users!inner(full_name, address)
+                    `);
+
+                if (allProductsError) {
+                    console.error('❌ Error fetching all products:', allProductsError);
+                } else {
+                    console.log('📊 All products in database:', allProducts);
+                    console.log('📍 Addresses found in products:', allProducts?.map(p => p.users?.address).filter(Boolean));
+                }
+
+                // Now let's check all users and their addresses
+                console.log('🔍 Checking all users and their addresses...');
+                const { data: allUsers, error: allUsersError } = await client
+                    .from('users')
+                    .select('id, full_name, address');
+
+                if (allUsersError) {
+                    console.error('❌ Error fetching all users:', allUsersError);
+                } else {
+                    console.log('👥 All users in database:', allUsers);
+                    console.log('📍 All addresses in users table:', allUsers?.map(u => u.address).filter(Boolean));
+                }
+
+                // Try different matching strategies
+                console.log('🔍 Trying different address matching strategies...');
+                
+                // Strategy 1: Exact match
+                let { data: municipalityUsers, error: usersError } = await client
+                    .from('users')
+                    .select('id, full_name, address')
+                    .eq('address', municipalityAddress);
+
+                console.log('📍 Strategy 1 (exact match) results:', municipalityUsers);
+
+                // Strategy 2: Case-insensitive contains match
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    ({ data: municipalityUsers, error: usersError } = await client
+                        .from('users')
+                        .select('id, full_name, address')
+                        .ilike('address', `%${municipalityAddress}%`));
+
+                    console.log('📍 Strategy 2 (ilike contains) results:', municipalityUsers);
+                }
+
+                // Strategy 3: Try extracting municipality name and matching
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    // Extract potential municipality names
+                    const addressParts = municipalityAddress.split(',').map(part => part.trim());
+                    console.log('📍 Address parts:', addressParts);
+
+                    for (const part of addressParts) {
+                        if (part.length > 3) { // Skip very short parts
+                            ({ data: municipalityUsers, error: usersError } = await client
+                                .from('users')
+                                .select('id, full_name, address')
+                                .ilike('address', `%${part}%`));
+
+                            console.log(`📍 Strategy 3 (part: "${part}") results:`, municipalityUsers);
+
+                            if (municipalityUsers && municipalityUsers.length > 0) {
+                                console.log(`✅ Found users with address part: "${part}"`);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Strategy 4: If still no users, try to find users with products
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    console.log('📍 Strategy 4: Finding users who have products...');
+                    
+                    ({ data: municipalityUsers, error: usersError } = await client
+                        .from('users')
+                        .select(`
+                            id, 
+                            full_name, 
+                            address,
+                            my_products!inner(id)
+                        `));
+
+                    console.log('📍 Strategy 4 (users with products) results:', municipalityUsers);
+                }
+
+                if (usersError) {
+                    console.error('❌ Error fetching municipality users:', usersError);
+                    updateInventoryTable([], 'Error loading municipality users');
+                    return;
+                }
+
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    console.log('⚠️ No users found with any strategy');
+                    updateInventoryTable([], `No users found. Sub admin address: "${municipalityAddress}". Please check if this address matches users in the database.`);
+                    return;
+                }
+
+                console.log(`✅ Found ${municipalityUsers.length} users:`, municipalityUsers);
+
+                // Get user IDs for products query
+                const userIds = municipalityUsers.map(user => user.id);
+                console.log('👥 User IDs to search for products:', userIds);
+
+                // Fetch products from these users
+                const { data: products, error: productsError } = await client
+                    .from('my_products')
+                    .select(`
+                        id,
+                        name,
+                        price,
+                        quantity,
+                        category,
+                        description,
+                        discount,
+                        image_url,
+                        user_id,
+                        users!inner(full_name, address)
+                    `)
+                    .in('user_id', userIds)
+                    .order('name', { ascending: true });
+
+                if (productsError) {
+                    console.error('❌ Error fetching products:', productsError);
+                    updateInventoryTable([], 'Error loading products');
+                    return;
+                }
+
+                console.log(`✅ Found ${products ? products.length : 0} products from municipality users:`, products);
+
+                // Store products for pagination
+                allMunicipalityProducts = products || [];
+                totalProducts = allMunicipalityProducts.length;
+                
+                if (allMunicipalityProducts.length === 0) {
+                    updateInventoryTable([], `No products found from users in the area. Found ${municipalityUsers.length} users but no products.`);
+                } else {
+                    updateInventoryTable(allMunicipalityProducts);
+                }
+
+            } catch (error) {
+                console.error('❌ Error in loadMunicipalityProducts:', error);
+                updateInventoryTable([], 'Error loading products');
+            }
+        }
+
+        // Function to update inventory table
+        function updateInventoryTable(products, errorMessage = null) {
+            const tableBody = document.getElementById('inventoryTableBody');
+            const tableInfo = document.getElementById('inventoryTableInfo');
+            
+            if (!tableBody) {
+                console.error('❌ Inventory table body not found');
+                return;
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            if (errorMessage) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${errorMessage}
+                        </td>
+                    </tr>
+                `;
+                if (tableInfo) {
+                    tableInfo.textContent = '0 to 0 items of 0';
+                }
+                return;
+            }
+
+            if (!products || products.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            <i class="fas fa-box-open me-2"></i>
+                            No products found in this municipality
+                        </td>
+                    </tr>
+                `;
+                if (tableInfo) {
+                    tableInfo.textContent = '0 to 0 items of 0';
+                }
+                return;
+            }
+
+            console.log(`📊 Displaying ${products.length} products`);
+
+            // Display paginated products
+            displayProductsPage(currentPage);
+        }
+
+        // Function to display products for current page
+        function displayProductsPage(page) {
+            const tableBody = document.getElementById('inventoryTableBody');
+            const currentPageBtn = document.getElementById('currentPageBtn');
+            const tableInfo = document.getElementById('inventoryTableInfo');
+            
+            if (!tableBody) {
+                console.warn('⚠️ Inventory table element not found in displayProductsPage');
+                return;
+            }
+
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageProducts = allMunicipalityProducts.slice(startIndex, endIndex);
+
+            if (pageProducts.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            No products on this page
+                        </td>
+                    </tr>
+                `;
+                if (tableInfo) {
+                    tableInfo.textContent = '0 to 0 items of 0';
+                }
+                return;
+            }
+
+            // Generate table rows
+            tableBody.innerHTML = pageProducts.map(product => {
+                const statusInfo = getProductStatus(product.quantity);
+                const price = parseFloat(product.price) || 0;
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${product.name}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${product.category}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold ${parseInt(product.quantity) <= 5 ? 'text-warning' : 'text-success'}">${product.quantity}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold">₱${price.toFixed(2)}</span>
+                        </td>
+                        <td>
+                            <span class="badge ${statusInfo.class}">${statusInfo.status}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update pagination info
+            if (currentPageBtn) {
+                currentPageBtn.textContent = page;
+            }
+
+            // Update table info
+            if (tableInfo) {
+                const startItem = startIndex + 1;
+                const endItem = Math.min(endIndex, allMunicipalityProducts.length);
+                tableInfo.textContent = `${startItem} to ${endItem} items of ${allMunicipalityProducts.length}`;
+            }
+
+            console.log(`📄 Displaying page ${page}: ${pageProducts.length} products`);
+        }
+
+        // Function to change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(allMunicipalityProducts.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                displayProductsPage(currentPage);
+            }
+        }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page loaded, initializing inventory...');
+            
+            // Wait a bit for shared-profile.js to load user data
+            setTimeout(() => {
+                loadMunicipalityProducts();
+            }, 1000);
+        });
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {

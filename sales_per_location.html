@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Per Location - Anihan</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">               
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="profile-dropdown.css" rel="stylesheet">
     <link href="sales_per_location.css" rel="stylesheet">
@@ -167,42 +167,20 @@
                             <thead>
                                 <tr>
                                     <th>Store Location</th>
-                                    <th>Most Bought Products</th>
+                                    <th>Product Name</th>
                                     <th>Quantity</th>
                                     <th>Total Sales</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="salesTableBody">
                                 <!-- Data rows will be populated here -->
                                 <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="4" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Loading sales data...</p>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -226,6 +204,239 @@
     <!-- Add Shared Profile System -->
     <script src="shared-profile.js"></script>
     <script>
+        // Use Supabase client from shared-profile.js
+        // Wait for shared-profile.js to initialize supabaseClient
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sales Per Location page loaded');
+            // Small delay to ensure shared-profile.js has initialized supabaseClient
+            setTimeout(() => {
+                loadSalesPerLocationData();
+            }, 200);
+        });
+
+        // Load sales per location data and populate table
+        async function loadSalesPerLocationData() {
+            try {
+                console.log('🔄 Loading sales per location data...');
+                
+                // Use the global supabaseClient from shared-profile.js
+                if (!window.supabaseClient && !supabaseClient) {
+                    console.error('❌ Supabase client not available');
+                    updateSalesTable([]);
+                    return;
+                }
+
+                const client = window.supabaseClient || supabaseClient;
+
+                // Get product sales data with store information using the same join approach as price monitoring
+                const { data: salesData, error } = await client
+                    .from('order_items')
+                    .select(`
+                        quantity,
+                        orders!inner(
+                            id,
+                            total,
+                            status
+                        ),
+                        my_products!inner(
+                            id,
+                            name,
+                            category,
+                            price,
+                            user_id,
+                            users!my_products_user_id_fkey (
+                                id,
+                                municipality,
+                                store-owner!store-owner_user_id_fkey (
+                                    store_name
+                                )
+                            )
+                        )
+                    `);
+
+                console.log('📈 Sales data query result:', { 
+                    dataCount: salesData?.length || 0, 
+                    error: error,
+                    sampleData: salesData?.slice(0, 3) 
+                });
+
+                if (error) {
+                    console.error('❌ Error fetching sales data:', error);
+                    updateSalesTable([]);
+                    return;
+                }
+
+                if (!salesData || salesData.length === 0) {
+                    console.warn('⚠️ No sales data found');
+                    updateSalesTable([]);
+                    return;
+                }
+
+                // Process and group the data by municipality (store location) and product (using same approach as price monitoring)
+                const processedData = {};
+                let processedCount = 0;
+
+
+
+
+
+
+
+
+
+
+
+                    console.log('� Attempting direct user lookup for municipalities...');
+                    
+                    // Get unique user IDs from sales data
+                    const userIds = [...new Set(salesData.map(item => item.orders.user_id))];
+                    console.log('👥 Found unique user IDs in orders:', userIds);
+                    
+                    if (userIds.length > 0) {
+                        const { data: users, error: usersError } = await client
+                            .from('users')
+                            .select('id, municipality, address, full_name')
+                            .in('id', userIds);
+                            
+                        if (!usersError && users) {
+                            users.forEach(user => {
+                                const municipality = user.municipality || user.address || 'Unknown Location';
+                                userMunicipalityMap[user.id] = municipality;
+                                console.log(`🗺️ Direct mapped User ${user.id} (${user.full_name}) to: ${municipality}`);
+                            });
+                        }
+                    }
+
+                
+                salesData.forEach(item => {
+                    // Get store information from the joined data (same approach as price monitoring)
+                    const product = item.my_products;
+                    const user = product?.users;
+                    const storeOwner = user?.['store-owner']?.[0];
+                    const storeName = storeOwner?.store_name || 'Unknown Store';
+                    const municipality = user?.municipality || 'Unknown Location';
+                    
+                    console.log(`📍 Processing item - Product: ${product?.name}, Municipality: ${municipality}`);
+                    
+                    const productName = product?.name || 'Unknown Product';
+                    const quantity = parseInt(item.quantity) || 0;
+                    const productPrice = parseFloat(product?.price) || 0;
+                    const itemTotal = quantity * productPrice;
+
+                    const key = `${municipality}-${productName}`;
+                    
+                    if (processedData[key]) {
+                        processedData[key].quantity += quantity;
+                        processedData[key].totalSales += itemTotal;
+                        processedData[key].orderCount += 1;
+                    } else {
+                        processedData[key] = {
+                            municipality: municipality,
+                            productName: productName,
+                            category: product?.category || 'Unknown',
+                            quantity: quantity,
+                            totalSales: itemTotal,
+                            orderCount: 1,
+                            storeName: storeName
+                        };
+                    }
+                    processedCount++;
+                });
+
+                console.log('📊 Processing complete:', { 
+                    processedItems: processedCount,
+                    uniqueLocationProducts: Object.keys(processedData).length,
+                    sampleProcessedData: Object.values(processedData).slice(0, 3)
+                });
+
+                // Convert to array and sort by total sales (descending)
+                const salesArray = Object.values(processedData)
+                    .sort((a, b) => b.totalSales - a.totalSales);
+
+                console.log('✅ Final sales array:', salesArray.length, 'records');
+                console.log('📋 Sample records:', salesArray.slice(0, 5));
+                
+                updateSalesTable(salesArray);
+
+            } catch (error) {
+                console.error('💥 Error in loadSalesPerLocationData:', error);
+                updateSalesTable([]);
+            }
+        }
+
+        // Update the sales table with data
+        function updateSalesTable(salesData) {
+            const tableBody = document.getElementById('salesTableBody');
+            if (!tableBody) {
+                console.error('Table body not found');
+                return;
+            }
+
+            if (!salesData || salesData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            No sales data available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Generate table rows
+            const tableRows = salesData.map(item => `
+                <tr>
+                    <td>
+                        <div class="location-info">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                            <span class="fw-semibold">${item.municipality}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="product-info">
+                            <div class="product-name fw-semibold">${item.productName}</div>
+                            <small class="text-muted">${item.category}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quantity-info">
+                            <span class="badge bg-success fs-6">${item.quantity}</span>
+                            <small class="text-muted d-block">${item.orderCount} orders</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="sales-amount">
+                            <span class="fw-bold text-success">₱${item.totalSales.toLocaleString('en-PH', {minimumFractionDigits: 2})}</span>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            tableBody.innerHTML = tableRows;
+            console.log(`✅ Updated table with ${salesData.length} records`);
+        }
+
+        // Search functionality
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const tableRows = document.querySelectorAll('.sales-table tbody tr');
+                
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
