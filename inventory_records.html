@@ -188,7 +188,10 @@
                         </table>
                     </div>
                     <div class="inventory-card-footer">
-                        <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
+                        <div class="footer-left">
+                            <span id="inventoryItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllInventoryModal()">View all &gt;</a>
+                        </div>
                         <div class="inventory-pagination">
                             <button class="btn">&lt;</button>
                             <button class="btn active">1</button>
@@ -394,6 +397,7 @@
         function populateInventoryTable(products) {
             console.log('Populating table with products:', products);
             const tbody = document.querySelector('.inventory-table tbody');
+            const itemsCount = document.getElementById('inventoryItemsCount');
             tbody.innerHTML = '';
 
             if (!products || products.length === 0) {
@@ -406,11 +410,18 @@
                         </td>
                     </tr>
                 `;
+                if (itemsCount) itemsCount.textContent = '0 to 0 items of 0';
                 return;
             }
 
-            console.log(`Creating ${products.length} product rows`);
-            products.forEach((product, index) => {
+            // Store all products globally for modal use
+            window.allInventoryProducts = products;
+
+            // Display first 10 items (simulate pagination)
+            const displayProducts = products.slice(0, 10);
+            
+            console.log(`Creating ${displayProducts.length} product rows`);
+            displayProducts.forEach((product, index) => {
                 console.log(`Creating row ${index + 1} for product:`, product);
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -435,7 +446,140 @@
                 `;
                 tbody.appendChild(row);
             });
+
+            // Update items count
+            if (itemsCount) {
+                const startItem = 1;
+                const endItem = Math.min(10, products.length);
+                itemsCount.textContent = `${startItem} to ${endItem} items of ${products.length}`;
+            }
+
             console.log('Table populated successfully');
+        }
+
+        // Function to show all inventory modal
+        function showAllInventoryModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allInventoryModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (window.allInventoryProducts && window.allInventoryProducts.length > 0) {
+                updateAllInventoryTable(window.allInventoryProducts);
+            } else {
+                updateAllInventoryTable([]);
+            }
+        }
+
+        // Function to update the all inventory modal table
+        function updateAllInventoryTable(inventoryData) {
+            const tableBody = document.getElementById('allInventoryTableBody');
+            const countElement = document.getElementById('allInventoryCount');
+            
+            if (!tableBody) {
+                console.error('❌ All inventory table body not found');
+                return;
+            }
+
+            if (!inventoryData || inventoryData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted p-4">
+                            <i class="fas fa-box-open me-2"></i>
+                            No inventory records found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 products found';
+                return;
+            }
+
+            // Generate all table rows
+            tableBody.innerHTML = inventoryData.map((product, index) => {
+                return `
+                    <tr>
+                        <td>
+                            <div class="product-info">
+                                <div class="product-name">${escapeHtml(product.name || 'N/A')}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${escapeHtml(product.category || 'N/A')}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold">${escapeHtml(product.quantity || '0')}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold">₱${escapeHtml(product.price || '0')}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">Available</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">${escapeHtml(product.description || 'No description')}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${inventoryData.length} product${inventoryData.length !== 1 ? 's' : ''} found`;
+            }
+
+            // Add search functionality
+            const searchInput = document.getElementById('inventorySearchInput');
+            if (searchInput) {
+                searchInput.oninput = function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredData = inventoryData.filter(product => 
+                        (product.name || '').toLowerCase().includes(searchTerm) ||
+                        (product.category || '').toLowerCase().includes(searchTerm) ||
+                        (product.description || '').toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center text-muted p-4">
+                                    <i class="fas fa-search me-2"></i>
+                                    No products found matching "${searchTerm}"
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = filteredData.map((product, index) => {
+                            return `
+                                <tr>
+                                    <td>
+                                        <div class="product-info">
+                                            <div class="product-name">${escapeHtml(product.name || 'N/A')}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">${escapeHtml(product.category || 'N/A')}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">${escapeHtml(product.quantity || '0')}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">₱${escapeHtml(product.price || '0')}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">Available</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">${escapeHtml(product.description || 'No description')}</span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                    
+                    if (countElement) {
+                        countElement.textContent = `${filteredData.length} product${filteredData.length !== 1 ? 's' : ''} found`;
+                    }
+                };
+            }
         }
 
         // Escape HTML to prevent XSS
@@ -520,6 +664,49 @@
             checkSharedProfile();
         });
     </script>
+
+    <!-- All Inventory Modal -->
+    <div class="modal fade" id="allInventoryModal" tabindex="-1" aria-labelledby="allInventoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allInventoryModalLabel">All Inventory Records</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="inventorySearchInput" placeholder="Search by product name, category...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Stocks</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allInventoryTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading inventory records...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allInventoryCount">0 products found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-</html>
 </html>

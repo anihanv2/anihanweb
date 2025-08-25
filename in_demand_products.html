@@ -192,7 +192,10 @@
                         </table>
                     </div>
                     <div class="demand-card-footer">
-                        <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
+                        <div class="footer-left">
+                            <span id="demandItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllInDemandModal()">View all &gt;</a>
+                        </div>
                         <div class="demand-pagination">
                             <button class="btn">&lt;</button>
                             <button class="btn active">1</button>
@@ -405,6 +408,8 @@
         // Update the demand table with data
         function updateDemandTable(demandData) {
             const tableBody = document.querySelector('.demand-table tbody');
+            const itemsCount = document.getElementById('demandItemsCount');
+            
             if (!tableBody) {
                 console.error('Table body not found');
                 return;
@@ -419,11 +424,18 @@
                         </td>
                     </tr>
                 `;
+                if (itemsCount) itemsCount.textContent = '0 to 0 items of 0';
                 return;
             }
 
+            // Store all data globally for modal use
+            window.allInDemandProducts = demandData;
+
+            // Display first 10 items (simulate pagination)
+            const displayData = demandData.slice(0, 10);
+
             // Generate table rows
-            const tableRows = demandData.map((item, index) => `
+            const tableRows = displayData.map((item, index) => `
                 <tr>
                     <td>
                         <div class="location-info d-flex align-items-center">
@@ -448,7 +460,151 @@
             `).join('');
 
             tableBody.innerHTML = tableRows;
-            console.log(`✅ Updated demand table with ${demandData.length} records`);
+
+            // Update items count
+            if (itemsCount) {
+                const startItem = 1;
+                const endItem = Math.min(10, demandData.length);
+                itemsCount.textContent = `${startItem} to ${endItem} items of ${demandData.length}`;
+            }
+
+            console.log(`✅ Updated demand table with ${displayData.length} of ${demandData.length} records`);
+        }
+
+        // Function to show all in demand products modal
+        function showAllInDemandModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allInDemandModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (window.allInDemandProducts && window.allInDemandProducts.length > 0) {
+                updateAllInDemandTable(window.allInDemandProducts);
+            } else {
+                updateAllInDemandTable([]);
+            }
+        }
+
+        // Function to update the all in demand products modal table
+        function updateAllInDemandTable(inDemandData) {
+            const tableBody = document.getElementById('allInDemandTableBody');
+            const countElement = document.getElementById('allInDemandCount');
+            
+            if (!tableBody) {
+                console.error('❌ All in demand table body not found');
+                return;
+            }
+
+            if (!inDemandData || inDemandData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted p-4">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            No in demand products found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 records found';
+                return;
+            }
+
+            // Generate all table rows
+            tableBody.innerHTML = inDemandData.map((item, index) => {
+                return `
+                    <tr>
+                        <td>
+                            <div class="location-info d-flex align-items-center">
+                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                <span class="fw-semibold">${escapeHtml(item.municipality || 'N/A')}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="product-info">
+                                <div class="product-name fw-semibold">${escapeHtml(item.productName || 'N/A')}</div>
+                                <small class="text-muted">${escapeHtml(item.category || 'N/A')}</small>
+                                ${index === 0 ? '<span class="badge bg-success ms-2"><i class="fas fa-crown"></i> Most Demanded</span>' : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="quantity-info">
+                                <span class="badge bg-primary fs-6">${escapeHtml(item.quantity || '0')}</span>
+                                <small class="text-muted d-block">${escapeHtml(item.orderCount || '0')} orders</small>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${inDemandData.length} record${inDemandData.length !== 1 ? 's' : ''} found`;
+            }
+
+            // Add search functionality
+            const searchInput = document.getElementById('inDemandSearchInput');
+            if (searchInput) {
+                searchInput.oninput = function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredData = inDemandData.filter(item => 
+                        (item.municipality || '').toLowerCase().includes(searchTerm) ||
+                        (item.productName || '').toLowerCase().includes(searchTerm) ||
+                        (item.category || '').toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="3" class="text-center text-muted p-4">
+                                    <i class="fas fa-search me-2"></i>
+                                    No records found matching "${searchTerm}"
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = filteredData.map((item, index) => {
+                            return `
+                                <tr>
+                                    <td>
+                                        <div class="location-info d-flex align-items-center">
+                                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                            <span class="fw-semibold">${escapeHtml(item.municipality || 'N/A')}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="product-info">
+                                            <div class="product-name fw-semibold">${escapeHtml(item.productName || 'N/A')}</div>
+                                            <small class="text-muted">${escapeHtml(item.category || 'N/A')}</small>
+                                            ${index === 0 && filteredData.length === inDemandData.length ? '<span class="badge bg-success ms-2"><i class="fas fa-crown"></i> Most Demanded</span>' : ''}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="quantity-info">
+                                            <span class="badge bg-primary fs-6">${escapeHtml(item.quantity || '0')}</span>
+                                            <small class="text-muted d-block">${escapeHtml(item.orderCount || '0')} orders</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                    
+                    if (countElement) {
+                        countElement.textContent = `${filteredData.length} record${filteredData.length !== 1 ? 's' : ''} found`;
+                    }
+                };
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
         }
 
         // Search functionality
@@ -492,5 +648,46 @@
             }
         });
     </script>
+
+    <!-- All In Demand Products Modal -->
+    <div class="modal fade" id="allInDemandModal" tabindex="-1" aria-labelledby="allInDemandModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allInDemandModalLabel">All In Demand Products</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="inDemandSearchInput" placeholder="Search by store location, product name...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Store Location</th>
+                                    <th>Most Bought Products</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allInDemandTableBody">
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading in demand products...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allInDemandCount">0 records found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -193,7 +193,10 @@
                         </table>
                     </div>
                     <div class="voucher-card-footer">
-                        <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
+                        <div class="footer-left">
+                            <span id="voucherItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllVouchersModal()">View all &gt;</a>
+                        </div>
                         <div class="voucher-pagination">
                             <button class="btn">&lt;</button>
                             <button class="btn active">1</button>
@@ -279,6 +282,7 @@
         
         function displayVouchers(vouchers) {
             const tableBody = document.getElementById('voucherTableBody');
+            const itemsCount = document.getElementById('voucherItemsCount');
             
             if (!vouchers || vouchers.length === 0) {
                 tableBody.innerHTML = `
@@ -292,11 +296,18 @@
                         </td>
                     </tr>
                 `;
+                if (itemsCount) itemsCount.textContent = '0 to 0 items of 0';
                 return;
             }
+
+            // Store all vouchers globally for modal use
+            window.allVouchers = vouchers;
+
+            // Display first 10 items (simulate pagination)
+            const displayVouchers = vouchers.slice(0, 10);
             
             // Generate table rows
-            const rows = vouchers.map(voucher => {
+            const rows = displayVouchers.map(voucher => {
                 const createdDate = new Date(voucher.created_at).toLocaleDateString();
                 const endDate = new Date(voucher.date_end).toLocaleDateString();
                 const currentDate = new Date();
@@ -340,6 +351,183 @@
             }).join('');
             
             tableBody.innerHTML = rows;
+
+            // Update items count
+            if (itemsCount) {
+                const startItem = 1;
+                const endItem = Math.min(10, vouchers.length);
+                itemsCount.textContent = `${startItem} to ${endItem} items of ${vouchers.length}`;
+            }
+        }
+
+        // Function to show all vouchers modal
+        function showAllVouchersModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allVouchersModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (window.allVouchers && window.allVouchers.length > 0) {
+                updateAllVouchersTable(window.allVouchers);
+            } else {
+                updateAllVouchersTable([]);
+            }
+        }
+
+        // Function to update the all vouchers modal table
+        function updateAllVouchersTable(vouchersData) {
+            const tableBody = document.getElementById('allVouchersTableBody');
+            const countElement = document.getElementById('allVouchersCount');
+            
+            if (!tableBody) {
+                console.error('❌ All vouchers table body not found');
+                return;
+            }
+
+            if (!vouchersData || vouchersData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted p-4">
+                            <i class="fas fa-ticket-alt me-2"></i>
+                            No voucher records found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 vouchers found';
+                return;
+            }
+
+            // Generate all table rows
+            tableBody.innerHTML = vouchersData.map(voucher => {
+                const createdDate = new Date(voucher.created_at).toLocaleDateString();
+                const endDate = new Date(voucher.date_end).toLocaleDateString();
+                const currentDate = new Date();
+                const voucherEndDate = new Date(voucher.date_end);
+                
+                // Determine voucher status
+                const isExpired = voucherEndDate < currentDate;
+                const isOutOfStock = voucher.stocks <= 0;
+                
+                let statusBadge = '';
+                let statusText = '';
+                
+                if (isExpired) {
+                    statusBadge = 'bg-danger';
+                    statusText = 'Expired';
+                } else if (isOutOfStock) {
+                    statusBadge = 'bg-warning text-dark';
+                    statusText = 'Out of Stock';
+                } else {
+                    statusBadge = 'bg-success';
+                    statusText = 'Available';
+                }
+                
+                return `
+                    <tr>
+                        <td>${escapeHtml(voucher.id || 'N/A')}</td>
+                        <td>${escapeHtml(voucher.voucher_type || '-')}</td>
+                        <td><strong>${escapeHtml(voucher.voucher_name || '-')}</strong></td>
+                        <td>${escapeHtml(voucher.stocks || '0')}</td>
+                        <td>₱${parseFloat(voucher.minimum_spent || 0).toFixed(2)}</td>
+                        <td>${endDate}</td>
+                        <td>${createdDate}</td>
+                        <td>
+                            <span class="badge ${statusBadge}" style="font-size: 0.75rem;">
+                                <i class="fas ${isExpired ? 'fa-clock' : isOutOfStock ? 'fa-exclamation-triangle' : 'fa-check-circle'} me-1"></i>
+                                ${statusText}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${vouchersData.length} voucher${vouchersData.length !== 1 ? 's' : ''} found`;
+            }
+
+            // Add search functionality
+            const searchInput = document.getElementById('voucherSearchInput');
+            if (searchInput) {
+                searchInput.oninput = function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredData = vouchersData.filter(voucher => 
+                        (voucher.voucher_name || '').toLowerCase().includes(searchTerm) ||
+                        (voucher.voucher_type || '').toLowerCase().includes(searchTerm) ||
+                        (voucher.id || '').toString().toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center text-muted p-4">
+                                    <i class="fas fa-search me-2"></i>
+                                    No vouchers found matching "${searchTerm}"
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = filteredData.map(voucher => {
+                            const createdDate = new Date(voucher.created_at).toLocaleDateString();
+                            const endDate = new Date(voucher.date_end).toLocaleDateString();
+                            const currentDate = new Date();
+                            const voucherEndDate = new Date(voucher.date_end);
+                            
+                            // Determine voucher status
+                            const isExpired = voucherEndDate < currentDate;
+                            const isOutOfStock = voucher.stocks <= 0;
+                            
+                            let statusBadge = '';
+                            let statusText = '';
+                            
+                            if (isExpired) {
+                                statusBadge = 'bg-danger';
+                                statusText = 'Expired';
+                            } else if (isOutOfStock) {
+                                statusBadge = 'bg-warning text-dark';
+                                statusText = 'Out of Stock';
+                            } else {
+                                statusBadge = 'bg-success';
+                                statusText = 'Available';
+                            }
+                            
+                            return `
+                                <tr>
+                                    <td>${escapeHtml(voucher.id || 'N/A')}</td>
+                                    <td>${escapeHtml(voucher.voucher_type || '-')}</td>
+                                    <td><strong>${escapeHtml(voucher.voucher_name || '-')}</strong></td>
+                                    <td>${escapeHtml(voucher.stocks || '0')}</td>
+                                    <td>₱${parseFloat(voucher.minimum_spent || 0).toFixed(2)}</td>
+                                    <td>${endDate}</td>
+                                    <td>${createdDate}</td>
+                                    <td>
+                                        <span class="badge ${statusBadge}" style="font-size: 0.75rem;">
+                                            <i class="fas ${isExpired ? 'fa-clock' : isOutOfStock ? 'fa-exclamation-triangle' : 'fa-check-circle'} me-1"></i>
+                                            ${statusText}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                    
+                    if (countElement) {
+                        countElement.textContent = `${filteredData.length} voucher${filteredData.length !== 1 ? 's' : ''} found`;
+                    }
+                };
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
         }
         
         function showError(message) {
@@ -397,5 +585,51 @@
             }
         });
     </script>
+
+    <!-- All Vouchers Modal -->
+    <div class="modal fade" id="allVouchersModal" tabindex="-1" aria-labelledby="allVouchersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allVouchersModalLabel">All Voucher Records</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="voucherSearchInput" placeholder="Search by voucher name, type, status...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Voucher Type</th>
+                                    <th>Voucher Name</th>
+                                    <th>Stocks</th>
+                                    <th>Minimum Spend</th>
+                                    <th>Date End</th>
+                                    <th>Created At</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allVouchersTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center">Loading voucher records...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allVouchersCount">0 vouchers found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

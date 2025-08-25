@@ -243,3 +243,25 @@ body {
     color: white;
     border-color: #28a745;
 }
+
+/* Footer Layout */
+.footer-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Modal Styles */
+.modal-body .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.modal-body .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.modal-body .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,0.02);
+}

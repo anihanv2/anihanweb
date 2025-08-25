@@ -186,7 +186,10 @@
                         </table>
                     </div>
                     <div class="sales-card-footer">
-                        <a href="#" style="color:#2563eb;font-size:0.95rem;">View all &gt;</a>
+                        <div class="footer-left">
+                            <span id="salesItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllSalesModal()">View all &gt;</a>
+                        </div>
                         <div class="sales-pagination">
                             <button class="btn">&lt;</button>
                             <button class="btn active">1</button>
@@ -369,6 +372,8 @@
         // Update the sales table with data
         function updateSalesTable(salesData) {
             const tableBody = document.getElementById('salesTableBody');
+            const itemsCount = document.getElementById('salesItemsCount');
+            
             if (!tableBody) {
                 console.error('Table body not found');
                 return;
@@ -383,11 +388,18 @@
                         </td>
                     </tr>
                 `;
+                if (itemsCount) itemsCount.textContent = '0 to 0 items of 0';
                 return;
             }
 
+            // Store all sales data globally for modal use
+            window.allSalesData = salesData;
+
+            // Display first 10 items (simulate pagination)
+            const displaySales = salesData.slice(0, 10);
+
             // Generate table rows
-            const tableRows = salesData.map(item => `
+            const tableRows = displaySales.map(item => `
                 <tr>
                     <td>
                         <div class="location-info">
@@ -416,7 +428,155 @@
             `).join('');
 
             tableBody.innerHTML = tableRows;
-            console.log(`✅ Updated table with ${salesData.length} records`);
+            
+            // Update items count
+            if (itemsCount) {
+                const startItem = 1;
+                const endItem = Math.min(10, salesData.length);
+                itemsCount.textContent = `${startItem} to ${endItem} items of ${salesData.length}`;
+            }
+            
+            console.log(`✅ Updated table with ${displaySales.length} of ${salesData.length} records`);
+        }
+
+        // Function to show all sales modal
+        function showAllSalesModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allSalesModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (window.allSalesData && window.allSalesData.length > 0) {
+                updateAllSalesTable(window.allSalesData);
+            } else {
+                updateAllSalesTable([]);
+            }
+        }
+
+        // Function to update the all sales modal table
+        function updateAllSalesTable(salesData) {
+            const tableBody = document.getElementById('allSalesTableBody');
+            const countElement = document.getElementById('allSalesCount');
+            
+            if (!tableBody) {
+                console.error('❌ All sales table body not found');
+                return;
+            }
+
+            if (!salesData || salesData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted p-4">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            No sales records found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 sales records found';
+                return;
+            }
+
+            // Generate all table rows
+            tableBody.innerHTML = salesData.map((sale, index) => {
+                return `
+                    <tr>
+                        <td>
+                            <div class="location-info">
+                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                <span class="fw-semibold">${escapeHtml(sale.municipality || 'Unknown Location')}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="product-name fw-semibold">${escapeHtml(sale.productName || 'Unknown Product')}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${escapeHtml(sale.category || 'Unknown')}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success fs-6">${escapeHtml(sale.quantity || '0')}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-success">₱${(sale.totalSales || 0).toLocaleString('en-PH', {minimumFractionDigits: 2})}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">${escapeHtml(sale.orderCount || '0')} orders</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${salesData.length} sales record${salesData.length !== 1 ? 's' : ''} found`;
+            }
+
+            // Add search functionality
+            const searchInput = document.getElementById('salesSearchInput');
+            if (searchInput) {
+                searchInput.oninput = function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredData = salesData.filter(sale => 
+                        (sale.municipality || '').toLowerCase().includes(searchTerm) ||
+                        (sale.productName || '').toLowerCase().includes(searchTerm) ||
+                        (sale.category || '').toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center text-muted p-4">
+                                    <i class="fas fa-search me-2"></i>
+                                    No sales records found matching "${searchTerm}"
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = filteredData.map((sale, index) => {
+                            return `
+                                <tr>
+                                    <td>
+                                        <div class="location-info">
+                                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                            <span class="fw-semibold">${escapeHtml(sale.municipality || 'Unknown Location')}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="product-name fw-semibold">${escapeHtml(sale.productName || 'Unknown Product')}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">${escapeHtml(sale.category || 'Unknown')}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success fs-6">${escapeHtml(sale.quantity || '0')}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">₱${(sale.totalSales || 0).toLocaleString('en-PH', {minimumFractionDigits: 2})}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">${escapeHtml(sale.orderCount || '0')} orders</span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                    
+                    if (countElement) {
+                        countElement.textContent = `${filteredData.length} sales record${filteredData.length !== 1 ? 's' : ''} found`;
+                    }
+                };
+            }
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
         }
 
         // Search functionality
@@ -458,5 +618,49 @@
             }
         });
     </script>
+
+    <!-- All Sales Modal -->
+    <div class="modal fade" id="allSalesModal" tabindex="-1" aria-labelledby="allSalesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allSalesModalLabel">All Sales Per Location</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="salesSearchInput" placeholder="Search by location, product name, category...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Store Location</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Total Sales</th>
+                                    <th>Orders Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allSalesTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading sales data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allSalesCount">0 sales records found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
