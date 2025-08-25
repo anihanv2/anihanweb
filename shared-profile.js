@@ -3,10 +3,13 @@
 const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE'
 
-// Initialize Supabase client
+// Initialize Supabase client globally
 let supabaseClient;
 try {
     supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Make it available globally
+    window.supabaseClient = supabaseClient;
+    console.log('✅ Supabase client initialized and made globally available');
 } catch (error) {
     console.error('Failed to initialize Supabase client:', error);
 }

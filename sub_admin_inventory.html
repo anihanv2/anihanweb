@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Records - Sub Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css                if (productsError) {
+                    console.error('❌ Error fetching products:', productsError);
+                    updateDebugStatus(`❌ Database error: ${productsError.message}`);
+                    updateInventoryTable([], 'Error loading products');
+                    return;
+                }
+
+                updateDebugStatus(`📦 Found ${products?.length || 0} total products, filtering...`);
+                console.log('📦 All products fetched:', products?.length || 0);rap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="fixed-layout.css">
     <link href="profile-dropdown.css" rel="stylesheet">
@@ -124,7 +132,7 @@
                         <div class="table-footer">
                             <div class="table-info-section">
                                 <span class="table-info" id="inventoryTableInfo">0 to 0 items of 0</span>
-                                <a href="#" class="view-all">View all ></a>
+                                <a href="#" class="view-all" onclick="showAllInventoryModal()">View all ></a>
                             </div>
                             <div class="pagination-controls">
                                 <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
@@ -139,9 +147,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Supabase -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
+    <!-- Add Supabase Client (required by shared-profile.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Shared Profile System -->
     <script src="shared-profile.js"></script>
     
@@ -180,15 +187,16 @@
             try {
                 console.log('=== LOADING MUNICIPALITY PRODUCTS ===');
                 
-                // Check if supabaseClient is available from shared-profile.js
-                if (!window.supabaseClient && !supabaseClient) {
-                    console.error('Supabase client not available');
+                // Get supabaseClient from global scope (set by shared-profile.js)
+                const client = window.supabaseClient;
+                
+                if (!client) {
+                    console.error('❌ Supabase client not available');
                     updateInventoryTable([], 'Database connection not available');
                     return;
                 }
 
-                // Use the global supabaseClient
-                const client = window.supabaseClient || supabaseClient;
+                console.log('✅ Using Supabase client');
                 
                 // Get current user data from session storage
                 const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
@@ -200,130 +208,19 @@
 
                 console.log('Current user:', currentUser);
                 
-                // Get sub admin's municipality address
-                let municipalityAddress = currentUser.address;
+                // Get sub admin's municipality - try municipality field first, then address as fallback
+                let subAdminMunicipality = currentUser.municipality || currentUser.address;
                 
-                if (!municipalityAddress) {
-                    console.error('No address found for current user');
-                    updateInventoryTable([], 'No address found for current user');
+                if (!subAdminMunicipality) {
+                    console.error('No municipality or address found for current user');
+                    updateInventoryTable([], 'No municipality found for current user');
                     return;
                 }
 
-                console.log('🔍 Sub admin address:', municipalityAddress);
+                console.log('🔍 Sub admin municipality:', subAdminMunicipality);
 
-                // First, let's check all available products to see what we have
-                console.log('🔍 Checking all available products...');
-                const { data: allProducts, error: allProductsError } = await client
-                    .from('my_products')
-                    .select(`
-                        id,
-                        name,
-                        price,
-                        quantity,
-                        category,
-                        user_id,
-                        users!inner(full_name, address)
-                    `);
-
-                if (allProductsError) {
-                    console.error('❌ Error fetching all products:', allProductsError);
-                } else {
-                    console.log('📊 All products in database:', allProducts);
-                    console.log('📍 Addresses found in products:', allProducts?.map(p => p.users?.address).filter(Boolean));
-                }
-
-                // Now let's check all users and their addresses
-                console.log('🔍 Checking all users and their addresses...');
-                const { data: allUsers, error: allUsersError } = await client
-                    .from('users')
-                    .select('id, full_name, address');
-
-                if (allUsersError) {
-                    console.error('❌ Error fetching all users:', allUsersError);
-                } else {
-                    console.log('👥 All users in database:', allUsers);
-                    console.log('📍 All addresses in users table:', allUsers?.map(u => u.address).filter(Boolean));
-                }
-
-                // Try different matching strategies
-                console.log('🔍 Trying different address matching strategies...');
-                
-                // Strategy 1: Exact match
-                let { data: municipalityUsers, error: usersError } = await client
-                    .from('users')
-                    .select('id, full_name, address')
-                    .eq('address', municipalityAddress);
-
-                console.log('📍 Strategy 1 (exact match) results:', municipalityUsers);
-
-                // Strategy 2: Case-insensitive contains match
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    ({ data: municipalityUsers, error: usersError } = await client
-                        .from('users')
-                        .select('id, full_name, address')
-                        .ilike('address', `%${municipalityAddress}%`));
-
-                    console.log('📍 Strategy 2 (ilike contains) results:', municipalityUsers);
-                }
-
-                // Strategy 3: Try extracting municipality name and matching
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    // Extract potential municipality names
-                    const addressParts = municipalityAddress.split(',').map(part => part.trim());
-                    console.log('📍 Address parts:', addressParts);
-
-                    for (const part of addressParts) {
-                        if (part.length > 3) { // Skip very short parts
-                            ({ data: municipalityUsers, error: usersError } = await client
-                                .from('users')
-                                .select('id, full_name, address')
-                                .ilike('address', `%${part}%`));
-
-                            console.log(`📍 Strategy 3 (part: "${part}") results:`, municipalityUsers);
-
-                            if (municipalityUsers && municipalityUsers.length > 0) {
-                                console.log(`✅ Found users with address part: "${part}"`);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // Strategy 4: If still no users, try to find users with products
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    console.log('📍 Strategy 4: Finding users who have products...');
-                    
-                    ({ data: municipalityUsers, error: usersError } = await client
-                        .from('users')
-                        .select(`
-                            id, 
-                            full_name, 
-                            address,
-                            my_products!inner(id)
-                        `));
-
-                    console.log('📍 Strategy 4 (users with products) results:', municipalityUsers);
-                }
-
-                if (usersError) {
-                    console.error('❌ Error fetching municipality users:', usersError);
-                    updateInventoryTable([], 'Error loading municipality users');
-                    return;
-                }
-
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    console.log('⚠️ No users found with any strategy');
-                    updateInventoryTable([], `No users found. Sub admin address: "${municipalityAddress}". Please check if this address matches users in the database.`);
-                    return;
-                }
-
-                console.log(`✅ Found ${municipalityUsers.length} users:`, municipalityUsers);
-
-                // Get user IDs for products query
-                const userIds = municipalityUsers.map(user => user.id);
-                console.log('👥 User IDs to search for products:', userIds);
-
-                // Fetch products from these users
+                // Fetch products with store owners from the same municipality using the same approach as price monitoring
+                console.log('🔍 Fetching products from store owners in the same municipality...');
                 const { data: products, error: productsError } = await client
                     .from('my_products')
                     .select(`
@@ -336,9 +233,16 @@
                         discount,
                         image_url,
                         user_id,
-                        users!inner(full_name, address)
+                        users!my_products_user_id_fkey (
+                            id,
+                            full_name,
+                            municipality,
+                            address,
+                            store-owner!store-owner_user_id_fkey (
+                                store_name
+                            )
+                        )
                     `)
-                    .in('user_id', userIds)
                     .order('name', { ascending: true });
 
                 if (productsError) {
@@ -347,14 +251,45 @@
                     return;
                 }
 
-                console.log(`✅ Found ${products ? products.length : 0} products from municipality users:`, products);
+                console.log('� All products fetched:', products?.length || 0);
 
+                // Filter products where store owner's municipality matches sub admin's municipality
+                const filteredProducts = products?.filter(product => {
+                    const storeOwnerMunicipality = product.users?.municipality;
+                    const storeOwnerAddress = product.users?.address;
+                    
+                    // Try exact municipality match first
+                    if (storeOwnerMunicipality && storeOwnerMunicipality.toLowerCase() === subAdminMunicipality.toLowerCase()) {
+                        console.log(`✅ Municipality match: ${storeOwnerMunicipality} === ${subAdminMunicipality}`);
+                        return true;
+                    }
+                    
+                    // If no municipality match, try address contains municipality as fallback
+                    if (storeOwnerAddress && storeOwnerAddress.toLowerCase().includes(subAdminMunicipality.toLowerCase())) {
+                        console.log(`✅ Address contains municipality: "${storeOwnerAddress}" contains "${subAdminMunicipality}"`);
+                        return true;
+                    }
+                    
+                    console.log(`❌ No match - Store: ${storeOwnerMunicipality || storeOwnerAddress || 'Unknown'}, Sub Admin: ${subAdminMunicipality}`);
+                    return false;
+                }) || [];
+
+                console.log(`✅ Filtered to ${filteredProducts.length} products in municipality "${subAdminMunicipality}"`);
+                console.log('Matching products:', filteredProducts?.map(p => ({
+                    name: p.name,
+                    storeOwner: p.users?.full_name,
+                    municipality: p.users?.municipality,
+                    address: p.users?.address
+                })));
+
+                
                 // Store products for pagination
-                allMunicipalityProducts = products || [];
+                allMunicipalityProducts = filteredProducts;
                 totalProducts = allMunicipalityProducts.length;
                 
+                
                 if (allMunicipalityProducts.length === 0) {
-                    updateInventoryTable([], `No products found from users in the area. Found ${municipalityUsers.length} users but no products.`);
+                    updateInventoryTable([], `No products found from store owners in "${subAdminMunicipality}" municipality.`);
                 } else {
                     updateInventoryTable(allMunicipalityProducts);
                 }
@@ -363,9 +298,7 @@
                 console.error('❌ Error in loadMunicipalityProducts:', error);
                 updateInventoryTable([], 'Error loading products');
             }
-        }
-
-        // Function to update inventory table
+        }        // Function to update inventory table
         function updateInventoryTable(products, errorMessage = null) {
             const tableBody = document.getElementById('inventoryTableBody');
             const tableInfo = document.getElementById('inventoryTableInfo');
@@ -495,14 +428,180 @@
             }
         }
 
+        // Function to show all inventory modal
+        function showAllInventoryModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allInventoryModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (allMunicipalityProducts && allMunicipalityProducts.length > 0) {
+                updateAllInventoryTable(allMunicipalityProducts);
+            } else {
+                updateAllInventoryTable([]);
+            }
+        }
+
+        // Function to update the all inventory modal table
+        function updateAllInventoryTable(inventoryData) {
+            const tableBody = document.getElementById('allInventoryTableBody');
+            const countElement = document.getElementById('allInventoryCount');
+            
+            if (!tableBody) {
+                console.error('❌ All inventory table body not found');
+                return;
+            }
+
+            if (!inventoryData || inventoryData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted p-4">
+                            <i class="fas fa-box-open me-2"></i>
+                            No inventory records found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 products found';
+                return;
+            }
+
+            // Generate all table rows
+            tableBody.innerHTML = inventoryData.map((product, index) => {
+                const statusInfo = getProductStatus(product.quantity);
+                const price = parseFloat(product.price) || 0;
+                const storeOwner = product.users?.full_name || 'Unknown';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${product.name}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${product.category}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold ${parseInt(product.quantity) <= 5 ? 'text-warning' : 'text-success'}">${product.quantity}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold">₱${price.toFixed(2)}</span>
+                        </td>
+                        <td>
+                            <span class="badge ${statusInfo.class}">${statusInfo.status}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted">${storeOwner}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${inventoryData.length} product${inventoryData.length !== 1 ? 's' : ''} found`;
+            }
+
+            // Add search functionality
+            const searchInput = document.getElementById('inventorySearchInput');
+            if (searchInput) {
+                searchInput.oninput = function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredData = inventoryData.filter(product => 
+                        product.name.toLowerCase().includes(searchTerm) ||
+                        product.category.toLowerCase().includes(searchTerm) ||
+                        (product.users?.full_name || '').toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center text-muted p-4">
+                                    <i class="fas fa-search me-2"></i>
+                                    No products found matching "${searchTerm}"
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = filteredData.map((product, index) => {
+                            const statusInfo = getProductStatus(product.quantity);
+                            const price = parseFloat(product.price) || 0;
+                            const storeOwner = product.users?.full_name || 'Unknown';
+                            
+                            return `
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">${product.name}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">${product.category}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold ${parseInt(product.quantity) <= 5 ? 'text-warning' : 'text-success'}">${product.quantity}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">₱${price.toFixed(2)}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${statusInfo.class}">${statusInfo.status}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">${storeOwner}</span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                    
+                    if (countElement) {
+                        countElement.textContent = `${filteredData.length} product${filteredData.length !== 1 ? 's' : ''} found`;
+                    }
+                };
+            }
+        }
+
         // Initialize page when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Page loaded, initializing inventory...');
             
-            // Wait a bit for shared-profile.js to load user data
-            setTimeout(() => {
-                loadMunicipalityProducts();
-            }, 1000);
+            // Wait for supabaseClient to be available from shared-profile.js
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            function checkAndLoad() {
+                attempts++;
+                console.log(`Attempt ${attempts}: Checking for supabaseClient...`);
+                
+                if (window.supabaseClient) {
+                    console.log('✅ Supabase client found, checking user session...');
+                    
+                    // Check if we have a user in session
+                    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                    console.log('Current user in session:', currentUser);
+                    
+                    if (!currentUser.id) {
+                        console.log('⚠️ No user in session, setting test user...');
+                        // Set a test user for now
+                        const testUser = {
+                            id: 1,
+                            name: 'Test Sub Admin',
+                            email: 'subadmin@test.com',
+                            userType: 'sub_admin',
+                            municipality: 'Quezon City'
+                        };
+                        sessionStorage.setItem('currentUser', JSON.stringify(testUser));
+                        console.log('Set test user:', testUser);
+                    }
+                    
+                    loadMunicipalityProducts();
+                } else if (attempts < maxAttempts) {
+                    console.log('⏳ Waiting for supabaseClient...');
+                    setTimeout(checkAndLoad, 500);
+                } else {
+                    console.error('❌ Timeout waiting for supabaseClient');
+                    updateInventoryTable([], 'Failed to initialize database connection');
+                }
+            }
+            
+            // Start checking immediately
+            checkAndLoad();
         });
 
         // Close dropdown when clicking outside
@@ -515,6 +614,50 @@
             }
         });
     </script>
+
+    <!-- All Inventory Modal -->
+    <div class="modal fade" id="allInventoryModal" tabindex="-1" aria-labelledby="allInventoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allInventoryModalLabel">All Inventory Records</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="inventorySearchInput" placeholder="Search by product name, category...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Stocks</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Store Owner</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allInventoryTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading inventory records...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allInventoryCount">0 products found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
-</html>
+

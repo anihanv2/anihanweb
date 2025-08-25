@@ -138,55 +138,135 @@ body {
     padding: 0;
 }
 
-.price-monitoring-table {
+/* Table Styles */
+.table-responsive {
+    padding: 0;
+}
+
+.price-table {
     width: 100%;
+    margin: 0;
     border-collapse: collapse;
 }
 
-.price-monitoring-table thead {
-    background: #f8f9fa;
-}
-
-.price-monitoring-table th {
+.price-table th {
     font-weight: 600;
-    padding: 20px 30px;
+    padding: 15px 20px;
+    background: #f8f9fa;
     border-bottom: 2px solid #e9ecef;
     color: #495057;
-    font-size: 0.95rem;
-    text-align: left;
 }
 
-.price-monitoring-table th:first-child {
-    width: 25%;
-}
-
-.price-monitoring-table th:nth-child(2) {
-    width: 40%;
-    padding-left: 60px;
-}
-
-.price-monitoring-table th:nth-child(3) {
-    width: 35%;
-}
-
-.price-monitoring-table td {
-    padding: 20px 30px;
+.price-table td {
+    padding: 15px 20px;
     border-bottom: 1px solid #e9ecef;
     color: #495057;
-    font-size: 0.9rem;
-    vertical-align: middle;
 }
 
-.price-monitoring-table td:nth-child(2) {
-    padding-left: 60px;
-}
-
-.price-monitoring-table td:first-child {
-    padding: 15px 20px;
-}
-
-.price-monitoring-table tbody tr:hover {
+.price-table tr:hover {
     background: #f8f9fa;
+}
+
+/* Footer Styles */
+.price-card-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e9ecef;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+}
+
+.price-pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.price-pagination .btn {
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: white;
+    border: 1px solid #ddd;
+    color: #495057;
+}
+
+.price-pagination .btn:hover {
+    background: #e9ecef;
+}
+
+.price-pagination .btn.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+/* Price monitoring specific styles */
+.product-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.product-size {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.category-badge {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.price {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 1rem;
+}
+
+.discount {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.store-name {
+    font-weight: 600;
+    color: #495057;
+}
+
+.store-location {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Loading and empty states */
+.price-table tbody td.text-center {
+    padding: 3rem 1rem;
+}
+
+.price-table tbody td.text-center i {
+    font-size: 2rem;
+    color: #dee2e6;
+}
+
+/* Product image styling */
+.price-table img {
+    border: 1px solid #dee2e6;
 }
 
 /* Product Image Placeholder */
@@ -202,76 +282,19 @@ body {
     font-size: 0.8rem;
 }
 
-/* Empty Table State */
-.price-monitoring-table tbody:empty::after {
-    content: '';
-    display: block;
-    height: 200px;
-}
-
-/* Footer Styles */
-.table-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 30px;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
-    font-size: 0.85rem;
-}
-
-.table-info-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.table-info {
-    color: #6c757d;
-}
-
-.view-all {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.view-all:hover {
-    text-decoration: underline;
-}
-
-.pagination-controls {
-    display: flex;
-    gap: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.pagination-controls .btn {
-    min-width: 32px;
-    height: 32px;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-    border-radius: 0;
-    background: white;
-    border: none;
-    border-right: 1px solid #ddd;
-    color: #495057;
-}
-
-.pagination-controls .btn:last-child {
-    border-right: none;
-}
-
-.pagination-controls .btn:hover {
-    background: #e9ecef;
-}
-
-.pagination-controls .btn-success {
-    background: #28a745;
-    color: white;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .product-name {
+        font-size: 0.9rem;
+    }
+    
+    .store-name {
+        font-size: 0.9rem;
+    }
+    
+    .store-location {
+        font-size: 0.8rem;
+    }
 }
 
 .pagination-controls .btn-success:hover {
@@ -319,44 +342,39 @@ body {
         height: 40px;
         font-size: 0.7rem;
     }
-    
-    .table-footer {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-        padding: 15px 20px;
-    }
-    
-    .pagination-controls {
-        align-self: center;
-    }
 }
 
 @media (max-width: 576px) {
-    .price-monitoring-card-header h4 {
-        font-size: 1.25rem;
+    .price-card-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
     }
     
-    .price-monitoring-table {
+    .footer-left {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .price-pagination {
+        justify-content: center;
+    }
+    
+    .price-table {
         font-size: 0.8rem;
     }
     
-    .price-monitoring-table th,
-    .price-monitoring-table td {
+    .price-table th,
+    .price-table td {
         padding: 12px 8px;
     }
     
-    .product-image-placeholder {
-        width: 35px;
-        height: 35px;
-        font-size: 0.6rem;
-    }
-    
     /* Hide some columns on very small screens */
-    .price-monitoring-table th:nth-child(3),
-    .price-monitoring-table td:nth-child(3),
-    .price-monitoring-table th:nth-child(6),
-    .price-monitoring-table td:nth-child(6) {
+    .price-table th:nth-child(3),
+    .price-table td:nth-child(3),
+    .price-table th:nth-child(6),
+    .price-table td:nth-child(6) {
         display: none;
     }
 }
@@ -377,13 +395,18 @@ body {
     transform: translateY(-50%);
     color: #6c757d;
     font-size: 0.9rem;
+    pointer-events: none;
 }
 
 .search-input {
     padding-left: 2.5rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     background-color: #f8f9fa;
+    height: 38px;
 }
 
 .search-input:focus {
@@ -391,4 +414,32 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4) !important;
     background-color: white !important;
     outline: none !important;
+}
+
+/* Modal Styles */
+#allPriceMonitoringModal .modal-dialog {
+    max-width: 95%;
+}
+
+#allPriceMonitoringModal .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#allPriceMonitoringModal .table td {
+    vertical-align: middle;
+}
+
+#priceMonitoringSearchInput {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+#priceMonitoringSearchInput:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    outline: none;
 }

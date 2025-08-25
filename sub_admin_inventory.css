@@ -332,3 +332,31 @@ body {
     background-color: white !important;
     outline: none !important;
 }
+
+/* Modal Styles */
+#allInventoryModal .modal-dialog {
+    max-width: 95%;
+}
+
+#allInventoryModal .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#allInventoryModal .table td {
+    vertical-align: middle;
+}
+
+#inventorySearchInput {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+#inventorySearchInput:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+    outline: none;
+}

@@ -92,8 +92,8 @@
                     </div>
                     
                     <div class="table-responsive">
-                            <table class="table price-monitoring-table">
-                                <thead>
+                        <table class="price-table">
+                            <thead>
                                 <tr>
                                     <th>Image</th>
                                     <th>Product Name</th>
@@ -102,29 +102,28 @@
                                     <th>Store name</th>
                                     <th>Store location</th>
                                 </tr>
-                                </thead>
-                                <tbody id="priceMonitoringTableBody">
-                                    <tr>
-                                        <td colspan="6" class="text-center">
-                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                                            Loading price monitoring data...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            </thead>
+                            <tbody id="priceMonitoringTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                        Loading price monitoring data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="price-card-footer">
+                        <div class="footer-left">
+                            <span class="table-info" id="priceMonitoringTableInfo" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllPriceMonitoringModal()">View all &gt;</a>
                         </div>
-                        
-                        <div class="table-footer">
-                            <div class="table-info-section">
-                                <span class="table-info" id="priceMonitoringTableInfo">0 to 0 items of 0</span>
-                                <a href="#" class="view-all">View all ></a>
-                            </div>
-                            <div class="pagination-controls">
-                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
-                                <button class="btn btn-sm btn-success" id="currentPageBtn">1</button>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">&gt;</button>
-                            </div>
+                        <div class="price-pagination">
+                            <button class="btn" onclick="changePage(-1)">&lt;</button>
+                            <button class="btn active" id="currentPageBtn">1</button>
+                            <button class="btn" onclick="changePage(1)">&gt;</button>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -132,9 +131,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Supabase -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
+    <!-- Add Supabase Client (required by shared-profile.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Shared Profile System -->
     <script src="shared-profile.js"></script>
     
@@ -181,16 +179,16 @@
 
                 console.log('Current user:', currentUser);
                 
-                // Get sub admin's municipality (use municipality field if available, fallback to address)
-                let userMunicipality = currentUser.municipality || currentUser.address;
+                // Get sub admin's municipality
+                let subAdminMunicipality = currentUser.municipality || currentUser.address;
                 
-                if (!userMunicipality) {
-                    console.error('No municipality or address found for current user');
+                if (!subAdminMunicipality) {
+                    console.error('No municipality found for current user');
                     updatePriceMonitoringTable([], 'No municipality found for current user');
                     return;
                 }
 
-                console.log('🔍 Sub admin municipality:', userMunicipality);
+                console.log('🔍 Sub admin municipality:', subAdminMunicipality);
 
                 // First, let's check all available products to see what we have
                 console.log('🔍 Checking all available products...');
@@ -204,7 +202,7 @@
                         category,
                         image_url,
                         user_id,
-                        users!inner(full_name, address, municipality)
+                        users!inner(full_name, municipality, address)
                     `);
 
                 if (allProductsError) {
@@ -218,7 +216,7 @@
                 console.log('🔍 Checking all users and their municipalities...');
                 const { data: allUsers, error: allUsersError } = await client
                     .from('users')
-                    .select('id, full_name, address, municipality');
+                    .select('id, full_name, municipality, address');
 
                 if (allUsersError) {
                     console.error('❌ Error fetching all users:', allUsersError);
@@ -227,85 +225,9 @@
                     console.log('📍 All municipalities in users table:', allUsers?.map(u => u.municipality).filter(Boolean));
                 }
 
-                // Try different matching strategies for municipality
-                console.log('🔍 Trying different municipality matching strategies...');
+                // Use municipality-based matching like other pages
+                console.log('🔍 Fetching products from same municipality...');
                 
-                // Strategy 1: Exact municipality match
-                let { data: municipalityUsers, error: usersError } = await client
-                    .from('users')
-                    .select('id, full_name, address, municipality')
-                    .eq('municipality', userMunicipality);
-
-                console.log('📍 Strategy 1 (exact municipality match) results:', municipalityUsers);
-
-                // Strategy 2: Case-insensitive municipality contains match
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    ({ data: municipalityUsers, error: usersError } = await client
-                        .from('users')
-                        .select('id, full_name, address, municipality')
-                        .ilike('municipality', `%${userMunicipality}%`));
-
-                    console.log('📍 Strategy 2 (ilike municipality contains) results:', municipalityUsers);
-                }
-
-                // Strategy 3: Try matching by address if municipality doesn't work
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    ({ data: municipalityUsers, error: usersError } = await client
-                        .from('users')
-                        .select('id, full_name, address, municipality')
-                        .ilike('address', `%${userMunicipality}%`));
-
-                    console.log('📍 Strategy 3 (address contains) results:', municipalityUsers);
-                }
-
-                // Strategy 4: Try matching just "Lipa" if municipality contains "Lipa City"
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    if (userMunicipality.toLowerCase().includes('lipa')) {
-                        ({ data: municipalityUsers, error: usersError } = await client
-                            .from('users')
-                            .select('id, full_name, address, municipality')
-                            .ilike('municipality', '%lipa%'));
-
-                        console.log('📍 Strategy 4 (lipa municipality) results:', municipalityUsers);
-                    }
-                }
-
-                // Strategy 5: If still no users, try to find users with products
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    console.log('📍 Strategy 5: Finding users who have products...');
-                    
-                    ({ data: municipalityUsers, error: usersError } = await client
-                        .from('users')
-                        .select(`
-                            id, 
-                            full_name, 
-                            address,
-                            municipality,
-                            my_products!inner(id)
-                        `));
-
-                    console.log('📍 Strategy 5 (users with products) results:', municipalityUsers);
-                }
-
-                if (usersError) {
-                    console.error('❌ Error fetching municipality users:', usersError);
-                    updatePriceMonitoringTable([], 'Error loading municipality users');
-                    return;
-                }
-
-                if (!municipalityUsers || municipalityUsers.length === 0) {
-                    console.log('⚠️ No users found with any strategy');
-                    updatePriceMonitoringTable([], `No users found. Sub admin municipality: "${userMunicipality}". Please check if this municipality matches users in the database.`);
-                    return;
-                }
-
-                console.log(`✅ Found ${municipalityUsers.length} users:`, municipalityUsers);
-
-                // Get user IDs for products query
-                const userIds = municipalityUsers.map(user => user.id);
-                console.log('👥 User IDs to search for products:', userIds);
-
-                // Fetch products from these users with store information
                 const { data: products, error: productsError } = await client
                     .from('my_products')
                     .select(`
@@ -314,11 +236,20 @@
                         price,
                         quantity,
                         category,
+                        description,
+                        discount,
                         image_url,
                         user_id,
-                        users!inner(full_name, address, municipality)
+                        users!my_products_user_id_fkey (
+                            id,
+                            full_name,
+                            municipality,
+                            address,
+                            store-owner!store-owner_user_id_fkey (
+                                store_name
+                            )
+                        )
                     `)
-                    .in('user_id', userIds)
                     .order('name', { ascending: true });
 
                 if (productsError) {
@@ -327,14 +258,40 @@
                     return;
                 }
 
-                console.log(`✅ Found ${products ? products.length : 0} products from municipality users:`, products);
+                console.log('📦 All products fetched:', products?.length || 0);
+
+                // Filter products where store owner's municipality matches sub admin's municipality
+                const filteredProducts = products?.filter(product => {
+                    const storeOwnerMunicipality = product.users?.municipality;
+                    const storeOwnerAddress = product.users?.address;
+                    
+                    // First try exact municipality match
+                    if (storeOwnerMunicipality === subAdminMunicipality) {
+                        return true;
+                    }
+                    
+                    // Fallback: check if address contains municipality
+                    if (!storeOwnerMunicipality && storeOwnerAddress) {
+                        return storeOwnerAddress.toLowerCase().includes(subAdminMunicipality.toLowerCase());
+                    }
+                    
+                    return false;
+                }) || [];
+
+                console.log('Filtered products for municipality:', filteredProducts?.length || 0);
+                console.log('Matching products:', filteredProducts?.map(p => ({
+                    name: p.name,
+                    storeOwner: p.users?.full_name,
+                    municipality: p.users?.municipality,
+                    address: p.users?.address
+                })));
 
                 // Store products for pagination
-                allMunicipalityProducts = products || [];
+                allMunicipalityProducts = filteredProducts;
                 totalProducts = allMunicipalityProducts.length;
                 
                 if (allMunicipalityProducts.length === 0) {
-                    updatePriceMonitoringTable([], `No products found from users in the area. Found ${municipalityUsers.length} users but no products.`);
+                    updatePriceMonitoringTable([], `No products found from store owners in "${subAdminMunicipality}" municipality.`);
                 } else {
                     updatePriceMonitoringTable(allMunicipalityProducts);
                 }
@@ -427,7 +384,7 @@
             tableBody.innerHTML = pageProducts.map(product => {
                 const price = parseFloat(product.price) || 0;
                 const storeName = product.users?.full_name || 'Unknown Store';
-                const storeLocation = getMunicipality(product.users) || 'Unknown Location';
+                const storeLocation = product.users?.municipality || 'Unknown Municipality';
                 
                 return `
                     <tr>
@@ -438,19 +395,19 @@
                             }
                         </td>
                         <td>
-                            <div class="fw-bold">${product.name}</div>
+                            <div class="product-name">${product.name}</div>
                         </td>
                         <td>
-                            <span class="badge bg-secondary">${product.category}</span>
+                            <span class="category-badge">${product.category}</span>
                         </td>
                         <td>
-                            <span class="fw-bold text-success">₱${price.toFixed(2)}</span>
+                            <span class="price">₱${price.toFixed(2)}</span>
                         </td>
                         <td>
-                            <div class="fw-bold">${storeName}</div>
+                            <div class="store-name">${storeName}</div>
                         </td>
                         <td>
-                            <span class="text-muted">${storeLocation}</span>
+                            <span class="store-location">${storeLocation}</span>
                         </td>
                     </tr>
                 `;
@@ -471,77 +428,13 @@
             console.log(`📄 Displaying page ${page}: ${pageProducts.length} products`);
         }
 
-        // Function to extract municipality from address (fallback)
+        // Function to extract municipality from address
         function extractMunicipality(address) {
             if (!address) return 'Unknown';
             
-            // Clean the address and split by common separators
-            const cleanAddress = address.trim();
-            
-            // Split by comma, semicolon, or pipe and get parts
-            const parts = cleanAddress.split(/[,;|]/).map(part => part.trim()).filter(part => part.length > 0);
-            
-            // Look for common municipality patterns
-            for (const part of parts) {
-                const lowerPart = part.toLowerCase();
-                
-                // Check if it contains municipality keywords
-                if (lowerPart.includes('city') || 
-                    lowerPart.includes('municipality') || 
-                    lowerPart.includes('town') ||
-                    lowerPart.includes('metro') ||
-                    lowerPart.includes('provincial')) {
-                    return part;
-                }
-                
-                // Check for specific known municipalities/cities
-                if (lowerPart.includes('lipa') || 
-                    lowerPart.includes('batangas') ||
-                    lowerPart.includes('manila') ||
-                    lowerPart.includes('quezon') ||
-                    lowerPart.includes('makati') ||
-                    lowerPart.includes('taguig') ||
-                    lowerPart.includes('pasig') ||
-                    lowerPart.includes('marikina') ||
-                    lowerPart.includes('caloocan') ||
-                    lowerPart.includes('valenzuela')) {
-                    return part;
-                }
-            }
-            
-            // If no specific municipality found, try to get the largest/most significant part
-            if (parts.length > 0) {
-                // Usually the municipality is one of the longer parts or the last part
-                const longestPart = parts.reduce((a, b) => a.length > b.length ? a : b);
-                
-                // If the longest part is reasonable length, use it
-                if (longestPart.length >= 4 && longestPart.length <= 25) {
-                    return longestPart;
-                }
-                
-                // Otherwise use the last part (often the broader location)
-                return parts[parts.length - 1];
-            }
-            
-            // Fallback to first 20 characters of address
-            return cleanAddress.substring(0, 20) + (cleanAddress.length > 20 ? '...' : '');
-        }
-
-        // Function to get municipality from user data
-        function getMunicipality(user) {
-            if (!user) return 'Unknown';
-            
-            // Use municipality field if available, fallback to address
-            if (user.municipality) {
-                return user.municipality;
-            }
-            
-            // If no municipality field, try to extract from address
-            if (user.address) {
-                return extractMunicipality(user.address);
-            }
-            
-            return 'Unknown';
+            // Try to extract the last part of the address which is usually the municipality
+            const parts = address.split(',').map(part => part.trim());
+            return parts[parts.length - 1] || address;
         }
 
         // Function to change page
@@ -552,6 +445,142 @@
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
                 displayPriceMonitoringPage(currentPage);
+            }
+        }
+
+        // Function to show all price monitoring modal
+        function showAllPriceMonitoringModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allPriceMonitoringModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (allMunicipalityProducts && allMunicipalityProducts.length > 0) {
+                updateAllPriceMonitoringTable(allMunicipalityProducts);
+            } else {
+                updateAllPriceMonitoringTable([]);
+            }
+        }
+
+        // Function to update the all price monitoring modal table
+        function updateAllPriceMonitoringTable(priceData) {
+            const tableBody = document.getElementById('allPriceMonitoringTableBody');
+            const countElement = document.getElementById('allPriceMonitoringCount');
+            
+            if (!tableBody) {
+                console.error('❌ All price monitoring table body not found');
+                return;
+            }
+
+            if (!priceData || priceData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted p-4">
+                            <i class="fas fa-box-open me-2"></i>
+                            No price monitoring records found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 products found';
+                return;
+            }
+
+            // Generate all table rows
+            tableBody.innerHTML = priceData.map((product, index) => {
+                const price = parseFloat(product.price) || 0;
+                const storeName = product.users?.full_name || 'Unknown Store';
+                const storeLocation = product.users?.municipality || 'Unknown Municipality';
+                
+                return `
+                    <tr>
+                        <td>
+                            ${product.image_url ? 
+                                `<img src="${product.image_url}" class="product-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="${product.name}">` : 
+                                '<div class="product-placeholder d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><i class="fas fa-image text-muted"></i></div>'
+                            }
+                        </td>
+                        <td>
+                            <div class="product-name">${product.name}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">${product.category}</span>
+                        </td>
+                        <td>
+                            <span class="price">₱${price.toFixed(2)}</span>
+                        </td>
+                        <td>
+                            <span class="store-name">${storeName}</span>
+                        </td>
+                        <td>
+                            <span class="store-location">${storeLocation}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${priceData.length} product${priceData.length !== 1 ? 's' : ''} found`;
+            }
+
+            // Add search functionality
+            const searchInput = document.getElementById('priceMonitoringSearchInput');
+            if (searchInput) {
+                searchInput.oninput = function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const filteredData = priceData.filter(product => 
+                        product.name.toLowerCase().includes(searchTerm) ||
+                        product.category.toLowerCase().includes(searchTerm) ||
+                        (product.users?.full_name || '').toLowerCase().includes(searchTerm) ||
+                        (product.users?.municipality || '').toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filteredData.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center text-muted p-4">
+                                    <i class="fas fa-search me-2"></i>
+                                    No products found matching "${searchTerm}"
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = filteredData.map((product, index) => {
+                            const price = parseFloat(product.price) || 0;
+                            const storeName = product.users?.full_name || 'Unknown Store';
+                            const storeLocation = product.users?.municipality || 'Unknown Municipality';
+                            
+                            return `
+                                <tr>
+                                    <td>
+                                        ${product.image_url ? 
+                                            `<img src="${product.image_url}" class="product-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="${product.name}">` : 
+                                            '<div class="product-placeholder d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><i class="fas fa-image text-muted"></i></div>'
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="product-name">${product.name}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">${product.category}</span>
+                                    </td>
+                                    <td>
+                                        <span class="price">₱${price.toFixed(2)}</span>
+                                    </td>
+                                    <td>
+                                        <span class="store-name">${storeName}</span>
+                                    </td>
+                                    <td>
+                                        <span class="store-location">${storeLocation}</span>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                    
+                    if (countElement) {
+                        countElement.textContent = `${filteredData.length} product${filteredData.length !== 1 ? 's' : ''} found`;
+                    }
+                };
             }
         }
 
@@ -575,6 +604,49 @@
             }
         });
     </script>
+
+    <!-- All Price Monitoring Modal -->
+    <div class="modal fade" id="allPriceMonitoringModal" tabindex="-1" aria-labelledby="allPriceMonitoringModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allPriceMonitoringModalLabel">All Price Monitoring Records</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="priceMonitoringSearchInput" placeholder="Search by product name, store name, category...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product Image</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Store Name</th>
+                                    <th>Store Location</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allPriceMonitoringTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading price monitoring records...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allPriceMonitoringCount">0 products found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-</html>
 </html>

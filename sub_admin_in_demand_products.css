@@ -190,6 +190,86 @@ body {
     border-top: 1px solid #e9ecef;
 }
 
+.footer-left {
+    color: #6c757d;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.view-all {
+    display: flex;
+    align-items: center;
+}
+
+.view-all-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.view-all-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination-controls .pagination-btn {
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 5px 10px;
+    background: white;
+    border: 1px solid #ddd;
+    color: #495057;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-controls .pagination-btn:disabled {
+    background: #f8f9fa;
+    border-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.pagination-controls .active-page {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+/* Modal Styles */
+#allInDemandModal .modal-dialog {
+    max-width: 95%;
+}
+
+#allInDemandModal .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#allInDemandModal .table td {
+    vertical-align: middle;
+}
+
+#inDemandSearchInput {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
 .demand-pagination {
     display: flex;
     align-items: center;
