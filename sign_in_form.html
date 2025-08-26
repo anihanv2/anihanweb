@@ -32,10 +32,12 @@
                     <label for="password" class="form-label">PASSWORD</label>
                     <div class="input-container">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="•••••" required>
-                        <button type="button" class="password-toggle-btn" id="togglePassword">
-                            <i class="fas fa-eye-slash" id="eyeIcon"></i>
-                        </button>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="•••••" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -83,11 +85,27 @@
             return Math.abs(hash).toString(16);
         }
 
+        // Test function to check password hashing - call this in browser console
+        window.testPasswordHash = function(password) {
+            const hash = hashPassword(password);
+            console.log('Password:', password);
+            console.log('Hash:', hash);
+            console.log('Method:', typeof CryptoJS !== 'undefined' && CryptoJS.MD5 ? 'MD5' : 'Simple Hash');
+            return hash;
+        };
+
         // Function to authenticate user against database
         async function authenticateUser(name, password) {
             try {
-                const hashedPassword = hashPassword(password);
+                console.log('=== LOGIN ATTEMPT ===');
+                console.log('Input name:', name);
+                console.log('Input password length:', password.length);
                 
+                const hashedPassword = hashPassword(password);
+                console.log('Hashed password:', hashedPassword);
+                console.log('Hash method used:', typeof CryptoJS !== 'undefined' && CryptoJS.MD5 ? 'MD5' : 'Simple Hash');
+                
+                console.log('Querying database for user...');
                 const { data: admin, error } = await supabaseClient
                     .from('admin_accounts')
                     .select('*')
@@ -95,10 +113,31 @@
                     .eq('password', hashedPassword)
                     .single();
                 
+                console.log('Database response:', { admin, error });
+                
                 if (error || !admin) {
+                    console.log('Authentication failed - trying alternative queries...');
+                    
+                    // Try to find user by name only to see if user exists
+                    const { data: userCheck, error: userError } = await supabaseClient
+                        .from('admin_accounts')
+                        .select('name, password')
+                        .eq('name', name);
+                    
+                    console.log('User check by name:', { userCheck, userError });
+                    
+                    if (userCheck && userCheck.length > 0) {
+                        console.log('User exists but password doesn\'t match');
+                        console.log('Stored password hash:', userCheck[0].password);
+                        console.log('Generated password hash:', hashedPassword);
+                    } else {
+                        console.log('User not found in database');
+                    }
+                    
                     return null;
                 }
                 
+                console.log('Authentication successful!');
                 return admin;
             } catch (error) {
                 console.error('Authentication error:', error);
@@ -124,16 +163,16 @@
         // Show/Hide Password Toggle
         document.getElementById('togglePassword').addEventListener('click', function() {
             const passwordField = document.getElementById('password');
-            const eyeIcon = document.getElementById('eyeIcon');
+            const toggleIcon = this.querySelector('i');
             
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
             } else {
                 passwordField.type = 'password';
-                eyeIcon.classList.remove('fa-eye');
-                eyeIcon.classList.add('fa-eye-slash');
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         });
 

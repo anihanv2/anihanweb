@@ -100,6 +100,51 @@ body {
 }
 
 /* Password Input Container */
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group > .form-control {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group > .btn {
+    position: relative;
+    z-index: 2;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #e0e0e0;
+    background-color: transparent;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-secondary:hover {
+    color: #28a745;
+    background-color: #f8f9fa;
+    border-color: #28a745;
+}
+
+.btn-outline-secondary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
+    outline: none;
+}
+
 .password-toggle-btn {
     position: absolute;
     right: 15px;

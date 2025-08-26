@@ -309,55 +309,52 @@
                 }
             });
 
-            // View all toggle event
-            document.querySelector('.view-all').addEventListener('click', function(e) {
-                e.preventDefault();
-                toggleViewAll();
-            });
+            // View all toggle event - with safety check
+            const viewAllElement = document.querySelector('.view-all');
+            if (viewAllElement) {
+                viewAllElement.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleViewAll();
+                });
+            } else {
+                console.log('View-all element not found - skipping event listener');
+            }
 
             // Contact number validation - only numbers and max 12 characters
-            document.getElementById('contactNumber').addEventListener('input', function(e) {
-                // Remove any non-numeric characters
-                let value = e.target.value.replace(/[^0-9]/g, '');
-                
-                // Limit to 12 characters
-                if (value.length > 12) {
-                    value = value.substring(0, 12);
-                }
-                
-                // Update the input value
-                e.target.value = value;
-            });
+            const contactNumberInput = document.getElementById('contactNumber');
+            if (contactNumberInput) {
+                contactNumberInput.addEventListener('input', function(e) {
+                    // Remove any non-numeric characters
+                    let value = e.target.value.replace(/[^0-9]/g, '');
+                    
+                    // Limit to 12 characters
+                    if (value.length > 12) {
+                        value = value.substring(0, 12);
+                    }
+                    
+                    // Update the input value
+                    e.target.value = value;
+                });
+            }
 
             // Contact number validation on paste
-            document.getElementById('contactNumber').addEventListener('paste', function(e) {
-                e.preventDefault();
-                
-                // Get pasted text
-                let pastedText = (e.clipboardData || window.clipboardData).getData('text');
-                
-                // Remove non-numeric characters and limit to 12 digits
-                let cleanedText = pastedText.replace(/[^0-9]/g, '').substring(0, 12);
-                
-                // Set the cleaned value
-                e.target.value = cleanedText;
-            });
+            if (contactNumberInput) {
+                contactNumberInput.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    
+                    // Get pasted text
+                    let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                    
+                    // Remove non-numeric characters and limit to 12 digits
+                    let cleanedText = pastedText.replace(/[^0-9]/g, '').substring(0, 12);
+                    
+                    // Set the cleaned value
+                    e.target.value = cleanedText;
+                });
+            }
 
-            // Password toggle functionality
-            document.getElementById('togglePassword').addEventListener('click', function() {
-                const passwordField = document.getElementById('password');
-                const toggleIcon = this.querySelector('i');
-                
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    toggleIcon.classList.remove('fa-eye');
-                    toggleIcon.classList.add('fa-eye-slash');
-                } else {
-                    passwordField.type = 'password';
-                    toggleIcon.classList.remove('fa-eye-slash');
-                    toggleIcon.classList.add('fa-eye');
-                }
-            });
+            // Password toggle functionality will be handled at the bottom of the page
+            console.log('Password toggle setup moved to bottom script');
         });
 
         // Function to load current user profile data
@@ -1278,11 +1275,17 @@ Common issues:
 
         // Function to toggle "View All" mode
         function toggleViewAll() {
+            const viewAllElement = document.querySelector('.view-all');
+            if (!viewAllElement) {
+                console.log('View-all element not found in toggleViewAll');
+                return;
+            }
+            
             showAllMode = !showAllMode;
             if (showAllMode) {
-                document.querySelector('.view-all').textContent = 'Show pages <';
+                viewAllElement.textContent = 'Show pages <';
             } else {
-                document.querySelector('.view-all').textContent = 'View all >';
+                viewAllElement.textContent = 'View all >';
                 currentPage = 1; // Reset to first page when exiting view all mode
             }
             displayAdminAccounts();
@@ -1456,6 +1459,15 @@ Common issues:
             return text.toString().replace(/[&<>"']/g, m => map[m]);
         }
 
+        // Test function to check password hashing - call this in browser console
+        window.testPasswordHash = function(password) {
+            const hash = hashPassword(password);
+            console.log('Password:', password);
+            console.log('Hash:', hash);
+            console.log('Method:', typeof CryptoJS !== 'undefined' && CryptoJS.MD5 ? 'MD5' : 'Simple Hash');
+            return hash;
+        };
+
         // Function to add new admin account - ADDED PASSWORD
         async function addAdminAccount(formData) {
             try {
@@ -1501,8 +1513,11 @@ Common issues:
                     image_url: imageUrl
                 };
                 
+                console.log('=== CREATING ADMIN ACCOUNT ===');
                 console.log('Data to insert:', insertData);
                 console.log('Image URL being saved:', imageUrl);
+                console.log('Password hash method:', typeof CryptoJS !== 'undefined' && CryptoJS.MD5 ? 'MD5' : 'Simple Hash');
+                console.log('Generated password hash:', insertData.password);
                 console.log('Password hash:', insertData.password);
                 
                 const { data, error } = await supabaseClient
@@ -2034,5 +2049,97 @@ Common issues:
             </div>
         </div>
     </div>
+
+    <!-- Password Toggle Script - Single Implementation -->
+    <script>
+        console.log('Setting up password toggle...');
+        
+        // Function to setup password toggle
+        function setupPasswordToggle() {
+            const toggleBtn = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            console.log('Toggle button found:', !!toggleBtn);
+            console.log('Password input found:', !!passwordInput);
+            
+            if (toggleBtn && passwordInput) {
+                // Remove any existing onclick to prevent conflicts
+                toggleBtn.onclick = null;
+                
+                // Clear any existing event listeners by cloning the element
+                const newToggleBtn = toggleBtn.cloneNode(true);
+                toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+                
+                // Add the click event to the new button
+                newToggleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const icon = this.querySelector('i');
+                    console.log('Button clicked, current password type:', passwordInput.type);
+                    
+                    if (icon) {
+                        if (passwordInput.type === 'password') {
+                            passwordInput.type = 'text';
+                            icon.className = 'fas fa-eye-slash';
+                            console.log('Changed to text (visible)');
+                        } else {
+                            passwordInput.type = 'password';
+                            icon.className = 'fas fa-eye';
+                            console.log('Changed to password (hidden)');
+                        }
+                    } else {
+                        console.error('Icon not found inside toggle button');
+                    }
+                });
+                
+                console.log('✅ Password toggle setup complete');
+                return true;
+            } else {
+                console.error('❌ Password toggle elements not found');
+                return false;
+            }
+        }
+        
+        // Try setup immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupPasswordToggle);
+        } else {
+            setupPasswordToggle();
+        }
+        
+        // Also try with a delay as backup
+        setTimeout(setupPasswordToggle, 1000);
+        
+        // Manual test function - call this in browser console: testPasswordToggle()
+        window.testPasswordToggle = function() {
+            const toggleBtn = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            console.log('=== MANUAL PASSWORD TOGGLE TEST ===');
+            console.log('Toggle button:', toggleBtn);
+            console.log('Password input:', passwordInput);
+            
+            if (toggleBtn && passwordInput) {
+                const icon = toggleBtn.querySelector('i');
+                console.log('Icon element:', icon);
+                console.log('Current password type:', passwordInput.type);
+                console.log('Current icon classes:', icon ? icon.className : 'no icon');
+                
+                // Manually trigger the toggle
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    if (icon) icon.className = 'fas fa-eye-slash';
+                    console.log('✅ Manually changed to visible');
+                } else {
+                    passwordInput.type = 'password';
+                    if (icon) icon.className = 'fas fa-eye';
+                    console.log('✅ Manually changed to hidden');
+                }
+            } else {
+                console.error('❌ Elements not found for manual test');
+            }
+        };
+    </script>
 </body>
 </html>
