@@ -155,11 +155,18 @@
                     <div class="col-12">
                         <div class="approval-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><b>Approved Application</b></h5>
-                                <!-- Search Bar in Header -->
-                                <div class="search-container">
-                                    <i class="fas fa-search search-icon"></i>
-                                    <input type="text" class="form-control search-input" placeholder="Search...">
+                                <h5 class="mb-0"><b>Processed Applications</b></h5>
+                                <!-- Search Bar and Filter -->
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" id="statusFilter" onchange="filterByStatus()">
+                                        <option value="all">All Status</option>
+                                        <option value="accepted">Accepted</option>
+                                        <option value="declined">Declined</option>
+                                    </select>
+                                    <div class="search-container">
+                                        <i class="fas fa-search search-icon"></i>
+                                        <input type="text" class="form-control search-input" placeholder="Search..." onkeyup="searchApplications(this.value)">
+                                    </div>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -167,25 +174,15 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th>Full Name</th>
-                                                <th>Email</th>
-                                                <th>Phone</th>
-                                                <th>Approval Status</th>
+                                                <th>Store Name</th>
+                                                <th>Municipality</th>
+                                                <th>Status</th>
+                                                <th>Date Processed</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>John Doe</td>
-                                                <td>John.doe@example.com</td>
-                                                <td>09123456544</td>
-                                                <td><span class="badge bg-success">Pending Approval</span></td>
-                                                <td>
-                                                    <button class="btn btn-primary btn-sm view-btn">
-                                                        View Info
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                        <tbody id="approvedApplicationsTableBody">
+                                            <!-- Dynamic content will be loaded here -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -210,269 +207,256 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <!-- Add Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Add CryptoJS for MD5 hashing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- Shared Profile System -->
+    <script src="shared-profile.js"></script>
+    
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE'
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        // Use the global supabaseClient from shared-profile.js
+        // No need to redeclare Supabase configuration as it's already in shared-profile.js
 
-        // Current user ID for tracking
-        window.currentUserId = null;
+        // Store all applications data for filtering
+        let allApplicationsData = [];
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing profile...');
-            loadCurrentUserProfile();
+            console.log('Page loaded, initializing approved applications...');
+            loadProcessedApplications();
         });
 
-        // Profile loading functions
-        async function loadCurrentUserProfile() {
+        // Load all processed applications (accepted and declined)
+        async function loadProcessedApplications() {
             try {
-                console.log('=== LOADING CURRENT USER PROFILE ===');
+                console.log('=== LOADING PROCESSED APPLICATIONS ===');
                 
-                // Get current user from session storage (set during login)
-                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
-                console.log('Session storage user:', currentUser);
-                
-                if (!currentUser.id || currentUser.id === 'fallback') {
-                    console.log('No valid logged-in user found in session, checking database...');
-                    await loadFirstUserForTesting();
+                // Wait for supabaseClient to be available from shared-profile.js
+                if (!window.supabaseClient) {
+                    console.log('Waiting for supabaseClient to be available...');
+                    setTimeout(loadProcessedApplications, 1000);
                     return;
                 }
                 
-                console.log('Found logged-in user with ID:', currentUser.id);
-                window.currentUserId = currentUser.id;
+                console.log('Supabase client:', window.supabaseClient);
                 
-                // Fetch the actual user data from database using their ID
-                try {
-                    const { data: userData, error } = await supabaseClient
-                        .from('admin_accounts')
-                        .select('*')
-                        .eq('id', currentUser.id)
-                        .single();
-                    
-                    if (error) {
-                        console.error('Database error fetching user:', error);
-                        await loadFirstUserForTesting();
-                        return;
-                    }
-                    
-                    if (userData) {
-                        console.log('Logged-in user data from database:', userData);
-                        
-                        // Update session with fresh data
-                        const userSession = {
-                            id: userData.id,
-                            name: userData.name,
-                            email: userData.email,
-                            userType: userData.user_type,
-                            image_url: userData.image_url
-                        };
-                        sessionStorage.setItem('currentUser', JSON.stringify(userSession));
-                        
-                        // Update profile display with logged-in user's data
-                        updateProfileDisplay({
-                            name: userData.name,
-                            email: userData.email,
-                            user_type: userData.user_type,
-                            image_url: userData.image_url
-                        });
-                    } else {
-                        console.log('No user data found for ID:', currentUser.id);
-                        updateProfileDisplay(currentUser);
-                    }
-                    
-                } catch (dbError) {
-                    console.error('Database connection error:', dbError);
-                    await loadFirstUserForTesting();
-                }
-                
-            } catch (error) {
-                console.error('Error in loadCurrentUserProfile:', error);
-                await loadFirstUserForTesting();
-            }
-        }
+                // Get all applications that have been processed (accepted or declined)
+                const { data: processedApps, error } = await window.supabaseClient
+                    .from('store-owner')
+                    .select('id, store_name, status, created_at, user_id')
+                    .in('status', ['accepted', 'declined']);
 
-        // Fallback function to load any user for testing
-        async function loadFirstUserForTesting() {
-            try {
-                console.log('=== LOADING FIRST USER FOR TESTING ===');
-                
-                if (!supabaseClient) {
-                    console.error('Supabase client not available, using fallback data');
-                    updateProfileDisplay({
-                        name: 'Administrator',
-                        email: 'admin@anihan.gov.ph',
-                        user_type: 'SUPER ADMIN',
-                        image_url: null
-                    });
+                console.log('Processed applications query - Error:', error);
+                console.log('Processed applications query - Data:', processedApps);
+
+                const tableBody = document.getElementById('approvedApplicationsTableBody');
+                if (!tableBody) {
+                    console.error('Table body element not found!');
                     return;
                 }
-                
-                const { data: users, error } = await supabaseClient
-                    .from('admin_accounts')
-                    .select('*')
-                    .limit(1);
-                
+
                 if (error) {
-                    console.error('Database error in loadFirstUserForTesting:', error);
-                    updateProfileDisplay({
-                        name: 'Administrator',
-                        email: 'admin@anihan.gov.ph',
-                        user_type: 'SUPER ADMIN',
-                        image_url: null
-                    });
+                    console.error('Error loading processed applications:', error);
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-danger">
+                                Error loading applications: ${error.message}
+                            </td>
+                        </tr>
+                    `;
                     return;
                 }
-                
-                if (users && users.length > 0) {
-                    const user = users[0];
-                    console.log('Using first user from database:', user);
-                    
-                    updateProfileDisplay({
-                        name: user.name,
-                        email: user.email,
-                        user_type: user.user_type,
-                        image_url: user.image_url
-                    });
-                } else {
-                    console.log('No users in database, using default');
-                    updateProfileDisplay({
-                        name: 'Administrator',
-                        email: 'admin@anihan.gov.ph',
-                        user_type: 'SUPER ADMIN',
-                        image_url: null
-                    });
+
+                if (!processedApps || processedApps.length === 0) {
+                    console.log('No processed applications found');
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center">No processed applications found</td>
+                        </tr>
+                    `;
+                    return;
                 }
-                
+
+                console.log(`Found ${processedApps.length} processed applications`);
+
+                // Get user data for each application
+                const applicationsWithUsers = [];
+                for (const app of processedApps) {
+                    try {
+                        const { data: userData, error: userError } = await window.supabaseClient
+                            .from('users')
+                            .select('*')
+                            .eq('id', app.user_id)
+                            .single();
+
+                        applicationsWithUsers.push({
+                            ...app,
+                            users: userError ? null : userData
+                        });
+                    } catch (userErr) {
+                        console.log('Could not get user data for application:', app.id);
+                        applicationsWithUsers.push({
+                            ...app,
+                            users: null
+                        });
+                    }
+                }
+
+                // Store data globally for filtering
+                allApplicationsData = applicationsWithUsers;
+
+                // Display the data
+                displayApplications(allApplicationsData);
+                console.log('Table populated successfully');
+
             } catch (error) {
-                console.error('Error in loadFirstUserForTesting:', error);
-                updateProfileDisplay({
-                    name: 'Administrator',
-                    email: 'admin@anihan.gov.ph',
-                    user_type: 'SUPER ADMIN',
-                    image_url: null
-                });
+                console.error('Error in loadProcessedApplications:', error);
+                const tableBody = document.getElementById('approvedApplicationsTableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-danger">
+                                Error loading applications: ${error.message}
+                            </td>
+                        </tr>
+                    `;
+                }
             }
         }
 
-        function updateProfileDisplay(userData) {
-            console.log('=== UPDATING PROFILE DISPLAY ===');
-            console.log('Updating profile display with data:', userData);
+        // Display applications in the table
+        function displayApplications(applications) {
+            const tableBody = document.getElementById('approvedApplicationsTableBody');
             
-            // Update profile name
-            const profileName = document.getElementById('profileUserName');
-            if (profileName) {
-                const displayName = userData.name || 'Administrator';
-                profileName.textContent = displayName;
-                console.log('✅ Updated profile name to:', displayName);
+            if (!applications || applications.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">No applications to display</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = applications.map(app => {
+                const statusClass = app.status === 'accepted' ? 'bg-success' : 'bg-danger';
+                const statusText = app.status === 'accepted' ? 'Accepted' : 'Declined';
+                const formattedDate = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A';
+                
+                // Check what municipality field exists
+                let municipalityDisplay = 'No Municipality Data';
+                if (app.users) {
+                    municipalityDisplay = app.users.municipality || 
+                                        app.users.Municipality || 
+                                        app.users.city || 
+                                        app.users.location || 
+                                        'No Municipality Data';
+                }
+                
+                return `
+                    <tr>
+                        <td>${app.store_name || 'N/A'}</td>
+                        <td>${municipalityDisplay}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>${formattedDate}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="viewApplicationDetails('${app.id}')">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filter applications by status
+        function filterByStatus() {
+            const filter = document.getElementById('statusFilter').value;
+            const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+            
+            let filteredData = allApplicationsData;
+            
+            // Apply status filter
+            if (filter !== 'all') {
+                filteredData = filteredData.filter(app => app.status === filter);
             }
             
-            // Update profile email
-            const profileEmail = document.getElementById('profileUserEmail');
-            if (profileEmail) {
-                const displayEmail = userData.email || 'admin@anihan.gov.ph';
-                profileEmail.textContent = displayEmail;
-                console.log('✅ Updated profile email to:', displayEmail);
+            // Apply search filter
+            if (searchTerm) {
+                filteredData = filteredData.filter(app => 
+                    (app.store_name && app.store_name.toLowerCase().includes(searchTerm)) ||
+                    (app.users && (
+                        app.users.municipality?.toLowerCase().includes(searchTerm) ||
+                        app.users.Municipality?.toLowerCase().includes(searchTerm) ||
+                        app.users.city?.toLowerCase().includes(searchTerm) ||
+                        app.users.location?.toLowerCase().includes(searchTerm)
+                    ))
+                );
             }
             
-            // Update profile role
-            const profileRole = document.getElementById('profileUserRole');
-            if (profileRole) {
-                const displayRole = userData.user_type || userData.userType || 'ADMIN';
-                profileRole.textContent = displayRole;
-                console.log('✅ Updated profile role to:', displayRole);
+            displayApplications(filteredData);
+        }
+
+        // Search applications
+        function searchApplications(searchTerm) {
+            const filter = document.getElementById('statusFilter').value;
+            searchTerm = searchTerm.toLowerCase();
+            
+            let filteredData = allApplicationsData;
+            
+            // Apply status filter
+            if (filter !== 'all') {
+                filteredData = filteredData.filter(app => app.status === filter);
             }
             
-            // Update profile title based on role
-            const profileTitle = document.getElementById('profileUserTitle');
-            if (profileTitle) {
-                const userRole = userData.user_type || userData.userType || 'ADMIN';
-                if (userRole === 'SUPER ADMIN') {
-                    profileTitle.textContent = 'System Administrator';
-                } else if (userRole === 'SUB ADMIN') {
-                    profileTitle.textContent = 'Municipal Administrator';
-                } else {
-                    profileTitle.textContent = 'Administrator';
-                }
-                console.log('Updated profile title for role:', userRole);
+            // Apply search filter
+            if (searchTerm) {
+                filteredData = filteredData.filter(app => 
+                    (app.store_name && app.store_name.toLowerCase().includes(searchTerm)) ||
+                    (app.users && (
+                        app.users.municipality?.toLowerCase().includes(searchTerm) ||
+                        app.users.Municipality?.toLowerCase().includes(searchTerm) ||
+                        app.users.city?.toLowerCase().includes(searchTerm) ||
+                        app.users.location?.toLowerCase().includes(searchTerm)
+                    ))
+                );
             }
             
-            // Update profile images
-            console.log('=== PROCESSING PROFILE IMAGE ===');
-            
-            if (userData.image_url && userData.image_url.trim() !== '' && userData.image_url !== 'null') {
-                console.log('✅ Profile image found - processing...');
-                
-                // Clean up the image URL
-                let cleanImageUrl = userData.image_url.trim();
-                if (cleanImageUrl.startsWith('"') && cleanImageUrl.endsWith('"')) {
-                    cleanImageUrl = cleanImageUrl.slice(1, -1);
-                }
-                
-                // Get image elements
-                const userAvatarImage = document.getElementById('userAvatarImage');
-                const userAvatarIcon = document.getElementById('userAvatarIcon');
-                const profileAvatarImage = document.getElementById('profileAvatarImage');
-                const profileAvatarIcon = document.getElementById('profileAvatarIcon');
-                
-                // Update main avatar (in navbar)
-                if (userAvatarImage && userAvatarIcon) {
-                    userAvatarImage.src = cleanImageUrl;
-                    userAvatarImage.style.display = 'block';
-                    userAvatarIcon.style.display = 'none';
-                    
-                    userAvatarImage.onerror = function() {
-                        console.error('❌ Main avatar image failed to load');
-                        this.style.display = 'none';
-                        userAvatarIcon.style.display = 'block';
-                    };
-                    
-                    userAvatarImage.onload = function() {
-                        console.log('✅ Main avatar image loaded successfully');
-                    };
-                }
-                
-                // Update dropdown avatar
-                if (profileAvatarImage && profileAvatarIcon) {
-                    profileAvatarImage.src = cleanImageUrl;
-                    profileAvatarImage.style.display = 'block';
-                    profileAvatarIcon.style.display = 'none';
-                    
-                    profileAvatarImage.onerror = function() {
-                        console.error('❌ Dropdown avatar image failed to load');
-                        this.style.display = 'none';
-                        profileAvatarIcon.style.display = 'block';
-                    };
-                    
-                    profileAvatarImage.onload = function() {
-                        console.log('✅ Dropdown avatar image loaded successfully');
-                    };
-                }
-                
-            } else {
-                console.log('❌ No profile image found - showing default icons');
-                
-                // Get image elements
-                const userAvatarImage = document.getElementById('userAvatarImage');
-                const userAvatarIcon = document.getElementById('userAvatarIcon');
-                const profileAvatarImage = document.getElementById('profileAvatarImage');
-                const profileAvatarIcon = document.getElementById('profileAvatarIcon');
-                
-                // Show icons when no image
-                if (userAvatarImage && userAvatarIcon) {
-                    userAvatarImage.style.display = 'none';
-                    userAvatarIcon.style.display = 'block';
-                }
-                if (profileAvatarImage && profileAvatarIcon) {
-                    profileAvatarImage.style.display = 'none';
-                    profileAvatarIcon.style.display = 'block';
-                }
+            displayApplications(filteredData);
+        }
+
+        // View application details
+        function viewApplicationDetails(appId) {
+            const app = allApplicationsData.find(a => a.id === appId);
+            if (!app) {
+                alert('Application not found');
+                return;
             }
             
-            console.log('=== PROFILE DISPLAY UPDATE COMPLETE ===');
+            const statusText = app.status === 'accepted' ? 'Accepted' : 'Declined';
+            
+            // Check what municipality field exists
+            let municipality = 'Not specified';
+            let userName = 'Not specified';
+            
+            if (app.users) {
+                municipality = app.users.municipality || 
+                             app.users.Municipality || 
+                             app.users.city || 
+                             app.users.location || 
+                             'Not specified';
+                             
+                userName = app.users.name || 
+                          app.users.full_name || 
+                          app.users.username || 
+                          app.users.email || 
+                          'Not specified';
+            }
+            
+            alert(`Application Details:
+            
+Store Name: ${app.store_name}
+Owner: ${userName}
+Municipality: ${municipality}
+Status: ${statusText}
+Date: ${app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}
+Application ID: ${app.id}`);
         }
 
         function toggleProfileDropdown() {

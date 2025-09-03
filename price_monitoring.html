@@ -166,7 +166,6 @@
                         <table class="price-table">
                             <thead>
                                 <tr>
-                                    <th>Image</th>
                                     <th>Product Name</th>
                                     <th>Category</th>
                                     <th>Price</th>
@@ -379,15 +378,6 @@ function populatePriceTable(priceData) {
     const category = product.category || 'General';
 
         const row = document.createElement('tr');
-
-        // Image cell
-        const imageTd = document.createElement('td');
-        console.log('Created imageTd element:', imageTd);
-        console.log('About to call createImageCellDOM with:', product.image_url, product.name);
-        createImageCellDOM(product.image_url, product.name, imageTd);
-        console.log('After createImageCellDOM, imageTd content:', imageTd.innerHTML);
-        row.appendChild(imageTd);
-        console.log('Appended imageTd to row');
 
         // Product name cell
         const nameTd = document.createElement('td');
@@ -960,7 +950,7 @@ async function debugImageUrls() {
             if (!priceData || priceData.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center text-muted p-4">
+                        <td colspan="5" class="text-center text-muted p-4">
                             <i class="fas fa-box-open me-2"></i>
                             No price monitoring records found
                         </td>
@@ -980,12 +970,6 @@ async function debugImageUrls() {
                 
                 return `
                     <tr>
-                        <td>
-                            ${product.image_url ? 
-                                `<img src="${product.image_url}" class="product-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="${product.name}">` : 
-                                '<div class="product-placeholder d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><i class="fas fa-image text-muted"></i></div>'
-                            }
-                        </td>
                         <td>
                             <div class="product-name">${escapeHtml(product.name || 'N/A')}</div>
                         </td>
@@ -1030,7 +1014,7 @@ async function debugImageUrls() {
                     if (filteredData.length === 0) {
                         tableBody.innerHTML = `
                             <tr>
-                                <td colspan="6" class="text-center text-muted p-4">
+                                <td colspan="5" class="text-center text-muted p-4">
                                     <i class="fas fa-search me-2"></i>
                                     No products found matching "${searchTerm}"
                                 </td>
@@ -1046,12 +1030,6 @@ async function debugImageUrls() {
                             
                             return `
                                 <tr>
-                                    <td>
-                                        ${product.image_url ? 
-                                            `<img src="${product.image_url}" class="product-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="${product.name}">` : 
-                                            '<div class="product-placeholder d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;"><i class="fas fa-image text-muted"></i></div>'
-                                        }
-                                    </td>
                                     <td>
                                         <div class="product-name">${escapeHtml(product.name || 'N/A')}</div>
                                     </td>
@@ -1145,7 +1123,6 @@ async function debugImageUrls() {
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Image</th>
                                     <th>Product Name</th>
                                     <th>Category</th>
                                     <th>Price</th>
@@ -1155,7 +1132,7 @@ async function debugImageUrls() {
                             </thead>
                             <tbody id="allPriceMonitoringTableBody">
                                 <tr>
-                                    <td colspan="6" class="text-center">Loading price monitoring records...</td>
+                                    <td colspan="5" class="text-center">Loading price monitoring records...</td>
                                 </tr>
                             </tbody>
                         </table>

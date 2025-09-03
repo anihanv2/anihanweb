@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+CTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -156,11 +156,13 @@
                         <div class="approval-card">
                             <div class="approval-card-header d-flex justify-content-between align-items-center">
                                 <span>For Approval Farmers</span>
-                                <!-- Search Bar in Header -->
-                                <div class="search-container">
-                                    <div class="search-input-wrapper">
-                                        <i class="fas fa-search search-icon"></i>
-                                        <input type="text" class="form-control search-input" placeholder="Search">
+                                <!-- Search Bar -->
+                                <div class="d-flex gap-2">
+                                    <div class="search-container">
+                                        <div class="search-input-wrapper">
+                                            <i class="fas fa-search search-icon"></i>
+                                            <input type="text" class="form-control search-input" placeholder="Search">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -169,62 +171,14 @@
                                     <table class="approval-table">
                                         <thead>
                                             <tr>
-                                                <th>Full Name</th>
-                                                <th>Email</th>
-                                                <th>Phone</th>
-                                                <th>Approval Status</th>
+                                                <th>Store Name</th>
+                                                <th>Municipality</th>
+                                                <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>John Doe</td>
-                                                <td>john.doe@example.com</td>
-                                                <td>+1234567890</td>
-                                                <td><span class="badge bg-warning">Pending Approval</span></td>
-                                                <td>
-                                                    <div class="action-buttons">
-                                                        <button class="btn btn-success btn-sm">
-                                                            <i class="fas fa-check me-1"></i>Approve
-                                                        </button>
-                                                        <button class="btn btn-danger btn-sm">
-                                                            <i class="fas fa-times me-1"></i>Reject
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Jane Smith</td>
-                                                <td>jane.smith@example.com</td>
-                                                <td>+1234567891</td>
-                                                <td><span class="badge bg-warning">Pending Approval</span></td>
-                                                <td>
-                                                    <div class="action-buttons">
-                                                        <button class="btn btn-success btn-sm">
-                                                            <i class="fas fa-check me-1"></i>Approve
-                                                        </button>
-                                                        <button class="btn btn-danger btn-sm">
-                                                            <i class="fas fa-times me-1"></i>Reject
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>Mike Johnson</td>
-                                                <td>mike.johnson@example.com</td>
-                                                <td>+1234567892</td>
-                                                <td><span class="badge bg-warning">Pending Approval</span></td>
-                                                <td>
-                                                    <div class="action-buttons">
-                                                        <button class="btn btn-success btn-sm">
-                                                            <i class="fas fa-times me-1"></i>Approve
-                                                        </button>
-                                                        <button class="btn btn-danger btn-sm">
-                                                            <i class="fas fa-times me-1"></i>Reject
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                        <tbody id="pendingApplicationsTableBody">
+                                            <!-- Dynamic content will be loaded here -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -252,6 +206,435 @@
     <script src="shared-profile.js"></script>
     
     <script>
+        // Use the global supabaseClient from shared-profile.js
+        // No need to redeclare Supabase configuration as it's already in shared-profile.js
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, starting initialization...');
+            checkDatabaseConnection();
+            loadPendingApplications();
+            setupSearchFunctionality();
+        });
+
+        // Check database connection and data
+        async function checkDatabaseConnection() {
+            try {
+                console.log('=== CHECKING DATABASE CONNECTION ===');
+                
+                // Wait for supabaseClient to be available from shared-profile.js
+                if (!window.supabaseClient) {
+                    console.log('Waiting for supabaseClient to be available...');
+                    setTimeout(checkDatabaseConnection, 1000);
+                    return;
+                }
+                
+                // First, check if store-owner table exists and has any data
+                const { data: allStores, error: allError } = await window.supabaseClient
+                    .from('store-owner')
+                    .select('id, store_name, status, user_id')
+                    .limit(10);
+
+                console.log('All store-owner records:', allStores);
+                console.log('Error:', allError);
+
+                // Check users table
+                const { data: allUsers, error: userError } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .limit(5);
+
+                console.log('Sample users:', allUsers);
+                console.log('User error:', userError);
+
+            } catch (error) {
+                console.error('Database connection test failed:', error);
+            }
+        }
+
+        // Manual test function that can be called from the UI
+        window.testDatabaseConnection = async function() {
+            const tableBody = document.getElementById('pendingApplicationsTableBody');
+            
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        Testing database connection...
+                    </td>
+                </tr>
+            `;
+
+            try {
+                console.log('=== MANUAL DATABASE TEST ===');
+
+                // Test 1: Check if supabase client is working
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+
+                // Test 2: Check store-owner table
+                console.log('Testing store-owner table...');
+                const { data: storeTest, error: storeError } = await window.supabaseClient
+                    .from('store-owner')
+                    .select('*')
+                    .limit(10);
+                console.log('Store-owner test:', { data: storeTest, error: storeError });
+
+                // Test 3: Check users table
+                console.log('Testing users table...');
+                const { data: userTest, error: userError } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .limit(10);
+                console.log('Users test:', { data: userTest, error: userError });
+
+                // Test 4: Check municipality data specifically
+                console.log('Testing municipality data...');
+                const { data: municipalityTest, error: municipalityError } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .not('municipality', 'is', null)
+                    .limit(10);
+                console.log('Municipality test:', { data: municipalityTest, error: municipalityError });
+
+                // Test 5: Check the relationship between store-owner and users
+                if (storeTest && storeTest.length > 0 && userTest && userTest.length > 0) {
+                    console.log('Testing store-user relationships...');
+                    for (const store of storeTest.slice(0, 3)) {
+                        const matchingUser = userTest.find(user => user.id === store.user_id);
+                        console.log(`Store "${store.store_name}" (user_id: ${store.user_id}) -> User:`, matchingUser);
+                    }
+                }
+
+                // Display comprehensive results
+                let resultHTML = '';
+                
+                if (storeError) {
+                    resultHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">
+                                Store table error: ${storeError.message}
+                            </td>
+                        </tr>
+                    `;
+                } else if (userError) {
+                    resultHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">
+                                Users table error: ${userError.message}
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    // Show detailed test results
+                    resultHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <strong>Database Test Results:</strong><br>
+                                Store records: ${storeTest?.length || 0}<br>
+                                User records: ${userTest?.length || 0}<br>
+                                Users with municipality: ${municipalityTest?.length || 0}<br>
+                                <small>Check console for detailed results</small>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                tableBody.innerHTML = resultHTML;
+
+                // Create detailed alert
+                let alertMessage = `Database Test Results:\n`;
+                alertMessage += `• Store records: ${storeTest?.length || 0}\n`;
+                alertMessage += `• User records: ${userTest?.length || 0}\n`;
+                alertMessage += `• Users with municipality: ${municipalityTest?.length || 0}\n`;
+                
+                if (storeTest && storeTest.length > 0) {
+                    alertMessage += `\nSample store data:\n`;
+                    storeTest.slice(0, 2).forEach(store => {
+                        alertMessage += `- "${store.store_name}" (user_id: ${store.user_id}, status: ${store.status})\n`;
+                    });
+                }
+                
+                if (userTest && userTest.length > 0) {
+                    alertMessage += `\nSample user data:\n`;
+                    userTest.slice(0, 2).forEach(user => {
+                        // Check what columns actually exist
+                        const userColumns = Object.keys(user);
+                        const displayName = user.name || user.full_name || user.username || user.email || 'Unknown';
+                        alertMessage += `- "${displayName}" (id: ${user.id}, municipality: ${user.municipality || 'NULL'})\n`;
+                        alertMessage += `  Columns: ${userColumns.join(', ')}\n`;
+                    });
+                }
+
+                alert(alertMessage);
+
+            } catch (error) {
+                console.error('Manual test failed:', error);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-danger">
+                            Test failed: ${error.message}<br>
+                            Check console for details
+                        </td>
+                    </tr>
+                `;
+                alert('Database test failed. Check console for error details.');
+            }
+        }
+
+        // Setup search functionality
+        function setupSearchFunctionality() {
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterTable(searchTerm);
+                });
+            }
+        }
+
+        // Filter table based on search term
+        function filterTable(searchTerm) {
+            const tableBody = document.getElementById('pendingApplicationsTableBody');
+            if (!tableBody) return;
+
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const storeName = row.cells[0]?.textContent.toLowerCase() || '';
+                const municipality = row.cells[1]?.textContent.toLowerCase() || '';
+                
+                if (storeName.includes(searchTerm) || municipality.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Load pending store owner applications with municipality data
+        async function loadPendingApplications() {
+            try {
+                console.log('=== LOADING PENDING APPLICATIONS ===');
+                
+                // Wait for supabaseClient to be available from shared-profile.js
+                if (!window.supabaseClient) {
+                    console.log('Waiting for supabaseClient to be available...');
+                    setTimeout(loadPendingApplications, 1000);
+                    return;
+                }
+                
+                console.log('Supabase client:', window.supabaseClient);
+                
+                // First try a simple query without joins to see if basic data exists
+                const { data: simpleStores, error: simpleError } = await window.supabaseClient
+                    .from('store-owner')
+                    .select('id, store_name, status, user_id')
+                    .or('status.eq.pending,status.is.null');
+
+                console.log('Simple query - Error:', simpleError);
+                console.log('Simple query - Data:', simpleStores);
+
+                const tableBody = document.getElementById('pendingApplicationsTableBody');
+                if (!tableBody) {
+                    console.error('Table body element not found!');
+                    return;
+                }
+
+                if (simpleError) {
+                    console.error('Error in simple query:', simpleError);
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">
+                                Database Error: ${simpleError.message}<br>
+                                Table: store-owner may not exist or have different name
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                if (!simpleStores || simpleStores.length === 0) {
+                    console.log('No pending applications found');
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">No pending applications found</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                console.log(`Found ${simpleStores.length} pending applications`);
+
+                // Now try to get user data for each store
+                const storesWithUsers = [];
+                for (const store of simpleStores) {
+                    try {
+                        console.log(`Looking up user data for store ${store.store_name} with user_id: ${store.user_id}`);
+                        
+                        // Try to get user data for this store
+                        const { data: userData, error: userError } = await window.supabaseClient
+                            .from('users')
+                            .select('*')
+                            .eq('id', store.user_id)
+                            .single();
+
+                        console.log(`User query result for ${store.user_id}:`, { userData, userError });
+
+                        if (userError) {
+                            console.error(`Error fetching user ${store.user_id}:`, userError);
+                        }
+
+                        storesWithUsers.push({
+                            ...store,
+                            users: userError ? null : userData
+                        });
+                    } catch (userErr) {
+                        console.log('Could not get user data for store:', store.id, 'Error:', userErr);
+                        storesWithUsers.push({
+                            ...store,
+                            users: null
+                        });
+                    }
+                }
+
+                // Display the data
+                tableBody.innerHTML = storesWithUsers.map(storeOwner => {
+                    console.log('Processing store owner for display:', storeOwner);
+                    console.log('User data:', storeOwner.users);
+                    console.log('Municipality data:', storeOwner.users?.municipality);
+                    
+                    // Check what municipality field exists
+                    let municipalityDisplay = 'No Municipality Data';
+                    if (storeOwner.users) {
+                        municipalityDisplay = storeOwner.users.municipality || 
+                                            storeOwner.users.Municipality || 
+                                            storeOwner.users.city || 
+                                            storeOwner.users.location || 
+                                            'No Municipality Data';
+                    }
+                    
+                    return `
+                        <tr id="row-${storeOwner.id}">
+                            <td>${storeOwner.store_name || 'N/A'}</td>
+                            <td title="User ID: ${storeOwner.user_id || 'N/A'}">${municipalityDisplay}</td>
+                            <td><span class="badge bg-warning">Pending Approval</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-success btn-sm" onclick="approveApplication('${storeOwner.id}')">
+                                        <i class="fas fa-check me-1"></i>Accept
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="declineApplication('${storeOwner.id}')">
+                                        <i class="fas fa-times me-1"></i>Decline
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                console.log('Table populated successfully');
+
+            } catch (error) {
+                console.error('Error in loadPendingApplications:', error);
+                const tableBody = document.getElementById('pendingApplicationsTableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">
+                                Error loading applications: ${error.message}<br>
+                                Check console for details
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        // Approve application
+        async function approveApplication(storeId) {
+            if (!confirm('Are you sure you want to accept this application?')) {
+                return;
+            }
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('store-owner')
+                    .update({ status: 'accepted' })
+                    .eq('id', storeId);
+
+                if (error) {
+                    console.error('Error accepting application:', error);
+                    alert('Error accepting application. Please try again.');
+                    return;
+                }
+
+                // Remove the row from the table
+                const row = document.getElementById(`row-${storeId}`);
+                if (row) {
+                    row.remove();
+                }
+
+                alert('Application accepted successfully!');
+
+                // Check if table is empty and show message
+                const tableBody = document.getElementById('pendingApplicationsTableBody');
+                if (tableBody && tableBody.children.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">No pending applications found</td>
+                        </tr>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error in approveApplication:', error);
+                alert('Error accepting application. Please try again.');
+            }
+        }
+
+        // Decline application
+        async function declineApplication(storeId) {
+            if (!confirm('Are you sure you want to decline this application?')) {
+                return;
+            }
+
+            try {
+                const { error } = await window.supabaseClient
+                    .from('store-owner')
+                    .update({ status: 'declined' })
+                    .eq('id', storeId);
+
+                if (error) {
+                    console.error('Error declining application:', error);
+                    alert('Error declining application. Please try again.');
+                    return;
+                }
+
+                // Remove the row from the table
+                const row = document.getElementById(`row-${storeId}`);
+                if (row) {
+                    row.remove();
+                }
+
+                alert('Application declined.');
+
+                // Check if table is empty and show message
+                const tableBody = document.getElementById('pendingApplicationsTableBody');
+                if (tableBody && tableBody.children.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">No pending applications found</td>
+                        </tr>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error in declineApplication:', error);
+                alert('Error declining application. Please try again.');
+            }
+        }
+
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
