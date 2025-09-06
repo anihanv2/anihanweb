@@ -154,75 +154,11 @@
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="violationsTableBody">
                                     <tr>
-                                        <td>Biryanah</td>
-                                        <td>Scam</td>
-                                        <td>03-25-25</td>
-                                        <td><span class="badge bg-warning text-dark">Open</span></td>
-                                        <td>
-                                            <button class="btn btn-success btn-sm me-1">
-                                                <i class="fas fa-check"></i> Resolved
-                                            </button>
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="fas fa-ban"></i> Block
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Green Market</td>
-                                        <td>Fake Products</td>
-                                        <td>03-22-25</td>
-                                        <td><span class="badge bg-success">Resolved</span></td>
-                                        <td>
-                                            <button class="btn btn-success btn-sm me-1" disabled>
-                                                <i class="fas fa-check"></i> Resolved
-                                            </button>
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="fas fa-ban"></i> Block
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Farm Fresh</td>
-                                        <td>Poor Quality</td>
-                                        <td>03-20-25</td>
-                                        <td><span class="badge bg-warning text-dark">Open</span></td>
-                                        <td>
-                                            <button class="btn btn-success btn-sm me-1">
-                                                <i class="fas fa-check"></i> Resolved
-                                            </button>
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="fas fa-ban"></i> Block
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Organic Store</td>
-                                        <td>Late Delivery</td>
-                                        <td>03-18-25</td>
-                                        <td><span class="badge bg-danger">Blocked</span></td>
-                                        <td>
-                                            <button class="btn btn-success btn-sm me-1" disabled>
-                                                <i class="fas fa-check"></i> Resolved
-                                            </button>
-                                            <button class="btn btn-danger btn-sm" disabled>
-                                                <i class="fas fa-ban"></i> Block
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>City Grocers</td>
-                                        <td>Overpricing</td>
-                                        <td>03-15-25</td>
-                                        <td><span class="badge bg-success">Resolved</span></td>
-                                        <td>
-                                            <button class="btn btn-success btn-sm me-1" disabled>
-                                                <i class="fas fa-check"></i> Resolved
-                                            </button>
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="fas fa-ban"></i> Block
-                                            </button>
+                                        <td colspan="5" class="text-center">
+                                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                            Loading violations data...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -252,6 +188,475 @@
     <!-- Add Shared Profile System -->
     <script src="shared-profile.js"></script>
     <script>
+        /*
+        =================================================================
+        DATABASE SCHEMA: store_reports table
+        =================================================================
+        - id: uuid (primary key)
+        - store_id: uuid (foreign key to store-owner table)
+        - store_name: text (store name)
+        - report_description: text (violation description)
+        - reported_at: timestamp (auto-generated)
+        - status: text (pending/resolved/dismissed)
+        - date: date (violation date)
+        =================================================================
+        */
+        
+        // Global variables to store violations data
+        let allViolationsData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // Function to load violations data from store_reports database
+        async function loadViolationsData() {
+            console.log('Loading violations data from store_reports...');
+            try {
+                // Check if supabaseClient is available from shared-profile.js
+                if (!window.supabaseClient && !supabaseClient) {
+                    console.error('Supabase client not available');
+                    showErrorMessage('Database connection not available');
+                    return;
+                }
+
+                // Use the global supabaseClient
+                const client = window.supabaseClient || supabaseClient;
+
+                // Show loading state
+                showLoadingState();
+
+                // Fetch data from store_reports table
+                const { data: reports, error } = await client
+                    .from('store_reports')
+                    .select('*')
+                    .order('date', { ascending: false }); // Sort by date, newest first
+
+                console.log('Store reports data:', { reports, error });
+
+                if (error) {
+                    console.error('Error fetching store reports:', error);
+                    showErrorMessage(`Database error: ${error.message}`);
+                    return;
+                }
+
+                if (!reports || reports.length === 0) {
+                    console.log('No violation reports found');
+                    showNoDataMessage();
+                    return;
+                }
+
+                allViolationsData = reports;
+                displayViolationsData(reports);
+                updatePaginationInfo();
+
+            } catch (error) {
+                console.error('Error loading violations data:', error);
+                showErrorMessage(`Failed to load violations: ${error.message}`);
+            }
+        }
+
+        // Function to display violations data in the table
+        function displayViolationsData(reports) {
+            const tableBody = document.getElementById('violationsTableBody');
+            
+            if (!reports || reports.length === 0) {
+                showNoDataMessage();
+                return;
+            }
+
+            // Calculate pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageReports = reports.slice(startIndex, endIndex);
+
+            const tableRows = pageReports.map(report => {
+                // Format the date
+                const formattedDate = formatDate(report.date);
+                
+                // Determine status based on report data (you can customize this logic)
+                const status = determineStatus(report);
+                
+                return `
+                    <tr data-report-id="${report.id}">
+                        <td>
+                            <div class="store-name">${escapeHtml(report.store_name || 'Unknown Store')}</div>
+                        </td>
+                        <td>
+                            <div class="violation-type">${escapeHtml(report.report_description || 'No description')}</div>
+                        </td>
+                        <td>
+                            <div class="violation-date">${formattedDate}</div>
+                        </td>
+                        <td>
+                            <span class="badge ${getStatusBadgeClass(status)}">${status}</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-success btn-sm me-1 resolve-btn" ${status === 'Resolved' || status === 'Dismissed' ? 'disabled' : ''} onclick="resolveViolation('${report.id}')">
+                                <i class="fas fa-check"></i> Resolved
+                            </button>
+                            <button class="btn btn-danger btn-sm dismiss-btn" ${status === 'Dismissed' ? 'disabled' : ''} onclick="dismissViolation('${report.id}')">
+                                <i class="fas fa-times"></i> Dismiss
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableBody.innerHTML = tableRows;
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString; // Return original if invalid
+                
+                // Format as MM-DD-YY
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = String(date.getFullYear()).slice(-2);
+                
+                return `${month}-${day}-${year}`;
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return dateString;
+            }
+        }
+
+        // Function to determine status (customize based on your data structure)
+        function determineStatus(report) {
+            // Check if there's a status field in the report
+            if (report.status) {
+                return capitalizeFirst(report.status);
+            }
+            
+            // Default logic - you can customize this based on your requirements
+            if (report.resolved === true || report.is_resolved === true) {
+                return 'Resolved';
+            } else if (report.dismissed === true || report.is_dismissed === true) {
+                return 'Dismissed';
+            } else {
+                return 'Pending';
+            }
+        }
+
+        // Function to get status badge CSS class
+        function getStatusBadgeClass(status) {
+            switch (status.toLowerCase()) {
+                case 'resolved':
+                    return 'bg-success';
+                case 'dismissed':
+                    return 'bg-danger';
+                case 'pending':
+                default:
+                    return 'bg-warning text-dark';
+            }
+        }
+
+        // Helper function to capitalize first letter
+        function capitalizeFirst(str) {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        }
+
+        // Function to show loading state
+        function showLoadingState() {
+            const tableBody = document.getElementById('violationsTableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        Loading violations data...
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Function to show error message
+        function showErrorMessage(message) {
+            const tableBody = document.getElementById('violationsTableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${escapeHtml(message)}
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Function to show no data message
+        function showNoDataMessage() {
+            const tableBody = document.getElementById('violationsTableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        No violation reports found
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Function to escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Function to resolve violation
+        async function resolveViolation(reportId) {
+            try {
+                console.log('Resolving violation:', reportId);
+                
+                const client = window.supabaseClient || supabaseClient;
+                
+                // Show loading state on the button
+                const row = document.querySelector(`tr[data-report-id="${reportId}"]`);
+                const resolveBtn = row?.querySelector('.resolve-btn');
+                if (resolveBtn) {
+                    resolveBtn.disabled = true;
+                    resolveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resolving...';
+                }
+                
+                // Update the report status to resolved in database
+                const { data, error } = await client
+                    .from('store_reports')
+                    .update({ 
+                        status: 'resolved'
+                    })
+                    .eq('id', reportId)
+                    .select(); // Get the updated data back
+
+                if (error) {
+                    console.error('Error resolving violation:', error);
+                    alert(`Failed to resolve violation: ${error.message}`);
+                    
+                    // Restore button state
+                    if (resolveBtn) {
+                        resolveBtn.disabled = false;
+                        resolveBtn.innerHTML = '<i class="fas fa-check"></i> Resolved';
+                    }
+                    return;
+                }
+
+                console.log('Database update successful:', data);
+
+                // Update local data array
+                const reportIndex = allViolationsData.findIndex(r => r.id == reportId);
+                if (reportIndex !== -1) {
+                    allViolationsData[reportIndex] = { 
+                        ...allViolationsData[reportIndex], 
+                        status: 'resolved'
+                    };
+                }
+
+                // Update the UI
+                if (row) {
+                    const statusBadge = row.querySelector('.badge');
+                    statusBadge.className = 'badge bg-success';
+                    statusBadge.textContent = 'Resolved';
+                    
+                    // Update button state
+                    if (resolveBtn) {
+                        resolveBtn.disabled = true;
+                        resolveBtn.innerHTML = '<i class="fas fa-check"></i> Resolved';
+                    }
+                }
+
+                console.log('Violation resolved successfully');
+                
+                // Show success message
+                showSuccessMessage('Violation has been resolved successfully!');
+                
+            } catch (error) {
+                console.error('Error resolving violation:', error);
+                alert(`Failed to resolve violation: ${error.message}`);
+                
+                // Restore button state
+                const row = document.querySelector(`tr[data-report-id="${reportId}"]`);
+                const resolveBtn = row?.querySelector('.resolve-btn');
+                if (resolveBtn) {
+                    resolveBtn.disabled = false;
+                    resolveBtn.innerHTML = '<i class="fas fa-check"></i> Resolved';
+                }
+            }
+        }
+
+        // Function to dismiss violation
+        async function dismissViolation(reportId) {
+            if (!confirm('Are you sure you want to dismiss this violation? This action will mark the violation as dismissed.')) {
+                return;
+            }
+
+            try {
+                console.log('Dismissing violation:', reportId);
+                
+                const client = window.supabaseClient || supabaseClient;
+                
+                // Show loading state on the button
+                const row = document.querySelector(`tr[data-report-id="${reportId}"]`);
+                const dismissBtn = row?.querySelector('.dismiss-btn');
+                if (dismissBtn) {
+                    dismissBtn.disabled = true;
+                    dismissBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Dismissing...';
+                }
+                
+                // Update the report status to dismissed in database
+                const { data, error } = await client
+                    .from('store_reports')
+                    .update({ 
+                        status: 'dismissed'
+                    })
+                    .eq('id', reportId)
+                    .select(); // Get the updated data back
+
+                if (error) {
+                    console.error('Error dismissing violation:', error);
+                    alert(`Failed to dismiss violation: ${error.message}`);
+                    
+                    // Restore button state
+                    if (dismissBtn) {
+                        dismissBtn.disabled = false;
+                        dismissBtn.innerHTML = '<i class="fas fa-times"></i> Dismiss';
+                    }
+                    return;
+                }
+
+                console.log('Database update successful:', data);
+
+                // Update local data array
+                const reportIndex = allViolationsData.findIndex(r => r.id == reportId);
+                if (reportIndex !== -1) {
+                    allViolationsData[reportIndex] = { 
+                        ...allViolationsData[reportIndex], 
+                        status: 'dismissed'
+                    };
+                }
+
+                // Update the UI
+                if (row) {
+                    const statusBadge = row.querySelector('.badge');
+                    statusBadge.className = 'badge bg-danger';
+                    statusBadge.textContent = 'Dismissed';
+                    
+                    const resolveBtn = row.querySelector('.resolve-btn');
+                    const dismissBtn = row.querySelector('.dismiss-btn');
+                    
+                    // Disable dismiss button
+                    if (dismissBtn) {
+                        dismissBtn.disabled = true;
+                        dismissBtn.innerHTML = '<i class="fas fa-times"></i> Dismiss';
+                    }
+                }
+
+                console.log('Violation dismissed successfully');
+                
+                // Show success message
+                showSuccessMessage('Violation has been dismissed successfully!');
+                
+            } catch (error) {
+                console.error('Error dismissing violation:', error);
+                alert(`Failed to dismiss violation: ${error.message}`);
+                
+                // Restore button state
+                const row = document.querySelector(`tr[data-report-id="${reportId}"]`);
+                const dismissBtn = row?.querySelector('.dismiss-btn');
+                if (dismissBtn) {
+                    dismissBtn.disabled = false;
+                    dismissBtn.innerHTML = '<i class="fas fa-times"></i> Dismiss';
+                }
+            }
+        }
+
+        // Function to show success message
+        function showSuccessMessage(message) {
+            // Create success alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                ${escapeHtml(message)}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Add to document
+            document.body.appendChild(alertDiv);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (alertDiv && alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+
+        // Function to update pagination info
+        function updatePaginationInfo() {
+            const totalReports = allViolationsData.length;
+            const startItem = totalReports === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, totalReports);
+            
+            const infoElement = document.querySelector('.table-info');
+            if (infoElement) {
+                infoElement.textContent = `Showing ${startItem} to ${endItem} of ${totalReports} violations`;
+            }
+        }
+
+        // Search functionality
+        function setupSearchFunctionality() {
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    
+                    if (searchTerm === '') {
+                        displayViolationsData(allViolationsData);
+                    } else {
+                        const filteredReports = allViolationsData.filter(report => {
+                            const storeName = (report.store_name || '').toLowerCase();
+                            const violationType = (report.report_description || '').toLowerCase();
+                            const date = formatDate(report.date).toLowerCase();
+                            
+                            return storeName.includes(searchTerm) || 
+                                   violationType.includes(searchTerm) || 
+                                   date.includes(searchTerm);
+                        });
+                        
+                        displayViolationsData(filteredReports);
+                    }
+                });
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Violations page loaded');
+            
+            // Wait for shared profile system to initialize
+            const checkSharedProfile = () => {
+                if (typeof supabaseClient !== 'undefined' || window.supabaseClient) {
+                    console.log('Supabase client available, loading violations data...');
+                    loadViolationsData();
+                    setupSearchFunctionality();
+                } else {
+                    // Wait a bit more for shared-profile.js to load
+                    setTimeout(checkSharedProfile, 100);
+                }
+            };
+            
+            checkSharedProfile();
+        });
+
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
@@ -280,49 +685,15 @@
             const dropdownIcon = dropdownToggle.querySelector('.dropdown-icon');
             const submenu = document.querySelector('#voucherSubmenu');
             
-            submenu.addEventListener('show.bs.collapse', function() {
-                dropdownIcon.style.transform = 'rotate(180deg)';
-            });
-            
-            submenu.addEventListener('hide.bs.collapse', function() {
-                dropdownIcon.style.transform = 'rotate(0deg)';
-            });
-        });
-
-        // Handle action buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            const resolvedButtons = document.querySelectorAll('.btn-success');
-            const blockButtons = document.querySelectorAll('.btn-danger');
-            
-            resolvedButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (!this.disabled) {
-                        const row = this.closest('tr');
-                        const statusBadge = row.querySelector('.badge');
-                        statusBadge.className = 'badge bg-success';
-                        statusBadge.textContent = 'Resolved';
-                        this.disabled = true;
-                    }
+            if (submenu) {
+                submenu.addEventListener('show.bs.collapse', function() {
+                    dropdownIcon.style.transform = 'rotate(180deg)';
                 });
-            });
-            
-            blockButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    if (!this.disabled) {
-                        const row = this.closest('tr');
-                        const statusBadge = row.querySelector('.badge');
-                        statusBadge.className = 'badge bg-danger';
-                        statusBadge.textContent = 'Blocked';
-                        this.disabled = true;
-                        
-                        // Also disable resolved button
-                        const resolvedBtn = row.querySelector('.btn-success');
-                        if (resolvedBtn) {
-                            resolvedBtn.disabled = true;
-                        }
-                    }
+                
+                submenu.addEventListener('hide.bs.collapse', function() {
+                    dropdownIcon.style.transform = 'rotate(0deg)';
                 });
-            });
+            }
         });
     </script>
 </body>

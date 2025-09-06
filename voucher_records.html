@@ -169,6 +169,7 @@
                                     <th>ID</th>
                                     <th>Voucher Type</th>
                                     <th>Voucher Name</th>
+                                    <th>Code</th>
                                     <th>Stocks</th>
                                     <th>Minimum Spend</th>
                                     <th>Date End</th>
@@ -179,7 +180,7 @@
                             <tbody id="voucherTableBody">
                                 <!-- Loading indicator -->
                                 <tr id="loadingRow">
-                                    <td colspan="8" class="text-center py-4">
+                                    <td colspan="9" class="text-center py-4">
                                         <div class="spinner-border spinner-border-sm me-2" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
@@ -336,6 +337,9 @@
                         <td>${voucher.id}</td>
                         <td>${voucher.voucher_type || '-'}</td>
                         <td><strong>${voucher.voucher_name || '-'}</strong></td>
+                        <td>
+                            <code class="bg-light text-dark px-2 py-1 rounded">${voucher.code || 'N/A'}</code>
+                        </td>
                         <td>${voucher.stocks || 0}</td>
                         <td>₱${parseFloat(voucher.minimum_spent || 0).toFixed(2)}</td>
                         <td>${endDate}</td>
@@ -386,7 +390,7 @@
             if (!vouchersData || vouchersData.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center text-muted p-4">
+                        <td colspan="9" class="text-center text-muted p-4">
                             <i class="fas fa-ticket-alt me-2"></i>
                             No voucher records found
                         </td>
@@ -426,6 +430,9 @@
                         <td>${escapeHtml(voucher.id || 'N/A')}</td>
                         <td>${escapeHtml(voucher.voucher_type || '-')}</td>
                         <td><strong>${escapeHtml(voucher.voucher_name || '-')}</strong></td>
+                        <td>
+                            <code class="bg-light text-dark px-2 py-1 rounded">${escapeHtml(voucher.code || 'N/A')}</code>
+                        </td>
                         <td>${escapeHtml(voucher.stocks || '0')}</td>
                         <td>₱${parseFloat(voucher.minimum_spent || 0).toFixed(2)}</td>
                         <td>${endDate}</td>
@@ -453,13 +460,14 @@
                     const filteredData = vouchersData.filter(voucher => 
                         (voucher.voucher_name || '').toLowerCase().includes(searchTerm) ||
                         (voucher.voucher_type || '').toLowerCase().includes(searchTerm) ||
+                        (voucher.code || '').toLowerCase().includes(searchTerm) ||
                         (voucher.id || '').toString().toLowerCase().includes(searchTerm)
                     );
                     
                     if (filteredData.length === 0) {
                         tableBody.innerHTML = `
                             <tr>
-                                <td colspan="8" class="text-center text-muted p-4">
+                                <td colspan="9" class="text-center text-muted p-4">
                                     <i class="fas fa-search me-2"></i>
                                     No vouchers found matching "${searchTerm}"
                                 </td>
@@ -495,6 +503,9 @@
                                     <td>${escapeHtml(voucher.id || 'N/A')}</td>
                                     <td>${escapeHtml(voucher.voucher_type || '-')}</td>
                                     <td><strong>${escapeHtml(voucher.voucher_name || '-')}</strong></td>
+                                    <td>
+                                        <code class="bg-light text-dark px-2 py-1 rounded">${escapeHtml(voucher.code || 'N/A')}</code>
+                                    </td>
                                     <td>${escapeHtml(voucher.stocks || '0')}</td>
                                     <td>₱${parseFloat(voucher.minimum_spent || 0).toFixed(2)}</td>
                                     <td>${endDate}</td>
@@ -596,7 +607,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <input type="text" class="form-control" id="voucherSearchInput" placeholder="Search by voucher name, type, status...">
+                        <input type="text" class="form-control" id="voucherSearchInput" placeholder="Search by voucher name, type, code, status...">
                     </div>
                     <div class="table-responsive">
                         <table class="table table-striped">
@@ -605,6 +616,7 @@
                                     <th>ID</th>
                                     <th>Voucher Type</th>
                                     <th>Voucher Name</th>
+                                    <th>Code</th>
                                     <th>Stocks</th>
                                     <th>Minimum Spend</th>
                                     <th>Date End</th>
@@ -614,7 +626,7 @@
                             </thead>
                             <tbody id="allVouchersTableBody">
                                 <tr>
-                                    <td colspan="8" class="text-center">Loading voucher records...</td>
+                                    <td colspan="9" class="text-center">Loading voucher records...</td>
                                 </tr>
                             </tbody>
                         </table>

@@ -252,6 +252,30 @@
                                         </div>
                                     </div>
                                     
+                                    <!-- Code Preview Section -->
+                                    <div class="row mt-3" id="codePreviewSection" style="display: none;">
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    <h6 class="mb-0">
+                                                        <i class="fas fa-eye me-2"></i>
+                                                        Code Preview
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p class="text-muted mb-2">Sample codes that will be generated:</p>
+                                                    <div id="codePreviewList" class="d-flex flex-wrap gap-2">
+                                                        <!-- Preview codes will be shown here -->
+                                                    </div>
+                                                    <small class="text-muted mt-2 d-block">
+                                                        <i class="fas fa-info-circle me-1"></i>
+                                                        Each voucher will have a unique code. Actual codes may vary slightly.
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="row mt-4">
                                         <div class="col-md-12">
                                             <button type="submit" class="btn btn-voucher">Add Voucher</button>
@@ -335,7 +359,50 @@
             
             // Add form submission handler
             document.getElementById('addVoucherForm').addEventListener('submit', handleFormSubmit);
+            
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateEnd').setAttribute('min', today);
+            
+            // Setup code preview functionality
+            setupCodePreview();
         });
+        
+        // Function to setup code preview functionality
+        function setupCodePreview() {
+            const voucherNameInput = document.getElementById('voucherName');
+            const stocksInput = document.getElementById('stocks');
+            
+            // Add event listeners to update preview when inputs change
+            voucherNameInput.addEventListener('input', updateCodePreview);
+            stocksInput.addEventListener('input', updateCodePreview);
+        }
+        
+        // Function to update code preview
+        function updateCodePreview() {
+            const voucherName = document.getElementById('voucherName').value.trim();
+            const stocks = parseInt(document.getElementById('stocks').value) || 0;
+            const previewSection = document.getElementById('codePreviewSection');
+            const previewList = document.getElementById('codePreviewList');
+            
+            // Show/hide preview section
+            if (voucherName && stocks > 0) {
+                previewSection.style.display = 'block';
+                
+                // Generate ONE preview code (since we only create one voucher)
+                const previewCode = generateVoucherCode(voucherName, 0);
+                
+                // Display single code with stock count info
+                const previewHTML = `
+                    <span class="badge bg-secondary">${previewCode}</span>
+                    <span class="text-muted ms-2">(Stock Count: ${stocks})</span>
+                `;
+                
+                previewList.innerHTML = previewHTML;
+            } else {
+                previewSection.style.display = 'none';
+            }
+        }
         
         function initializeSupabase() {
             try {
@@ -368,6 +435,24 @@
             } catch (error) {
                 console.error('❌ Error initializing Supabase:', error);
             }
+        }
+        
+        // Function to generate unique voucher codes
+        function generateVoucherCode(voucherName, index) {
+            // Create a base from voucher name (first 3 letters, uppercase)
+            const namePrefix = voucherName.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase() || 'VCH';
+            
+            // Add timestamp to ensure uniqueness
+            const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+            
+            // Add random characters for extra uniqueness
+            const randomChars = Math.random().toString(36).substring(2, 5).toUpperCase();
+            
+            // Add sequential number for uniqueness
+            const sequentialNum = String(index + 1).padStart(3, '0');
+            
+            // Combine all parts: PREFIX-TIMESTAMP-RANDOM-SEQ
+            return `${namePrefix}-${timestamp}-${randomChars}-${sequentialNum}`;
         }
         
         async function handleFormSubmit(e) {
@@ -409,19 +494,24 @@
             submitButton.textContent = 'Adding Voucher...';
             
             try {
-                // Prepare data for database insertion
+                // Generate a single unique code for this voucher
+                const uniqueCode = generateVoucherCode(voucherName, 0);
+                
+                // Prepare voucher data - create only ONE voucher with the stock count
                 const voucherData = {
                     voucher_type: voucherType,
                     voucher_name: voucherName,
-                    stocks: parseFloat(stocks),
+                    stocks: parseInt(stocks), // Store the actual stock count
                     minimum_spent: parseFloat(minimumSpend),
                     date_end: dateEnd,
-                    file: voucherFile ? voucherFile.name : null
+                    code: uniqueCode,
+                    file: voucherFile ? voucherFile.name : null,
+                    created_at: new Date().toISOString()
                 };
                 
-                console.log('Inserting voucher data:', voucherData);
+                console.log('Creating single voucher with data:', voucherData);
                 
-                // Insert into database
+                // Insert ONE voucher into database
                 const { data, error } = await voucherSupabaseClient
                     .from('vouchers')
                     .insert([voucherData])
@@ -434,7 +524,11 @@
                 console.log('✅ Voucher saved successfully:', data);
                 
                 // Show success notification
-                showSuccessToast(data[0]);
+                showSuccessToast({
+                    voucher_name: voucherName,
+                    code: uniqueCode,
+                    stocks: parseInt(stocks)
+                });
                 
                 // Reset form
                 resetForm();
@@ -450,9 +544,14 @@
         }
         
         function showSuccessToast(voucherData) {
-            // Update toast content
+            // Update toast content with voucher details
             document.getElementById('successVoucherName').textContent = voucherData.voucher_name;
-            document.getElementById('successVoucherCode').textContent = `ID: ${voucherData.id}`;
+            
+            // Show single voucher information
+            document.getElementById('successVoucherCode').innerHTML = `
+                <strong>Code:</strong> ${voucherData.code}<br>
+                <small>Stock Count: ${voucherData.stocks}</small>
+            `;
             
             // Show toast
             const successToast = new bootstrap.Toast(document.getElementById('successToast'), {
