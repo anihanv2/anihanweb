@@ -168,7 +168,7 @@
                         <div class="table-footer">
                             <div class="table-info-section">
                                 <span class="table-info">Showing 5 of 25 violations</span>
-                                <a href="#" class="view-all">View all ></a>
+                                <a href="#" class="view-all" onclick="showAllViolationsModal()">View all ></a>
                             </div>
                             <div class="pagination-controls">
                                 <button class="btn btn-sm btn-outline-secondary">&lt;</button>
@@ -638,6 +638,122 @@
             }
         }
 
+        // Function to show all violations modal
+        function showAllViolationsModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allViolationsModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (allViolationsData && allViolationsData.length > 0) {
+                updateAllViolationsTable(allViolationsData);
+            } else {
+                updateAllViolationsTable([]);
+            }
+            
+            // Setup search functionality
+            setupViolationSearch();
+        }
+
+        // Function to update the all violations modal table
+        function updateAllViolationsTable(violationsData) {
+            const tableBody = document.getElementById('allViolationsTableBody');
+            const countElement = document.getElementById('allViolationsCount');
+            
+            if (!tableBody) {
+                console.error('❌ All violations table body not found');
+                return;
+            }
+
+            if (!violationsData || violationsData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted p-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No violation records found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 violations found';
+                return;
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            // Populate table with violation data
+            violationsData.forEach(report => {
+                const row = document.createElement('tr');
+                
+                // Determine status badge class
+                let statusBadge = '';
+                switch (report.status?.toLowerCase()) {
+                    case 'resolved':
+                        statusBadge = '<span class="badge bg-success">Resolved</span>';
+                        break;
+                    case 'dismissed':
+                        statusBadge = '<span class="badge bg-secondary">Dismissed</span>';
+                        break;
+                    case 'pending':
+                    default:
+                        statusBadge = '<span class="badge bg-warning">Pending</span>';
+                        break;
+                }
+                
+                row.innerHTML = `
+                    <td>${escapeHtml(report.id)}</td>
+                    <td>${escapeHtml(report.store_name || 'N/A')}</td>
+                    <td>${escapeHtml(report.report_description || 'N/A')}</td>
+                    <td>${formatDate(report.date)}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        ${report.status?.toLowerCase() === 'pending' ? 
+                            `<button class="btn btn-sm btn-success me-1" onclick="resolveViolation(${report.id})">
+                                <i class="fas fa-check"></i> Resolve
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="dismissViolation(${report.id})">
+                                <i class="fas fa-times"></i> Dismiss
+                            </button>` : 
+                            '<span class="text-muted">No actions available</span>'
+                        }
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${violationsData.length} violations found`;
+            }
+
+            console.log('✅ All violations modal table updated with', violationsData.length, 'violations');
+        }
+
+        // Setup violation search functionality in modal
+        function setupViolationSearch() {
+            const searchInput = document.getElementById('violationSearchInput');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (!allViolationsData) return;
+
+                const filteredViolations = allViolationsData.filter(report => {
+                    const storeName = (report.store_name || '').toLowerCase();
+                    const violationType = (report.report_description || '').toLowerCase();
+                    const status = (report.status || '').toLowerCase();
+                    const date = formatDate(report.date).toLowerCase();
+                    
+                    return storeName.includes(searchTerm) || 
+                           violationType.includes(searchTerm) || 
+                           status.includes(searchTerm) ||
+                           date.includes(searchTerm);
+                });
+
+                updateAllViolationsTable(filteredViolations);
+            });
+        }
+
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Violations page loaded');
@@ -696,5 +812,49 @@
             }
         });
     </script>
+
+    <!-- All Violations Modal -->
+    <div class="modal fade" id="allViolationsModal" tabindex="-1" aria-labelledby="allViolationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allViolationsModalLabel">All Violations</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="violationSearchInput" placeholder="Search by store name, violation type, status...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Store Name</th>
+                                    <th>Violation Type</th>
+                                    <th>Date Reported</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allViolationsTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading violations...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allViolationsCount">0 violations found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
