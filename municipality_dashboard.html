@@ -47,6 +47,23 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
+        /* Chart Container Stability Styles */
+        .chart-container-stable {
+            overflow: hidden !important;
+            position: relative !important;
+        }
+
+        .chart-container-stable canvas {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+
+        #salesChart {
+            transition: none !important;
+            animation: none !important;
+        }
+
         .municipality-item.top-municipality {
             background: #ffffff;
             border: 1px solid #e9ecef;
@@ -414,7 +431,10 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="salesChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                    <!-- Stable Chart Container -->
+                                    <div class="chart-container-stable" style="position: relative; height: 200px; width: 100%; overflow: hidden;">
+                                        <canvas id="salesChart" width="400" height="200" style="position: absolute; top: 0; left: 0; display: block; max-width: 100%; height: 200px;"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1010,81 +1030,38 @@
         // Load Sales Analytics from orders matching municipality
         async function loadSalesAnalytics(client, municipalityAddress, adminData) {
             try {
-                console.log('� STARTING SALES ANALYTICS LOAD');
-                console.log('�🔍 Loading sales analytics for municipality:', municipalityAddress);
-                console.log('🔍 Admin data:', adminData);
-                console.log('🔍 Client available:', !!client);
+                console.log('🚀 STARTING MUNICIPALITY-SPECIFIC SALES ANALYTICS LOAD');
+                console.log('🏛️ Loading sales analytics for municipality:', municipalityAddress);
+                console.log('� Admin data:', adminData);
                 
-                // Step 1: Get all store owners
-                console.log('📡 Step 1: Fetching store owners...');
-                const { data: storeOwners, error: storeOwnersError } = await client
-                    .from('store-owner')
-                    .select('user_id');
+                // Step 1: Get the address of the logged-in account from admin_accounts table
+                const loggedInAdminAddress = municipalityAddress; // This comes from the admin_accounts.address field
+                console.log('📍 Logged-in admin address from admin_accounts:', loggedInAdminAddress);
                 
-                if (storeOwnersError) {
-                    console.error('❌ Error fetching store owners:', storeOwnersError);
+                if (!loggedInAdminAddress) {
+                    console.warn('⚠️ No address found for logged-in admin account');
                     updateSalesChartWithFallback();
                     return;
                 }
                 
-                const storeOwnerIds = storeOwners?.map(so => so.user_id) || [];
-                console.log(`📦 Found ${storeOwnerIds.length} store owners`);
+                // Step 2: Match this address with the municipality field in the users table
+                console.log('📡 Step 2: Finding users where municipality matches admin address...');
+                const { data: matchingUsers, error: usersError } = await client
+                    .from('users')
+                    .select('id, full_name, municipality')
+                    .eq('municipality', loggedInAdminAddress);
                 
-                // Step 2: Get products from store owners in the same municipality
-                console.log('📡 Step 2: Fetching products from store owners in municipality...');
-                const { data: municipalityProducts, error: productsError } = await client
-                    .from('my_products')
-                    .select(`
-                        id, 
-                        name, 
-                        user_id,
-                        users!inner (
-                            id,
-                            full_name,
-                            municipality,
-                            address
-                        )
-                    `)
-                    .in('user_id', storeOwnerIds);
-                
-                if (productsError) {
-                    console.error('❌ Error fetching products:', productsError);
+                if (usersError) {
+                    console.error('❌ Error fetching users with matching municipality:', usersError);
                     updateSalesChartWithFallback();
                     return;
                 }
                 
-                console.log(`📦 Found ${municipalityProducts?.length || 0} products from store owners`);
+                console.log(`� Found ${matchingUsers?.length || 0} users with municipality matching admin address "${loggedInAdminAddress}"`);
                 
-                // Filter products by store owner municipality matching admin's address
-                const matchingProducts = municipalityProducts?.filter(product => {
-                    if (!product.users || (!product.users.municipality && !product.users.address)) return false;
-                    
-                    const adminMunicipality = municipalityAddress.toLowerCase();
-                    const storeOwnerMunicipality = (product.users.municipality || product.users.address || '').toLowerCase();
-                    
-                    // Try multiple matching strategies
-                    const exactMatch = storeOwnerMunicipality === adminMunicipality;
-                    const containsMatch = storeOwnerMunicipality.includes(adminMunicipality) || adminMunicipality.includes(storeOwnerMunicipality);
-                    const lipaMatch = adminMunicipality.includes('lipa') && storeOwnerMunicipality.includes('lipa');
-                    
-                    const matches = exactMatch || containsMatch || lipaMatch;
-                    
-                    if (matches) {
-                        console.log(`✅ Product ${product.name} (${product.id}) from store owner ${product.users.full_name} matches municipality:`, {
-                            storeOwnerMunicipality: product.users.municipality || product.users.address,
-                            adminMunicipality: municipalityAddress,
-                            matchType: exactMatch ? 'exact' : containsMatch ? 'contains' : 'lipa'
-                        });
-                    }
-                    
-                    return matches;
-                }) || [];
-                
-                console.log(`📍 Found ${matchingProducts.length} products from store owners in municipality "${municipalityAddress}"`);
-                
-                // Step 3: Get all orders (like dashboard_super_admin) and filter for municipality relevance
-                if (matchingProducts.length === 0) {
-                    console.warn('⚠️ No products found from store owners in municipality - showing empty analytics');
+                // Step 3: Fetch all corresponding user_id values from users in that municipality
+                if (!matchingUsers || matchingUsers.length === 0) {
+                    console.warn('⚠️ No users found with matching municipality - showing empty analytics');
                     analyticsData.sales = {
                         monthly: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], data: new Array(12).fill(0) },
                         weekly: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: new Array(4).fill(0) },
@@ -1094,81 +1071,97 @@
                     return;
                 }
                 
-                // Get unique store owner user IDs who have products in the municipality
-                const municipalityStoreOwnerIds = [...new Set(matchingProducts.map(p => p.user_id))];
-                console.log('� Step 3: Fetching all orders to filter for municipality relevance...');
-                console.log('📍 Municipality store owner IDs:', municipalityStoreOwnerIds);
+                const municipalityUserIds = matchingUsers.map(user => user.id);
+                console.log('📍 Municipality user IDs to fetch orders for:', municipalityUserIds);
                 
-                // Get all orders (following dashboard_super_admin pattern)
-                const { data: allOrders, error: ordersError } = await client
+                // Step 4: From the orders table, fetch orders for all matching user_id values
+                console.log('📡 Step 4: Fetching orders from orders table for municipality users...');
+                const { data: municipalityOrders, error: ordersError } = await client
                     .from('orders')
-                    .select('id, total, user_id, created_at, status, address')
+                    .select('id, user_id, total, created_at, status')
+                    .in('user_id', municipalityUserIds)
                     .not('total', 'is', null);
                 
                 if (ordersError) {
-                    console.error('❌ Error fetching orders:', ordersError);
+                    console.error('❌ Error fetching orders for municipality users:', ordersError);
                     updateSalesChartWithFallback();
                     return;
                 }
                 
-                console.log(`📦 Found ${allOrders?.length || 0} total orders in system`);
+                console.log(`📦 Found ${municipalityOrders?.length || 0} orders from municipality users`);
                 
-                // Filter orders that are relevant to the municipality (either from store owners or delivered to municipality)
-                const municipalityOrders = allOrders?.filter(order => {
-                    // Check if order is from a municipality store owner
-                    const isFromMunicipalityStoreOwner = municipalityStoreOwnerIds.includes(order.user_id);
-                    
-                    // Check if order is delivered to the municipality
-                    let isDeliveredToMunicipality = false;
-                    if (order.address) {
-                        const adminMunicipality = municipalityAddress.toLowerCase();
-                        const orderAddress = order.address.toLowerCase();
-                        
-                        isDeliveredToMunicipality = orderAddress.includes(adminMunicipality) || 
-                                                  adminMunicipality.includes(orderAddress) ||
-                                                  (adminMunicipality.includes('lipa') && orderAddress.includes('lipa'));
-                    }
-                    
-                    const matches = isFromMunicipalityStoreOwner || isDeliveredToMunicipality;
-                    
-                    if (matches) {
-                        console.log(`✅ Order ${order.id} matches municipality:`, {
-                            total: `₱${parseFloat(order.total).toFixed(2)}`,
-                            isFromStoreOwner: isFromMunicipalityStoreOwner,
-                            isDeliveredToMunicipality: isDeliveredToMunicipality,
-                            orderAddress: order.address
-                        });
-                    }
-                    
-                    return matches;
-                }) || [];
-                
-                console.log(`📦 Found ${municipalityOrders.length} orders related to municipality`);
+                // Step 5: Calculate the sum of the total column for all matching user_id values
+                let totalSalesSum = 0;
                 if (municipalityOrders && municipalityOrders.length > 0) {
-                    const totalRevenue = municipalityOrders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
-                    console.log('💰 Municipality orders details:', municipalityOrders.slice(0, 5).map(o => ({
-                        id: o.id,
-                        total: `₱${parseFloat(o.total).toFixed(2)}`,
-                        user_id: o.user_id,
-                        address: o.address,
-                        date: new Date(o.created_at).toLocaleDateString()
-                    })));
-                    console.log(`💰 Total revenue from municipality-related orders: ₱${totalRevenue.toFixed(2)}`);
+                    totalSalesSum = municipalityOrders.reduce((sum, order) => {
+                        const orderTotal = parseFloat(order.total) || 0;
+                        return sum + orderTotal;
+                    }, 0);
+                    
+                    console.log('💰 Municipality orders breakdown:');
+                    municipalityOrders.slice(0, 10).forEach(order => {
+                        console.log(`  📦 Order ${order.id}: ₱${parseFloat(order.total).toFixed(2)} (${new Date(order.created_at).toLocaleDateString()})`);
+                    });
+                    
+                    if (municipalityOrders.length > 10) {
+                        console.log(`  ... and ${municipalityOrders.length - 10} more orders`);
+                    }
                 }
                 
-                // Process the filtered orders using dashboard_super_admin approach
-                const chartData = processOrdersForChart(municipalityOrders || []);
-                console.log('📊 Processed chart data:', chartData);
+                console.log(`💰 TOTAL SALES SUM FOR MUNICIPALITY: ₱${totalSalesSum.toFixed(2)}`);
+                console.log(`✅ Data filtered by admin address matching user municipality`);
                 
-                // Update analytics data with multiple periods
+                // Step 6: Display this sum on the sales analytics line graph, grouped by time
+                console.log('� Step 6: Updating Sales Analytics line graph with time-grouped data...');
+                
+                // Generate chart data grouped by time periods (daily, weekly, monthly, yearly)
                 analyticsData.sales = generateMultiPeriodData(municipalityOrders || []);
-                console.log('✅ Sales analytics updated with municipality store owner data');
                 
-                // Update the chart
+                // Log the processed data for verification
+                const currentPeriodData = analyticsData.sales.monthly;
+                const currentMonthTotal = currentPeriodData.data.reduce((sum, val) => sum + val, 0);
+                console.log(`� Current year total from chart data: ₱${currentMonthTotal.toFixed(2)}`);
+                console.log('📊 Monthly breakdown:', currentPeriodData.labels.map((label, i) => 
+                    `${label}: ₱${currentPeriodData.data[i].toFixed(2)}`
+                ).join(', '));
+                
+                console.log('✅ Sales analytics line graph updated with municipality-filtered data');
+                console.log('✅ Only sales data from users within same municipality as admin address is shown');
+                
+                // Update the sales chart display
                 updateSalesChart();
                 
+                // Force immediate chart update to ensure monthly data shows
+                setTimeout(() => {
+                    if (window.salesChart && analyticsData.sales.monthly) {
+                        console.log('🔄 Force updating chart with monthly data immediately...');
+                        const monthlyData = analyticsData.sales.monthly;
+                        window.salesChart.data.labels = monthlyData.labels;
+                        window.salesChart.data.datasets[0].data = monthlyData.data;
+                        window.salesChart.update('none');
+                        console.log('✅ Monthly data forced into chart:', monthlyData);
+                        
+                        // Ensure the dropdown is set to monthly
+                        const salesFilter = document.getElementById('salesFilter');
+                        if (salesFilter) {
+                            salesFilter.value = 'monthly';
+                        }
+                    }
+                }, 50); // Almost immediate
+                
+                // Force update the displays immediately to ensure data shows
+                setTimeout(() => {
+                    const currentFilter = document.getElementById('salesFilter')?.value || 'monthly';
+                    const currentData = analyticsData.sales[currentFilter];
+                    if (currentData) {
+                        updateMunicipalitySalesDisplays(currentData, currentFilter);
+                        console.log('🔄 Force updated municipality sales displays with data:', currentData);
+                    }
+                }, 100);
+                
             } catch (error) {
-                console.error('❌ Error loading sales analytics:', error);
+                console.error('❌ Error loading municipality-specific sales analytics:', error);
+                updateSalesChartWithFallback();
             }
         }
 
@@ -1186,7 +1179,11 @@
                     if (currentData && currentData.labels && currentData.data) {
                         window.salesChart.data.labels = currentData.labels;
                         window.salesChart.data.datasets[0].data = currentData.data;
-                        window.salesChart.update();
+                        window.salesChart.update('none'); // Update without animation to prevent movement
+                        
+                        // Update total sales displays
+                        updateMunicipalitySalesDisplays(currentData, currentFilter);
+                        
                         console.log('✅ Sales chart updated successfully with real data');
                     } else {
                         console.error('❌ Invalid chart data structure:', currentData);
@@ -1198,6 +1195,68 @@
                 console.warn('⚠️ Sales chart not available for update');
                 console.log('🔍 window.salesChart exists:', !!window.salesChart);
                 console.log('🔍 window.salesChart.data exists:', !!(window.salesChart && window.salesChart.data));
+            }
+        }
+
+        // Function to update municipality sales amount displays
+        function updateMunicipalitySalesDisplays(currentData, currentFilter) {
+            try {
+                console.log('🔄 Updating municipality sales displays...', { currentData, currentFilter });
+                
+                // Calculate current period total
+                const currentPeriodTotal = currentData.data.reduce((sum, value) => sum + value, 0);
+                
+                // Calculate total across all periods
+                let totalSales = 0;
+                Object.values(analyticsData.sales).forEach(periodData => {
+                    if (periodData && periodData.data) {
+                        totalSales += periodData.data.reduce((sum, value) => sum + value, 0);
+                    }
+                });
+                
+                // Update display elements
+                const totalSalesElement = document.getElementById('totalMunicipalitySales');
+                const currentPeriodElement = document.getElementById('currentPeriodSales');
+                
+                console.log('📊 Display elements found:', { 
+                    totalSalesElement: !!totalSalesElement, 
+                    currentPeriodElement: !!currentPeriodElement 
+                });
+                
+                if (totalSalesElement) {
+                    const formattedTotal = `₱${totalSales.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    totalSalesElement.textContent = formattedTotal;
+                    console.log('💰 Updated total sales display:', formattedTotal);
+                } else {
+                    console.warn('⚠️ Total sales element not found');
+                }
+                
+                if (currentPeriodElement) {
+                    let periodLabel = '';
+                    switch(currentFilter) {
+                        case 'monthly': periodLabel = 'This Year'; break;
+                        case 'weekly': periodLabel = 'This Month'; break;
+                        case 'yearly': periodLabel = 'All Years'; break;
+                        default: periodLabel = 'Current Period';
+                    }
+                    const formattedPeriod = `₱${currentPeriodTotal.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    currentPeriodElement.textContent = formattedPeriod;
+                    
+                    // Update the label
+                    const periodLabelElement = currentPeriodElement.previousElementSibling;
+                    if (periodLabelElement && periodLabelElement.classList.contains('text-muted')) {
+                        periodLabelElement.textContent = periodLabel;
+                    }
+                    
+                    console.log('📈 Updated current period display:', formattedPeriod, `(${periodLabel})`);
+                } else {
+                    console.warn('⚠️ Current period element not found');
+                }
+                
+                console.log(`💰 Municipality sales displays updated - Total: ₱${totalSales.toFixed(2)}, Current Period (${currentFilter}): ₱${currentPeriodTotal.toFixed(2)}`);
+                
+            } catch (error) {
+                console.error('❌ Error updating municipality sales displays:', error);
             }
         }
 
@@ -2110,9 +2169,14 @@
         // Filter Functions
         function updateSalesChart(period) {
             const data = analyticsData.sales[period];
-            window.salesChart.data.labels = data.labels;
-            window.salesChart.data.datasets[0].data = data.data;
-            window.salesChart.update();
+            if (data && window.salesChart) {
+                window.salesChart.data.labels = data.labels;
+                window.salesChart.data.datasets[0].data = data.data;
+                window.salesChart.update('none'); // Update without animation to prevent movement
+                
+                // Update the sales amount displays
+                updateMunicipalitySalesDisplays(data, period);
+            }
         }
 
         function updateStocksChart(view) {
@@ -2291,17 +2355,22 @@
                 console.log('✅ Sales chart canvas found');
                 
                 const ctx = canvas.getContext('2d');
-                const currentData = analyticsData.sales.monthly;
                 
-                console.log('📊 Initial chart data:', currentData);
+                // Initialize with better default data that shows something is loading
+                const initialData = {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // All zeros initially
+                };
+                
+                console.log('📊 Initial chart data (will be updated with real data):', initialData);
                 
                 window.salesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: currentData.labels,
+                    labels: initialData.labels,
                     datasets: [{
                         label: 'Sales (₱)',
-                        data: currentData.data,
+                        data: initialData.data,
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         borderWidth: 2,
@@ -2312,6 +2381,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 0 // Disable animations to prevent movement
+                    },
                     plugins: {
                         legend: {
                             display: true,
@@ -2331,12 +2403,39 @@
                                 }
                             }
                         }
+                    },
+                    elements: {
+                        point: {
+                            radius: 3,
+                            hoverRadius: 5
+                        },
+                        line: {
+                            borderWidth: 2
+                        }
                     }
                 }
             });
             
             console.log('✅ Sales chart initialized successfully');
             console.log('📊 Chart object:', window.salesChart);
+            
+            // Schedule a refresh after data should be loaded
+            setTimeout(() => {
+                console.log('🔄 Auto-refreshing sales chart with latest data...');
+                if (window.salesChart && analyticsData.sales) {
+                    const currentFilter = document.getElementById('salesFilter')?.value || 'monthly';
+                    const currentData = analyticsData.sales[currentFilter];
+                    if (currentData && currentData.data && currentData.data.some(val => val > 0)) {
+                        console.log('📊 Found real data, updating chart:', currentData);
+                        window.salesChart.data.labels = currentData.labels;
+                        window.salesChart.data.datasets[0].data = currentData.data;
+                        window.salesChart.update('none');
+                        console.log('✅ Sales chart auto-refreshed with real data');
+                    } else {
+                        console.log('📊 No real data yet, keeping placeholder data');
+                    }
+                }
+            }, 5000); // Check after 5 seconds
             
             } catch (error) {
                 console.error('❌ Error initializing sales chart:', error);
