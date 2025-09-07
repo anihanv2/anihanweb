@@ -1059,6 +1059,10 @@
         let totalUsers = 0;
         const usersPerPage = 4;
 
+        // Sales chart data storage
+        let currentSalesData = null;
+        let currentSalesPeriod = 'monthly';
+
         // Function to load and display users data in the table
         async function loadUsersData() {
             try {
@@ -1579,6 +1583,13 @@
                 return;
             }
 
+            // Store data globally for export functions
+            currentSalesData = {
+                labels: [...chartData.labels],
+                data: [...chartData.data]
+            };
+            currentSalesPeriod = document.getElementById('salesFilter')?.value || 'monthly';
+
             // Update chart data
             salesChart.data.labels = chartData.labels;
             salesChart.data.datasets[0].data = chartData.data;
@@ -1616,13 +1627,13 @@
                 case 'weekly':
                     sampleData = {
                         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                        data: [3500, 4200, 3800, 2720] // Total: 14220
+                        data: [0, 0, 0, 0] // Total: 14220
                     };
                     break;
                 case 'yearly':
                     sampleData = {
                         labels: ['2021', '2022', '2023', '2024', '2025'],
-                        data: [8500, 10200, 12800, 13500, 14220]
+                        data: [0, 0, 0, 0, 0]
                     };
                     break;
                 case 'monthly':
@@ -1633,6 +1644,13 @@
                     };
                     break;
             }
+            
+            // Store sample data globally for export
+            currentSalesData = {
+                labels: [...sampleData.labels],
+                data: [...sampleData.data]
+            };
+            currentSalesPeriod = period;
             
             salesChart.data.labels = sampleData.labels;
             salesChart.data.datasets[0].data = sampleData.data;
@@ -1653,23 +1671,30 @@
                 case 'weekly':
                     fallbackData = {
                         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                        data: [4500, 5200, 4800, 6200]
+                        data: [0, 0, 0, 0]
                     };
                     break;
                 case 'yearly':
                     fallbackData = {
                         labels: ['2021', '2022', '2023', '2024', '2025'],
-                        data: [45000, 62000, 78000, 95000, 112000]
+                        data: [0, 0, 0, 0, 0]
                     };
                     break;
                 case 'monthly':
                 default:
                     fallbackData = {
                         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                        data: [5000, 7500, 6200, 8100, 9500, 11000, 12500, 14220, 13000, 15000, 16500, 18000]
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                     };
                     break;
             }
+            
+            // Store fallback data globally for export
+            currentSalesData = {
+                labels: [...fallbackData.labels],
+                data: [...fallbackData.data]
+            };
+            currentSalesPeriod = period;
             
             salesChart.data.labels = fallbackData.labels;
             salesChart.data.datasets[0].data = fallbackData.data;
@@ -2189,22 +2214,36 @@
         }
 
         function exportToCSV(chartType, filename) {
-            let csv = 'Label,Value\n';
+            let csv = '';
+            let headers = '';
+            let dataRows = '';
             
-            // Get data from Chart.js charts
-            const chartMap = {
-                sales: salesChart,
-                stocks: stocksChart,
-                soil: soilChart,
-                hectare: hectareChart
-            };
-                
-            const chart = chartMap[chartType];
-            if (chart && chart.data) {
-                chart.data.labels.forEach((label, index) => {
-                    const value = chart.data.datasets[0].data[index];
-                    csv += `${label},${value}\n`;
+            if (chartType === 'sales' && currentSalesData) {
+                // Use real sales data
+                headers = 'Period,Sales Amount (PHP)\n';
+                currentSalesData.labels.forEach((label, index) => {
+                    const value = currentSalesData.data[index] || 0;
+                    dataRows += `${label},${value.toFixed(2)}\n`;
                 });
+                csv = headers + dataRows;
+            } else {
+                // Fallback to chart data for other chart types
+                csv = 'Label,Value\n';
+                
+                const chartMap = {
+                    sales: salesChart,
+                    stocks: stocksChart,
+                    soil: soilChart,
+                    hectare: hectareChart
+                };
+                    
+                const chart = chartMap[chartType];
+                if (chart && chart.data) {
+                    chart.data.labels.forEach((label, index) => {
+                        const value = chart.data.datasets[0].data[index];
+                        csv += `${label},${value}\n`;
+                    });
+                }
             }
             
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -3384,11 +3423,17 @@
             
             switch(chartType) {
                 case 'sales':
-                    data = analyticsData.sales[document.getElementById('salesFilter').value];
-                    csv = 'Period,Sales Amount (PHP)\n';
-                    data.labels.forEach((label, index) => {
-                        csv += label + ',' + data.data[index] + '\n';
-                    });
+                    // Use real sales data instead of dummy analyticsData
+                    if (currentSalesData) {
+                        csv = 'Period,Sales Amount (PHP)\n';
+                        currentSalesData.labels.forEach((label, index) => {
+                            const value = currentSalesData.data[index] || 0;
+                            csv += `${label},${value.toFixed(2)}\n`;
+                        });
+                    } else {
+                        // Fallback if no data available
+                        csv = 'Period,Sales Amount (PHP)\nNo data available,0.00\n';
+                    }
                     break;
                 case 'stocks':
                     // Always export as Category, Stock, Status for all products
