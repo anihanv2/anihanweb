@@ -49,6 +49,32 @@
             background-color: #f8f9fa;
             border-top: 1px solid #dee2e6;
         }
+        
+        /* Municipality Sales Modal Styles */
+        #allMunicipalitySalesModal .modal-dialog {
+            max-width: 95%;
+        }
+        
+        #allMunicipalitySalesModal .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        #allMunicipalitySalesModal .table td {
+            vertical-align: middle;
+        }
+        
+        #municipalitySearchInput {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+        }
+        
+        #municipalitySearchInput:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
 
         
 
@@ -481,6 +507,44 @@
                     </div>
                 </div>
                 
+                <!-- Top Municipality in terms of Sales Table -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="municipality-sales-table-card">
+                            <div class="municipality-sales-table-header">
+                                <h5>Top Municipality in terms of Sales</h5>
+                            </div>
+                            <div class="municipality-sales-table-body">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <thead>
+                                            <tr>
+                                                <th>Municipality</th>
+                                                <th>Total Sales</th>
+                                                <th>Number of Orders</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="municipalitySalesTableBody">
+                                            <!-- Municipality sales will be loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="municipality-sales-table-footer">
+                                    <div class="table-info-section">
+                                        <span class="table-info" id="municipalitySalesTableInfo">Loading municipality sales...</span>
+                                        <a href="#" class="view-all-link" onclick="showAllMunicipalitySalesModal()">View all ></a>
+                                    </div>
+                                    <div class="pagination-controls">
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeMunicipalityPage(-1)">&lt;</button>
+                                        <button class="btn btn-sm btn-primary active-page" id="currentMunicipalityPageBtn">1</button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeMunicipalityPage(1)">&gt;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Users Table -->
                 <div class="row mb-4">
                     <div class="col-12">
@@ -571,6 +635,55 @@
         </div>
     </div>
 
+    <!-- All Municipality Sales Modal -->
+    <div class="modal fade" id="allMunicipalitySalesModal" tabindex="-1" aria-labelledby="allMunicipalitySalesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allMunicipalitySalesModalLabel">All Municipality Sales</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="municipalitySearchInput" placeholder="Search municipalities by name...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Municipality</th>
+                                    <th>Total Sales</th>
+                                    <th>Number of Orders</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allMunicipalitySalesTableBody">
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading municipality sales...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allMunicipalitySalesCount">0 municipalities found</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" onclick="exportAllMunicipalitySales('csv')">
+                                <i class="fas fa-file-csv me-1"></i>Export CSV
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="exportAllMunicipalitySales('pdf')">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -607,6 +720,7 @@
                 loadActiveFarmersCount();
                 loadAvailableProductsCount();
                 loadUsersData();
+                loadMunicipalitySalesData();
                 
                 // Initialize charts after supabaseClient is available
                 if (typeof Chart !== 'undefined') {
@@ -1052,6 +1166,319 @@
             }
         }
 
+        // Municipality Sales Variables
+        let currentMunicipalityPage = 1;
+        let totalMunicipalities = 0;
+        const municipalitiesPerPage = 4;
+
+        // Function to load and display municipality sales data
+        async function loadMunicipalitySalesData() {
+            try {
+                console.log('=== LOADING MUNICIPALITY SALES DATA ===');
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+
+                // Query to get municipality sales with JOIN
+                const { data: municipalitySales, error } = await supabaseClient
+                    .from('orders')
+                    .select(`
+                        total,
+                        users!inner(municipality)
+                    `)
+                    .order('total', { ascending: false });
+
+                if (error) {
+                    console.error('Database error fetching municipality sales:', error);
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+
+                // Aggregate sales by municipality
+                const salesByMunicipality = {};
+                
+                municipalitySales.forEach(order => {
+                    const municipality = order.users?.municipality;
+                    if (municipality) {
+                        if (!salesByMunicipality[municipality]) {
+                            salesByMunicipality[municipality] = {
+                                municipality: municipality,
+                                totalSales: 0,
+                                orderCount: 0
+                            };
+                        }
+                        salesByMunicipality[municipality].totalSales += parseFloat(order.total || 0);
+                        salesByMunicipality[municipality].orderCount += 1;
+                    }
+                });
+
+                // Convert to array and sort by total sales
+                const aggregatedData = Object.values(salesByMunicipality)
+                    .sort((a, b) => b.totalSales - a.totalSales);
+
+                totalMunicipalities = aggregatedData.length;
+
+                // Get paginated data
+                const startIndex = (currentMunicipalityPage - 1) * municipalitiesPerPage;
+                const endIndex = startIndex + municipalitiesPerPage;
+                const paginatedData = aggregatedData.slice(startIndex, endIndex);
+
+                console.log('✅ Municipality sales data processed:', paginatedData);
+                updateMunicipalitySalesTable(paginatedData);
+
+            } catch (error) {
+                console.error('Error in loadMunicipalitySalesData:', error);
+                updateMunicipalitySalesTable([]);
+            }
+        }
+
+        // Function to update the municipality sales table
+        function updateMunicipalitySalesTable(municipalityData) {
+            const tableBody = document.getElementById('municipalitySalesTableBody');
+            const tableInfo = document.getElementById('municipalitySalesTableInfo');
+            
+            if (!tableBody) {
+                console.error('❌ Municipality sales table body not found');
+                return;
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            if (municipalityData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center">No sales data found</td>
+                    </tr>
+                `;
+                if (tableInfo) {
+                    tableInfo.textContent = '0 items of 0';
+                }
+                return;
+            }
+
+            // Populate table with municipality sales data
+            municipalityData.forEach(data => {
+                const row = document.createElement('tr');
+                
+                const formattedSales = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2
+                }).format(data.totalSales);
+                
+                row.innerHTML = `
+                    <td>${data.municipality}</td>
+                    <td>${formattedSales}</td>
+                    <td>${data.orderCount}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update table info and pagination
+            const startItem = ((currentMunicipalityPage - 1) * municipalitiesPerPage) + 1;
+            const endItem = Math.min(currentMunicipalityPage * municipalitiesPerPage, totalMunicipalities);
+            
+            if (tableInfo) {
+                tableInfo.textContent = `${startItem} to ${endItem} items of ${totalMunicipalities}`;
+            }
+
+            // Update current page button
+            const currentMunicipalityPageBtn = document.getElementById('currentMunicipalityPageBtn');
+            if (currentMunicipalityPageBtn) {
+                currentMunicipalityPageBtn.textContent = currentMunicipalityPage;
+            }
+
+            console.log('✅ Municipality sales table updated with', municipalityData.length, 'municipalities');
+        }
+
+        // Function to change municipality page
+        function changeMunicipalityPage(direction) {
+            const totalPages = Math.ceil(totalMunicipalities / municipalitiesPerPage);
+            
+            if (direction === 1 && currentMunicipalityPage < totalPages) {
+                currentMunicipalityPage++;
+                loadMunicipalitySalesData();
+            } else if (direction === -1 && currentMunicipalityPage > 1) {
+                currentMunicipalityPage--;
+                loadMunicipalitySalesData();
+            }
+        }
+
+        // Function to show all municipality sales modal
+        function showAllMunicipalitySalesModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allMunicipalitySalesModal'));
+            modal.show();
+            loadAllMunicipalitySalesData();
+        }
+
+        // Function to load all municipality sales data for modal
+        async function loadAllMunicipalitySalesData() {
+            try {
+                const tableBody = document.getElementById('allMunicipalitySalesTableBody');
+                const countSpan = document.getElementById('allMunicipalitySalesCount');
+                
+                if (!tableBody) return;
+
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading municipality sales...</td></tr>';
+
+                if (!supabaseClient) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Database connection error</td></tr>';
+                    return;
+                }
+
+                // Query all municipality sales data
+                const { data: municipalitySales, error } = await supabaseClient
+                    .from('orders')
+                    .select(`
+                        total,
+                        users!inner(municipality)
+                    `);
+
+                if (error) {
+                    console.error('Error loading all municipality sales:', error);
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Error loading data</td></tr>';
+                    return;
+                }
+
+                // Aggregate sales by municipality
+                const salesByMunicipality = {};
+                
+                municipalitySales.forEach(order => {
+                    const municipality = order.users?.municipality;
+                    if (municipality) {
+                        if (!salesByMunicipality[municipality]) {
+                            salesByMunicipality[municipality] = {
+                                municipality: municipality,
+                                totalSales: 0,
+                                orderCount: 0
+                            };
+                        }
+                        salesByMunicipality[municipality].totalSales += parseFloat(order.total || 0);
+                        salesByMunicipality[municipality].orderCount += 1;
+                    }
+                });
+
+                // Convert to array and sort by total sales
+                const allMunicipalityData = Object.values(salesByMunicipality)
+                    .sort((a, b) => b.totalSales - a.totalSales);
+
+                // Clear and populate table
+                tableBody.innerHTML = '';
+
+                if (allMunicipalityData.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No municipality sales found</td></tr>';
+                    if (countSpan) countSpan.textContent = '0 municipalities found';
+                    return;
+                }
+
+                allMunicipalityData.forEach(data => {
+                    const row = document.createElement('tr');
+                    
+                    const formattedSales = new Intl.NumberFormat('en-PH', {
+                        style: 'currency',
+                        currency: 'PHP',
+                        minimumFractionDigits: 2
+                    }).format(data.totalSales);
+                    
+                    row.innerHTML = `
+                        <td>${data.municipality}</td>
+                        <td>${formattedSales}</td>
+                        <td>${data.orderCount}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                if (countSpan) {
+                    countSpan.textContent = `${allMunicipalityData.length} municipalities found`;
+                }
+
+                // Store data for search functionality
+                window.allMunicipalityData = allMunicipalityData;
+                
+                // Setup search functionality
+                setupMunicipalitySearch();
+
+            } catch (error) {
+                console.error('Error in loadAllMunicipalitySalesData:', error);
+                const tableBody = document.getElementById('allMunicipalitySalesTableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Error loading data</td></tr>';
+                }
+            }
+        }
+
+        // Function to export municipality sales data
+        function exportAllMunicipalitySales(format) {
+            if (!window.allMunicipalityData || window.allMunicipalityData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            if (format === 'csv') {
+                exportMunicipalitySalesCSV();
+            } else if (format === 'pdf') {
+                exportMunicipalitySalesPDF();
+            }
+        }
+
+        function exportMunicipalitySalesCSV() {
+            const csvContent = [
+                ['Municipality', 'Total Sales', 'Number of Orders'],
+                ...window.allMunicipalityData.map(data => [
+                    data.municipality,
+                    data.totalSales.toFixed(2),
+                    data.orderCount
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'municipality_sales.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportMunicipalitySalesPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(16);
+            doc.text('Top Municipality Sales Report', 20, 20);
+
+            let yPosition = 40;
+            doc.setFontSize(12);
+            doc.text('Municipality', 20, yPosition);
+            doc.text('Total Sales', 80, yPosition);
+            doc.text('Orders', 140, yPosition);
+
+            yPosition += 10;
+            window.allMunicipalityData.forEach(data => {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                const formattedSales = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2
+                }).format(data.totalSales);
+                
+                doc.text(data.municipality, 20, yPosition);
+                doc.text(formattedSales, 80, yPosition);
+                doc.text(data.orderCount.toString(), 140, yPosition);
+                yPosition += 10;
+            });
+
+            doc.save('municipality_sales.pdf');
+        }
+
         // Function to load and populate sales chart with real data
         async function loadTotalSalesData() {
             try {
@@ -1287,6 +1714,12 @@
 
                 console.log('✅ All users data fetched:', users);
                 updateAllUsersTable(users || []);
+                
+                // Store data globally for search functionality
+                window.allUsersData = users || [];
+                
+                // Setup search functionality
+                setupUserSearch();
 
             } catch (error) {
                 console.error('Error in loadAllUsers:', error);
@@ -1363,6 +1796,63 @@
 
                 updateAllUsersTable(filteredUsers);
             });
+        }
+
+        // Setup municipality search functionality
+        function setupMunicipalitySearch() {
+            const searchInput = document.getElementById('municipalitySearchInput');
+            if (!searchInput) return;
+
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                
+                if (!window.allMunicipalityData) return;
+
+                const filteredMunicipalities = window.allMunicipalityData.filter(data => {
+                    const municipality = (data.municipality || '').toLowerCase();
+                    
+                    return municipality.includes(searchTerm);
+                });
+
+                updateAllMunicipalitySalesTable(filteredMunicipalities);
+            });
+        }
+
+        // Function to update all municipality sales table in modal
+        function updateAllMunicipalitySalesTable(municipalityData) {
+            const tableBody = document.getElementById('allMunicipalitySalesTableBody');
+            const countSpan = document.getElementById('allMunicipalitySalesCount');
+            
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '';
+
+            if (municipalityData.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No municipalities found</td></tr>';
+                if (countSpan) countSpan.textContent = '0 municipalities found';
+                return;
+            }
+
+            municipalityData.forEach(data => {
+                const row = document.createElement('tr');
+                
+                const formattedSales = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2
+                }).format(data.totalSales);
+                
+                row.innerHTML = `
+                    <td>${data.municipality}</td>
+                    <td>${formattedSales}</td>
+                    <td>${data.orderCount}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            if (countSpan) {
+                countSpan.textContent = `${municipalityData.length} municipalities found`;
+            }
         }
 
         // Function to export all users data

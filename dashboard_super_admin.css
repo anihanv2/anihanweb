@@ -831,3 +831,131 @@ body {
         flex-wrap: wrap;
     }
 }
+
+/* Municipality Sales Table Styles */
+.municipality-sales-table-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.municipality-sales-table-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 20px 25px;
+    margin: 0;
+}
+
+.municipality-sales-table-header h5 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.municipality-sales-table-body {
+    padding: 0;
+}
+
+.municipality-sales-table-body .table {
+    margin: 0;
+}
+
+.municipality-sales-table-body .table thead th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+    padding: 15px 20px;
+    font-size: 0.9rem;
+}
+
+.municipality-sales-table-body .table tbody td {
+    padding: 15px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f4;
+    color: #333;
+}
+
+.municipality-sales-table-body .table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.municipality-sales-table-body .table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.municipality-sales-table-footer {
+    background-color: #f8f9fa;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #dee2e6;
+}
+
+.municipality-sales-table-footer .table-info-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.municipality-sales-table-footer .table-info {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.municipality-sales-table-footer .view-all-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.municipality-sales-table-footer .view-all-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.municipality-sales-table-footer .pagination-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.municipality-sales-table-footer .pagination-controls .btn {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+    border-radius: 6px;
+}
+
+.municipality-sales-table-footer .pagination-controls .active-page {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+/* Municipality Sales Modal Styles */
+#allMunicipalitySalesModal .modal-dialog {
+    max-width: 95%;
+}
+
+#allMunicipalitySalesModal .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#allMunicipalitySalesModal .table td {
+    vertical-align: middle;
+}
+
+#municipalitySearchInput {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+}
+
+#municipalitySearchInput:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
