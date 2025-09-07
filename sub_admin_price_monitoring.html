@@ -382,7 +382,7 @@
             // Generate table rows
             tableBody.innerHTML = pageProducts.map(product => {
                 const price = parseFloat(product.price) || 0;
-                const storeName = product.users?.full_name || 'Unknown Store';
+                const storeName = product.users?.['store-owner']?.[0]?.store_name || product.users?.full_name || 'Unknown Store';
                 const storeLocation = product.users?.municipality || 'Unknown Municipality';
                 
                 return `
@@ -480,7 +480,7 @@
             // Generate all table rows
             tableBody.innerHTML = priceData.map((product, index) => {
                 const price = parseFloat(product.price) || 0;
-                const storeName = product.users?.full_name || 'Unknown Store';
+                const storeName = product.users?.['store-owner']?.[0]?.store_name || product.users?.full_name || 'Unknown Store';
                 const storeLocation = product.users?.municipality || 'Unknown Municipality';
                 
                 return `
@@ -533,7 +533,7 @@
                     } else {
                         tableBody.innerHTML = filteredData.map((product, index) => {
                             const price = parseFloat(product.price) || 0;
-                            const storeName = product.users?.full_name || 'Unknown Store';
+                            const storeName = product.users?.['store-owner']?.[0]?.store_name || product.users?.full_name || 'Unknown Store';
                             const storeLocation = product.users?.municipality || 'Unknown Municipality';
                             
                             return `
