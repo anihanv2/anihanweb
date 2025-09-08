@@ -402,7 +402,7 @@
                         <div class="col-md-6">
                             <div class="analytics-card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5>Sales Analytics</h5>
+                                    <h5>Sales Analytics (Seller Sales by Municipality)</h5>
                                     <div class="chart-controls">
                                         <select class="form-select form-select-sm me-2" id="salesFilter" style="width: 100px;">
                                             <option value="monthly">Monthly</option>
@@ -1030,38 +1030,71 @@
         // Load Sales Analytics from orders matching municipality
         async function loadSalesAnalytics(client, municipalityAddress, adminData) {
             try {
-                console.log('🚀 STARTING MUNICIPALITY-SPECIFIC SALES ANALYTICS LOAD');
-                console.log('🏛️ Loading sales analytics for municipality:', municipalityAddress);
-                console.log('� Admin data:', adminData);
+                console.log('🚀 STARTING SALES ANALYTICS BY SELLER MUNICIPALITY');
+                console.log('🏛️ Target municipality:', municipalityAddress);
                 
-                // Step 1: Get the address of the logged-in account from admin_accounts table
-                const loggedInAdminAddress = municipalityAddress; // This comes from the admin_accounts.address field
-                console.log('📍 Logged-in admin address from admin_accounts:', loggedInAdminAddress);
+                // Step 1: Get all sellers from store-owner table
+                console.log('📡 Step 1: Fetching all sellers from store-owner table...');
+                const { data: sellers, error: sellersError } = await client
+                    .from('store-owner')
+                    .select('user_id');
                 
-                if (!loggedInAdminAddress) {
-                    console.warn('⚠️ No address found for logged-in admin account');
+                if (sellersError) {
+                    console.error('❌ Error fetching sellers:', sellersError);
+                    console.error('❌ Full error:', JSON.stringify(sellersError, null, 2));
                     updateSalesChartWithFallback();
                     return;
                 }
                 
-                // Step 2: Match this address with the municipality field in the users table
-                console.log('📡 Step 2: Finding users where municipality matches admin address...');
-                const { data: matchingUsers, error: usersError } = await client
+                console.log(`📊 Found ${sellers?.length || 0} sellers in store-owner table`);
+                console.log('📊 Sample sellers:', sellers?.slice(0, 3));
+                
+                if (!sellers || sellers.length === 0) {
+                    console.warn('⚠️ No sellers found in store-owner table');
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                // Extract seller user IDs
+                const sellerUserIds = sellers.map(seller => seller.user_id);
+                console.log('👥 Seller user IDs:', sellerUserIds.slice(0, 5), '...and', sellerUserIds.length - 5, 'more');
+                
+                // Step 2: Get seller details with municipality from users table
+                console.log('📡 Step 2: Fetching seller details from users table...');
+                const { data: sellerUsers, error: usersError } = await client
                     .from('users')
                     .select('id, full_name, municipality')
-                    .eq('municipality', loggedInAdminAddress);
+                    .in('id', sellerUserIds);
                 
                 if (usersError) {
-                    console.error('❌ Error fetching users with matching municipality:', usersError);
+                    console.error('❌ Error fetching seller users:', usersError);
+                    console.error('❌ Full error:', JSON.stringify(usersError, null, 2));
                     updateSalesChartWithFallback();
                     return;
                 }
                 
-                console.log(`� Found ${matchingUsers?.length || 0} users with municipality matching admin address "${loggedInAdminAddress}"`);
+                console.log(`� Found ${sellerUsers?.length || 0} seller users`);
+                console.log('👥 Sample seller users:', sellerUsers?.slice(0, 3));
                 
-                // Step 3: Fetch all corresponding user_id values from users in that municipality
-                if (!matchingUsers || matchingUsers.length === 0) {
-                    console.warn('⚠️ No users found with matching municipality - showing empty analytics');
+                if (!sellerUsers || sellerUsers.length === 0) {
+                    console.warn('⚠️ No seller users found');
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                // Step 3: Filter sellers by municipality (if admin municipality is specified)
+                let filteredSellers = sellerUsers;
+                if (municipalityAddress) {
+                    filteredSellers = sellerUsers.filter(user => user.municipality === municipalityAddress);
+                    console.log(`🏛️ Filtered to ${filteredSellers.length} sellers in municipality: ${municipalityAddress}`);
+                } else {
+                    console.log('� No municipality filter applied - showing all sellers');
+                }
+                
+                console.log('🏛️ Filtered sellers:', filteredSellers?.slice(0, 3));
+                
+                if (filteredSellers.length === 0) {
+                    console.warn('⚠️ No sellers found in target municipality');
                     analyticsData.sales = {
                         monthly: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], data: new Array(12).fill(0) },
                         weekly: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: new Array(4).fill(0) },
@@ -1071,96 +1104,141 @@
                     return;
                 }
                 
-                const municipalityUserIds = matchingUsers.map(user => user.id);
-                console.log('📍 Municipality user IDs to fetch orders for:', municipalityUserIds);
+                // Step 4: Get orders for these sellers
+                const targetSellerIds = filteredSellers.map(seller => seller.id);
+                console.log('📡 Step 4: Fetching orders for sellers...');
+                console.log('� Target seller IDs:', targetSellerIds);
                 
-                // Step 4: From the orders table, fetch orders for all matching user_id values
-                console.log('📡 Step 4: Fetching orders from orders table for municipality users...');
-                const { data: municipalityOrders, error: ordersError } = await client
-                    .from('orders')
-                    .select('id, user_id, total, created_at, status')
-                    .in('user_id', municipalityUserIds)
-                    .not('total', 'is', null);
+                const { data: sellerProducts, error: productsError } = await client
+                    .from('my_products')
+                    .select('id, user_id, name')
+                    .in('user_id', targetSellerIds);
                 
-                if (ordersError) {
-                    console.error('❌ Error fetching orders for municipality users:', ordersError);
+                if (productsError) {
+                    console.error('❌ Error fetching seller products:', productsError);
                     updateSalesChartWithFallback();
                     return;
                 }
                 
-                console.log(`📦 Found ${municipalityOrders?.length || 0} orders from municipality users`);
+                console.log(`🛍️ Found ${sellerProducts?.length || 0} products from target sellers`);
                 
-                // Step 5: Calculate the sum of the total column for all matching user_id values
-                let totalSalesSum = 0;
-                if (municipalityOrders && municipalityOrders.length > 0) {
-                    totalSalesSum = municipalityOrders.reduce((sum, order) => {
-                        const orderTotal = parseFloat(order.total) || 0;
-                        return sum + orderTotal;
-                    }, 0);
+                if (!sellerProducts || sellerProducts.length === 0) {
+                    console.warn('⚠️ No products found from target sellers');
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                const productIds = sellerProducts.map(product => product.id);
+                
+                // Get order items for these products
+                const { data: orderItems, error: orderItemsError } = await client
+                    .from('order_items')
+                    .select('id, order_id, product_id, quantity, price')
+                    .in('product_id', productIds);
+                
+                if (orderItemsError) {
+                    console.error('❌ Error fetching order items:', orderItemsError);
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                console.log(`📦 Found ${orderItems?.length || 0} order items for seller products`);
+                
+                if (!orderItems || orderItems.length === 0) {
+                    console.warn('⚠️ No order items found for seller products');
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                const orderIds = [...new Set(orderItems.map(item => item.order_id))];
+                console.log(`📋 Found ${orderIds.length} unique orders containing seller products`);
+                
+                // Get the full orders for these order IDs
+                const { data: orders, error: ordersError } = await client
+                    .from('orders')
+                    .select('id, user_id, total, created_at, status')
+                    .in('id', orderIds)
+                    .not('total', 'is', null);
+                
+                if (ordersError) {
+                    console.error('❌ Error fetching orders:', ordersError);
+                    console.error('❌ Full error:', JSON.stringify(ordersError, null, 2));
+                    updateSalesChartWithFallback();
+                    return;
+                }
+                
+                console.log(`📦 Found ${orders?.length || 0} complete orders`);
+                console.log('📦 Sample orders:', orders?.slice(0, 3));
+                
+                // Step 7: Calculate sales attributed to sellers
+                let totalSales = 0;
+                const salesByOrder = new Map();
+                
+                if (orders && orders.length > 0) {
+                    // For each order, calculate how much was spent on seller products
+                    for (const order of orders) {
+                        const orderItemsForThisOrder = orderItems.filter(item => item.order_id === order.id);
+                        const orderSalesFromSellers = orderItemsForThisOrder.reduce((sum, item) => {
+                            const itemTotal = (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0);
+                            return sum + itemTotal;
+                        }, 0);
+                        
+                        salesByOrder.set(order.id, orderSalesFromSellers);
+                        totalSales += orderSalesFromSellers;
+                    }
                     
-                    console.log('💰 Municipality orders breakdown:');
-                    municipalityOrders.slice(0, 10).forEach(order => {
-                        console.log(`  📦 Order ${order.id}: ₱${parseFloat(order.total).toFixed(2)} (${new Date(order.created_at).toLocaleDateString()})`);
+                    console.log('💰 Sales breakdown by order:');
+                    Array.from(salesByOrder.entries()).slice(0, 10).forEach(([orderId, sales]) => {
+                        const order = orders.find(o => o.id === orderId);
+                        console.log(`  📦 Order ${orderId}: ₱${sales.toFixed(2)} (${new Date(order?.created_at).toLocaleDateString()})`);
                     });
                     
-                    if (municipalityOrders.length > 10) {
-                        console.log(`  ... and ${municipalityOrders.length - 10} more orders`);
+                    if (salesByOrder.size > 10) {
+                        console.log(`  ... and ${salesByOrder.size - 10} more orders`);
                     }
                 }
                 
-                console.log(`💰 TOTAL SALES SUM FOR MUNICIPALITY: ₱${totalSalesSum.toFixed(2)}`);
-                console.log(`✅ Data filtered by admin address matching user municipality`);
+                console.log(`💰 TOTAL SALES FROM MUNICIPALITY SELLERS: ₱${totalSales.toFixed(2)}`);
                 
-                // Step 6: Display this sum on the sales analytics line graph, grouped by time
-                console.log('� Step 6: Updating Sales Analytics line graph with time-grouped data...');
+                // Step 8: Create modified orders array with seller-attributed sales for chart generation
+                const sellerAttributedOrders = orders.map(order => ({
+                    ...order,
+                    total: salesByOrder.get(order.id) || 0
+                })).filter(order => order.total > 0);
                 
-                // Generate chart data grouped by time periods (daily, weekly, monthly, yearly)
-                analyticsData.sales = generateMultiPeriodData(municipalityOrders || []);
+                console.log('📊 Step 8: Generating time-based chart data...');
+                analyticsData.sales = generateMultiPeriodData(sellerAttributedOrders);
                 
-                // Log the processed data for verification
-                const currentPeriodData = analyticsData.sales.monthly;
-                const currentMonthTotal = currentPeriodData.data.reduce((sum, val) => sum + val, 0);
-                console.log(`� Current year total from chart data: ₱${currentMonthTotal.toFixed(2)}`);
-                console.log('📊 Monthly breakdown:', currentPeriodData.labels.map((label, i) => 
-                    `${label}: ₱${currentPeriodData.data[i].toFixed(2)}`
+                // Log chart data
+                const monthlyTotal = analyticsData.sales.monthly.data.reduce((sum, val) => sum + val, 0);
+                console.log(`📊 Monthly chart total: ₱${monthlyTotal.toFixed(2)}`);
+                console.log('📊 Monthly data:', analyticsData.sales.monthly.labels.map((label, i) => 
+                    `${label}: ₱${analyticsData.sales.monthly.data[i].toFixed(2)}`
                 ).join(', '));
                 
-                console.log('✅ Sales analytics line graph updated with municipality-filtered data');
-                console.log('✅ Only sales data from users within same municipality as admin address is shown');
-                
-                // Update the sales chart display
+                // Step 7: Update the chart
+                console.log('📊 Step 7: Updating sales chart...');
                 updateSalesChart();
                 
-                // Force immediate chart update to ensure monthly data shows
+                // Force chart update
                 setTimeout(() => {
                     if (window.salesChart && analyticsData.sales.monthly) {
-                        console.log('🔄 Force updating chart with monthly data immediately...');
+                        console.log('🔄 Force updating chart...');
                         const monthlyData = analyticsData.sales.monthly;
                         window.salesChart.data.labels = monthlyData.labels;
                         window.salesChart.data.datasets[0].data = monthlyData.data;
                         window.salesChart.update('none');
-                        console.log('✅ Monthly data forced into chart:', monthlyData);
-                        
-                        // Ensure the dropdown is set to monthly
-                        const salesFilter = document.getElementById('salesFilter');
-                        if (salesFilter) {
-                            salesFilter.value = 'monthly';
-                        }
-                    }
-                }, 50); // Almost immediate
-                
-                // Force update the displays immediately to ensure data shows
-                setTimeout(() => {
-                    const currentFilter = document.getElementById('salesFilter')?.value || 'monthly';
-                    const currentData = analyticsData.sales[currentFilter];
-                    if (currentData) {
-                        updateMunicipalitySalesDisplays(currentData, currentFilter);
-                        console.log('🔄 Force updated municipality sales displays with data:', currentData);
+                        console.log('✅ Chart force updated with data:', monthlyData);
                     }
                 }, 100);
                 
+                console.log('✅ Sales analytics completed successfully');
+                console.log(`✅ Showing sales from ${filteredSellers.length} sellers in ${municipalityAddress}`);
+                console.log('✅ Sales properly attributed to seller municipality via order items');
+                
             } catch (error) {
-                console.error('❌ Error loading municipality-specific sales analytics:', error);
+                console.error('❌ Critical error in loadSalesAnalytics:', error);
+                console.error('❌ Error stack:', error.stack);
                 updateSalesChartWithFallback();
             }
         }
@@ -2369,7 +2447,7 @@
                 data: {
                     labels: initialData.labels,
                     datasets: [{
-                        label: 'Sales (₱)',
+                        label: 'Sales by Municipality Sellers (₱)',
                         data: initialData.data,
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
@@ -3466,6 +3544,73 @@
                 updateAllUsersTable(filteredUsers);
             });
         }
+
+        // Debug function to test sales data loading
+        window.debugSalesData = async function() {
+            console.log('🐛 DEBUG: Testing sales data loading...');
+            
+            const client = window.supabaseClient || supabaseClient;
+            if (!client) {
+                console.error('❌ No Supabase client available');
+                return;
+            }
+            
+            console.log('✅ Supabase client available');
+            
+            // Test 1: Check store-owner table
+            console.log('🧪 Test 1: Checking store-owner table...');
+            const { data: sellers, error: sellersError } = await client
+                .from('store-owner')
+                .select('*')
+                .limit(5);
+            
+            if (sellersError) {
+                console.error('❌ Error accessing store-owner table:', sellersError);
+            } else {
+                console.log('✅ store-owner table accessible, sample data:', sellers);
+            }
+            
+            // Test 2: Check users table
+            console.log('🧪 Test 2: Checking users table...');
+            const { data: users, error: usersError } = await client
+                .from('users')
+                .select('id, full_name, municipality')
+                .limit(5);
+            
+            if (usersError) {
+                console.error('❌ Error accessing users table:', usersError);
+            } else {
+                console.log('✅ users table accessible, sample data:', users);
+            }
+            
+            // Test 3: Check orders table
+            console.log('🧪 Test 3: Checking orders table...');
+            const { data: orders, error: ordersError } = await client
+                .from('orders')
+                .select('id, user_id, total, created_at')
+                .not('total', 'is', null)
+                .limit(5);
+            
+            if (ordersError) {
+                console.error('❌ Error accessing orders table:', ordersError);
+            } else {
+                console.log('✅ orders table accessible, sample data:', orders);
+            }
+            
+            // Test 4: Manual data loading
+            if (sellers && users && orders) {
+                console.log('🧪 Test 4: Manual sales analytics loading...');
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                if (currentUser.address) {
+                    await loadSalesAnalytics(client, currentUser.address, currentUser);
+                } else {
+                    console.log('📡 Loading sales analytics without municipality filter...');
+                    await loadSalesAnalytics(client, null, currentUser);
+                }
+            }
+            
+            console.log('🐛 DEBUG: Test completed');
+        };
     </script>
 
     <!-- All Users Modal -->
