@@ -1178,35 +1178,47 @@
         // Function to load and display municipality sales data
         async function loadMunicipalitySalesData() {
             try {
-                console.log('=== LOADING MUNICIPALITY SALES DATA ===');
+                console.log('🚀 === LOADING MUNICIPALITY SALES DATA ===');
                 
                 if (!supabaseClient) {
-                    console.error('Supabase client not available');
+                    console.error('❌ Supabase client not available');
                     updateMunicipalitySalesTable([]);
                     return;
                 }
 
-                // Query to get municipality sales with JOIN
-                const { data: municipalitySales, error } = await supabaseClient
+                console.log('✅ Supabase client available, proceeding with query...');
+
+                // Use the working query from test
+                console.log('🔍 Fetching orders with municipality data...');
+                const { data: ordersData, error } = await supabaseClient
                     .from('orders')
                     .select(`
                         total,
-                        users!inner(municipality)
-                    `)
-                    .order('total', { ascending: false });
+                        users!orders_user_id_fkey(municipality)
+                    `);
 
                 if (error) {
-                    console.error('Database error fetching municipality sales:', error);
+                    console.error('❌ Database error:', error);
                     updateMunicipalitySalesTable([]);
                     return;
                 }
 
-                // Aggregate sales by municipality
+                console.log(`📦 Total orders found: ${ordersData?.length || 0}`);
+
+                if (!ordersData || ordersData.length === 0) {
+                    console.log('⚠️ No orders found');
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+
+                // Aggregate sales by municipality (same logic as working test)
                 const salesByMunicipality = {};
-                
-                municipalitySales.forEach(order => {
+
+                ordersData.forEach(order => {
                     const municipality = order.users?.municipality;
-                    if (municipality) {
+                    const total = parseFloat(order.total || 0);
+                    
+                    if (municipality && total > 0) {
                         if (!salesByMunicipality[municipality]) {
                             salesByMunicipality[municipality] = {
                                 municipality: municipality,
@@ -1214,10 +1226,39 @@
                                 orderCount: 0
                             };
                         }
-                        salesByMunicipality[municipality].totalSales += parseFloat(order.total || 0);
+                        salesByMunicipality[municipality].totalSales += total;
                         salesByMunicipality[municipality].orderCount += 1;
                     }
                 });
+
+                console.log('📊 Sales by municipality:', salesByMunicipality);
+
+                // Convert to array and sort by total sales
+                console.log('� Unique user IDs from orders:', [].slice(0, 5));
+
+                // Fetch users data
+                console.log('� Step 2: Fetching users data...');
+                const { data: users, error: usersError } = await supabaseClient
+                    .from('users')
+                    .select('id, full_name, municipality')
+                    .in('id', []);
+
+                if (usersError) {
+                    console.error('❌ Users query error:', usersError);
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+
+                console.log('👥 Users found:', users?.length || 0);
+                console.log('📊 Sample users:', users?.slice(0, 3));
+
+                // Create a user lookup map
+                const userMap = {};
+                users?.forEach(user => {
+                    userMap[user.id] = user;
+                });
+
+                console.log('�️ User map created with', Object.keys(userMap).length, 'users');
 
                 // Convert to array and sort by total sales
                 const aggregatedData = Object.values(salesByMunicipality)
@@ -1230,17 +1271,28 @@
                 const endIndex = startIndex + municipalitiesPerPage;
                 const paginatedData = aggregatedData.slice(startIndex, endIndex);
 
-                console.log('✅ Municipality sales data processed:', paginatedData);
+                console.log(`✅ Final result: ${aggregatedData.length} municipalities found`);
+                console.log('🏆 Top municipalities:', paginatedData);
+
+                if (aggregatedData.length === 0) {
+                    console.log('❌ No municipality data found. Possible issues:');
+                    console.log('   - Users have no municipality field filled');
+                    console.log('   - No completed orders');
+                    console.log('   - Orders have zero totals');
+                }
+
                 updateMunicipalitySalesTable(paginatedData);
 
             } catch (error) {
-                console.error('Error in loadMunicipalitySalesData:', error);
+                console.error('❌ Error in loadMunicipalitySalesData:', error);
                 updateMunicipalitySalesTable([]);
             }
         }
 
         // Function to update the municipality sales table
         function updateMunicipalitySalesTable(municipalityData) {
+            console.log('🔄 Updating municipality sales table with data:', municipalityData);
+            
             const tableBody = document.getElementById('municipalitySalesTableBody');
             const tableInfo = document.getElementById('municipalitySalesTableInfo');
             
@@ -1253,9 +1305,13 @@
             tableBody.innerHTML = '';
 
             if (municipalityData.length === 0) {
+                console.log('⚠️ No municipality data to display');
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="3" class="text-center">No sales data found</td>
+                        <td colspan="3" class="text-center text-muted">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No sales data found. Check browser console for debugging info.
+                        </td>
                     </tr>
                 `;
                 if (tableInfo) {
@@ -1263,6 +1319,8 @@
                 }
                 return;
             }
+
+            console.log(`📊 Displaying ${municipalityData.length} municipalities`);
 
             // Populate table with municipality sales data
             municipalityData.forEach(data => {
@@ -1280,6 +1338,8 @@
                     <td>${data.orderCount}</td>
                 `;
                 tableBody.appendChild(row);
+                
+                console.log(`📍 Added row: ${data.municipality} - ${formattedSales} (${data.orderCount} orders)`);
             });
 
             // Update table info and pagination
@@ -1296,7 +1356,185 @@
                 currentMunicipalityPageBtn.textContent = currentMunicipalityPage;
             }
 
-            console.log('✅ Municipality sales table updated with', municipalityData.length, 'municipalities');
+            console.log('✅ Municipality sales table updated successfully');
+        }
+
+        // Debug function to manually check municipality data
+        async function debugMunicipalityData() {
+            console.log('🔍 === MANUAL DEBUG: MUNICIPALITY DATA ===');
+            
+            if (!supabaseClient) {
+                console.error('❌ Supabase client not available');
+                alert('Supabase client not available - check connection');
+                return;
+            }
+
+            try {
+                // Check if orders table exists and has data
+                console.log('📦 Checking orders table...');
+                const { data: ordersCheck, error: ordersError } = await supabaseClient
+                    .from('orders')
+                    .select('id, total, status, user_id')
+                    .limit(5);
+                
+                console.log('Orders table check:', { ordersCheck, ordersError });
+                
+                if (ordersError) {
+                    console.error('❌ Orders table error:', ordersError);
+                    alert(`Orders table error: ${ordersError.message}`);
+                    return;
+                }
+                
+                if (!ordersCheck || ordersCheck.length === 0) {
+                    console.log('⚠️ No orders found in database');
+                    alert('No orders found in the database. You need to add some orders first.');
+                    return;
+                }
+                
+                console.log('✅ Orders table accessible, sample data:', ordersCheck);
+                
+                // Check users table
+                console.log('👥 Checking users table...');
+                const { data: usersCheck, error: usersError } = await supabaseClient
+                    .from('users')
+                    .select('id, full_name, municipality')
+                    .limit(5);
+                
+                console.log('Users table check:', { usersCheck, usersError });
+                
+                if (usersError) {
+                    console.error('❌ Users table error:', usersError);
+                    alert(`Users table error: ${usersError.message}`);
+                    return;
+                }
+                
+                // Check JOIN query
+                console.log('🔗 Testing JOIN query...');
+                const { data: joinTest, error: joinError } = await supabaseClient
+                    .from('orders')
+                    .select(`
+                        id,
+                        total,
+                        status,
+                        users!orders_user_id_fkey(
+                            id,
+                            full_name,
+                            municipality
+                        )
+                    `)
+                    .limit(5);
+                
+                console.log('JOIN test:', { joinTest, joinError });
+                
+                if (joinError) {
+                    console.error('❌ JOIN query error:', joinError);
+                    alert(`JOIN query error: ${joinError.message}`);
+                    return;
+                }
+                
+                // Check what statuses are available
+                const { data: allOrders, error: allOrdersError } = await supabaseClient
+                    .from('orders')
+                    .select('id, status, total, users!orders_user_id_fkey(municipality)');
+                
+                if (allOrdersError) {
+                    console.error('❌ Error fetching all orders:', allOrdersError);
+                    return;
+                }
+                
+                const statuses = [...new Set(allOrders.map(o => o.status))];
+                console.log('📊 Available order statuses:', statuses);
+                console.log('📊 Orders by status:', 
+                    statuses.map(status => ({
+                        status,
+                        count: allOrders.filter(o => o.status === status).length
+                    }))
+                );
+                
+                // Show municipalities
+                const municipalities = [...new Set(allOrders.map(o => o.users?.municipality).filter(Boolean))];
+                console.log('�️ Municipalities found in users:', municipalities);
+                
+                // Now try to load the municipality data
+                console.log('🔄 Triggering loadMunicipalitySalesData...');
+                await loadMunicipalitySalesData();
+                
+            } catch (error) {
+                console.error('❌ Debug error:', error);
+                alert(`Debug error: ${error.message}`);
+            }
+        }
+
+        // Simple test function for municipality data
+        async function testMunicipalityData() {
+            console.log('🔍 === SIMPLE MUNICIPALITY TEST ===');
+            
+            if (!supabaseClient) {
+                alert('Supabase client not available');
+                return;
+            }
+
+            try {
+                // Test the exact query we use for municipality sales
+                console.log('🔍 Testing municipality sales query...');
+                const { data: ordersData, error } = await supabaseClient
+                    .from('orders')
+                    .select(`
+                        total,
+                        users!orders_user_id_fkey(municipality)
+                    `)
+                    .limit(10);
+                
+                console.log('Municipality sales query result:', { ordersData, error });
+                
+                if (error) {
+                    alert(`Query error: ${error.message}`);
+                    return;
+                }
+
+                if (!ordersData || ordersData.length === 0) {
+                    alert('No orders found in database');
+                    return;
+                }
+
+                // Analyze the data
+                let validSales = 0;
+                let totalSales = 0;
+                const municipalities = new Set();
+
+                ordersData.forEach(order => {
+                    const municipality = order.users?.municipality;
+                    const total = parseFloat(order.total || 0);
+                    
+                    if (municipality && total > 0) {
+                        validSales++;
+                        totalSales += total;
+                        municipalities.add(municipality);
+                    }
+                });
+
+                const result = `Municipality Sales Test Results:
+• Total orders: ${ordersData.length}
+• Orders with valid sales: ${validSales}
+• Total sales amount: ₱${totalSales.toFixed(2)}
+• Unique municipalities: ${municipalities.size}
+• Municipalities found: ${Array.from(municipalities).join(', ')}
+
+${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
+
+                console.log(result);
+                alert(result);
+
+                // Try to load the actual data if valid
+                if (validSales > 0) {
+                    console.log('🔄 Triggering loadMunicipalitySalesData...');
+                    await loadMunicipalitySalesData();
+                }
+
+            } catch (error) {
+                console.error('Test error:', error);
+                alert(`Test error: ${error.message}`);
+            }
         }
 
         // Function to change municipality page
@@ -1334,12 +1572,12 @@
                     return;
                 }
 
-                // Query all municipality sales data
-                const { data: municipalitySales, error } = await supabaseClient
+                // Use the same working query from the main function
+                const { data: ordersData, error } = await supabaseClient
                     .from('orders')
                     .select(`
                         total,
-                        users!inner(municipality)
+                        users!orders_user_id_fkey(municipality)
                     `);
 
                 if (error) {
@@ -1348,12 +1586,20 @@
                     return;
                 }
 
-                // Aggregate sales by municipality
+                if (!ordersData || ordersData.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No completed orders found</td></tr>';
+                    if (countSpan) countSpan.textContent = '0 municipalities found';
+                    return;
+                }
+
+                // Aggregate sales by municipality from user data
                 const salesByMunicipality = {};
                 
-                municipalitySales.forEach(order => {
+                ordersData.forEach(order => {
                     const municipality = order.users?.municipality;
-                    if (municipality) {
+                    const total = parseFloat(order.total || 0);
+                    
+                    if (municipality && total > 0) {
                         if (!salesByMunicipality[municipality]) {
                             salesByMunicipality[municipality] = {
                                 municipality: municipality,
@@ -1361,7 +1607,7 @@
                                 orderCount: 0
                             };
                         }
-                        salesByMunicipality[municipality].totalSales += parseFloat(order.total || 0);
+                        salesByMunicipality[municipality].totalSales += total;
                         salesByMunicipality[municipality].orderCount += 1;
                     }
                 });
