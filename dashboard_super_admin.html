@@ -180,6 +180,31 @@
             border-color: #007bff;
             color: white;
         }
+
+        /* Chart Container Stability */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            min-height: 200px;
+            max-height: 200px;
+            overflow: hidden;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 200px !important;
+            max-height: 200px !important;
+        }
+
+        /* Total Sales Display */
+        .total-sales-display {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body>
@@ -392,7 +417,9 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <canvas id="salesChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                <div class="chart-container" style="position: relative; height: 200px; margin-bottom: 15px;">
+                                    <canvas id="salesChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -721,6 +748,14 @@
                 loadAvailableProductsCount();
                 loadUsersData();
                 loadMunicipalitySalesData();
+                
+                // Debug municipality sales
+                setTimeout(() => {
+                    if (window.debugMunicipalitySales) {
+                        console.log('🧪 Running municipality sales debug...');
+                        window.debugMunicipalitySales();
+                    }
+                }, 2000);
                 
                 // Initialize charts after supabaseClient is available
                 if (typeof Chart !== 'undefined') {
@@ -1176,6 +1211,74 @@
         const municipalitiesPerPage = 4;
 
         // Function to load and display municipality sales data
+        // Debug function for municipality sales
+        window.debugMunicipalitySales = async function() {
+            console.log('🧪 === DEBUGGING MUNICIPALITY SALES ===');
+            
+            if (!supabaseClient) {
+                console.error('❌ Supabase client not available');
+                return;
+            }
+
+            try {
+                // Test 1: Check store-owner table
+                console.log('🧪 Test 1: Checking store-owner table...');
+                const { data: sellers, error: sellersError } = await supabaseClient
+                    .from('store-owner')
+                    .select('user_id')
+                    .limit(10);
+                
+                console.log('🧪 Sellers result:', { data: sellers, error: sellersError });
+
+                if (sellers && sellers.length > 0) {
+                    // Test 2: Check users table for these sellers
+                    console.log('🧪 Test 2: Checking users table...');
+                    const sellerIds = sellers.map(s => s.user_id);
+                    const { data: users, error: usersError } = await supabaseClient
+                        .from('users')
+                        .select('id, full_name, municipality')
+                        .in('id', sellerIds);
+                    
+                    console.log('🧪 Users result:', { data: users, error: usersError });
+                    
+                    if (users) {
+                        const withMunicipality = users.filter(u => u.municipality);
+                        console.log(`🧪 Users with municipality: ${withMunicipality.length} of ${users.length}`);
+                        console.log('🧪 Sample:', withMunicipality.slice(0, 3));
+                    }
+                }
+
+                // Test 3: Check completed orders
+                console.log('🧪 Test 3: Checking completed orders...');
+                const { data: orders, error: ordersError } = await supabaseClient
+                    .from('orders')
+                    .select('id, total, status')
+                    .limit(10);
+                
+                console.log('🧪 All orders result:', { data: orders, error: ordersError });
+                
+                if (orders && orders.length > 0) {
+                    const statusCounts = {};
+                    orders.forEach(order => {
+                        statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+                    });
+                    console.log('🧪 Order statuses found:', statusCounts);
+                    
+                    // Test completed orders specifically
+                    const { data: completedOrders, error: completedError } = await supabaseClient
+                        .from('orders')
+                        .select('id, total, status')
+                        .eq('status', 'completed')
+                        .limit(5);
+                    
+                    console.log('🧪 Completed orders result:', { data: completedOrders, error: completedError });
+                }
+
+            } catch (error) {
+                console.error('🧪 Debug error:', error);
+            }
+        };
+
         async function loadMunicipalitySalesData() {
             try {
                 console.log('🚀 === LOADING MUNICIPALITY SALES DATA ===');
@@ -1186,79 +1289,172 @@
                     return;
                 }
 
-                console.log('✅ Supabase client available, proceeding with query...');
-
-                // Use the working query from test
-                console.log('🔍 Fetching orders with municipality data...');
-                const { data: ordersData, error } = await supabaseClient
-                    .from('orders')
-                    .select(`
-                        total,
-                        users!orders_user_id_fkey(municipality)
-                    `);
-
-                if (error) {
-                    console.error('❌ Database error:', error);
+                // Step 1: Get all sellers from store-owner table
+                console.log('📡 Step 1: Fetching all sellers from store-owner table...');
+                const { data: sellers, error: sellersError } = await supabaseClient
+                    .from('store-owner')
+                    .select('user_id');
+                
+                if (sellersError) {
+                    console.error('❌ Error fetching sellers:', sellersError);
                     updateMunicipalitySalesTable([]);
                     return;
                 }
-
-                console.log(`📦 Total orders found: ${ordersData?.length || 0}`);
-
-                if (!ordersData || ordersData.length === 0) {
-                    console.log('⚠️ No orders found');
+                
+                console.log(`📊 Found ${sellers?.length || 0} sellers in store-owner table`);
+                console.log('📊 Sample sellers:', sellers?.slice(0, 3));
+                
+                if (!sellers || sellers.length === 0) {
+                    console.warn('⚠️ No sellers found in store-owner table');
                     updateMunicipalitySalesTable([]);
                     return;
                 }
-
-                // Aggregate sales by municipality (same logic as working test)
-                const salesByMunicipality = {};
-
-                ordersData.forEach(order => {
-                    const municipality = order.users?.municipality;
-                    const total = parseFloat(order.total || 0);
-                    
-                    if (municipality && total > 0) {
-                        if (!salesByMunicipality[municipality]) {
-                            salesByMunicipality[municipality] = {
-                                municipality: municipality,
-                                totalSales: 0,
-                                orderCount: 0
-                            };
-                        }
-                        salesByMunicipality[municipality].totalSales += total;
-                        salesByMunicipality[municipality].orderCount += 1;
-                    }
-                });
-
-                console.log('📊 Sales by municipality:', salesByMunicipality);
-
-                // Convert to array and sort by total sales
-                console.log('� Unique user IDs from orders:', [].slice(0, 5));
-
-                // Fetch users data
-                console.log('� Step 2: Fetching users data...');
-                const { data: users, error: usersError } = await supabaseClient
+                
+                // Extract seller user IDs
+                const sellerUserIds = sellers.map(seller => seller.user_id);
+                console.log('👥 Seller user IDs (first 5):', sellerUserIds.slice(0, 5));
+                
+                // Step 2: Get seller details with municipality from users table
+                console.log('📡 Step 2: Fetching seller details from users table...');
+                const { data: sellerUsers, error: usersError } = await supabaseClient
                     .from('users')
                     .select('id, full_name, municipality')
-                    .in('id', []);
-
+                    .in('id', sellerUserIds);
+                
                 if (usersError) {
-                    console.error('❌ Users query error:', usersError);
+                    console.error('❌ Error fetching seller users:', usersError);
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+                
+                console.log(`� Found ${sellerUsers?.length || 0} seller users`);
+                
+                if (!sellerUsers || sellerUsers.length === 0) {
+                    console.warn('⚠️ No seller users found');
                     updateMunicipalitySalesTable([]);
                     return;
                 }
 
-                console.log('👥 Users found:', users?.length || 0);
-                console.log('📊 Sample users:', users?.slice(0, 3));
+                // Step 3: Get products for these sellers
+                const { data: sellerProducts, error: productsError } = await supabaseClient
+                    .from('my_products')
+                    .select('id, user_id, name')
+                    .in('user_id', sellerUserIds);
+                
+                if (productsError) {
+                    console.error('❌ Error fetching seller products:', productsError);
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+                
+                console.log(`🛍️ Found ${sellerProducts?.length || 0} products from sellers`);
+                
+                if (!sellerProducts || sellerProducts.length === 0) {
+                    console.warn('⚠️ No products found from sellers');
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+                
+                const productIds = sellerProducts.map(product => product.id);
+                
+                // Step 4: Get order items for these products
+                const { data: orderItems, error: orderItemsError } = await supabaseClient
+                    .from('order_items')
+                    .select('id, order_id, product_id, quantity, price')
+                    .in('product_id', productIds);
+                
+                if (orderItemsError) {
+                    console.error('❌ Error fetching order items:', orderItemsError);
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+                
+                console.log(`� Found ${orderItems?.length || 0} order items for seller products`);
+                
+                if (!orderItems || orderItems.length === 0) {
+                    console.warn('⚠️ No order items found for seller products');
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+                
+                const orderIds = [...new Set(orderItems.map(item => item.order_id))];
+                
+                // Step 5: Get the full orders for these order IDs
+                console.log('📡 Step 5: Fetching orders (all statuses)...');
+                const { data: orders, error: ordersError } = await supabaseClient
+                    .from('orders')
+                    .select('id, user_id, total, created_at, status')
+                    .in('id', orderIds);
+                
+                if (ordersError) {
+                    console.error('❌ Error fetching orders:', ordersError);
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+                
+                console.log(`📦 Found ${orders?.length || 0} orders (all statuses)`);
+                console.log('📦 Sample orders:', orders?.slice(0, 3));
+                
+                // Check order statuses
+                if (orders && orders.length > 0) {
+                    const statusCounts = {};
+                    orders.forEach(order => {
+                        statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+                    });
+                    console.log('📊 Order status breakdown:', statusCounts);
+                }
+                
+                if (ordersError) {
+                    console.error('❌ Error fetching orders:', ordersError);
+                    updateMunicipalitySalesTable([]);
+                    return;
+                }
+                
+                console.log(`� Found ${orders?.length || 0} completed orders`);
+                
+                // Step 6: Calculate sales by municipality
+                const salesByMunicipality = {};
+                
+                if (orders && orders.length > 0) {
+                    // For each order, calculate how much was spent on seller products by municipality
+                    for (const order of orders) {
+                        const orderItemsForThisOrder = orderItems.filter(item => item.order_id === order.id);
+                        
+                        // Group by seller municipality for this order
+                        const orderSalesByMunicipality = {};
+                        
+                        for (const item of orderItemsForThisOrder) {
+                            const product = sellerProducts.find(p => p.id === item.product_id);
+                            if (product) {
+                                const seller = sellerUsers.find(u => u.id === product.user_id);
+                                if (seller && seller.municipality) {
+                                    const municipality = seller.municipality;
+                                    const itemTotal = (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0);
+                                    
+                                    if (!orderSalesByMunicipality[municipality]) {
+                                        orderSalesByMunicipality[municipality] = 0;
+                                    }
+                                    orderSalesByMunicipality[municipality] += itemTotal;
+                                }
+                            }
+                        }
+                        
+                        // Add to overall totals
+                        for (const [municipality, sales] of Object.entries(orderSalesByMunicipality)) {
+                            if (!salesByMunicipality[municipality]) {
+                                salesByMunicipality[municipality] = {
+                                    municipality: municipality,
+                                    totalSales: 0,
+                                    orderCount: 0
+                                };
+                            }
+                            salesByMunicipality[municipality].totalSales += sales;
+                            salesByMunicipality[municipality].orderCount += 1;
+                        }
+                    }
+                }
 
-                // Create a user lookup map
-                const userMap = {};
-                users?.forEach(user => {
-                    userMap[user.id] = user;
-                });
-
-                console.log('�️ User map created with', Object.keys(userMap).length, 'users');
+                console.log('📊 Sales by municipality (seller attribution):', salesByMunicipality);
 
                 // Convert to array and sort by total sales
                 const aggregatedData = Object.values(salesByMunicipality)
@@ -1272,14 +1468,7 @@
                 const paginatedData = aggregatedData.slice(startIndex, endIndex);
 
                 console.log(`✅ Final result: ${aggregatedData.length} municipalities found`);
-                console.log('🏆 Top municipalities:', paginatedData);
-
-                if (aggregatedData.length === 0) {
-                    console.log('❌ No municipality data found. Possible issues:');
-                    console.log('   - Users have no municipality field filled');
-                    console.log('   - No completed orders');
-                    console.log('   - Orders have zero totals');
-                }
+                console.log('🏆 Top municipalities by seller sales:', paginatedData);
 
                 updateMunicipalitySalesTable(paginatedData);
 
@@ -3607,9 +3796,46 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
 
                 console.log(`Chart data for ${period}:`, chartData);
                 updateSalesChartWithData(chartData);
+                
+                // Calculate and display total sales
+                updateTotalSalesDisplay(orders);
 
             } catch (error) {
                 console.error(`Error loading ${period} sales data:`, error);
+            }
+        }
+        
+        // Function to update total sales display
+        function updateTotalSalesDisplay(orders) {
+            try {
+                let totalSales = 0;
+                let totalOrders = 0;
+                
+                if (orders && orders.length > 0) {
+                    orders.forEach(order => {
+                        if (order.total && (order.status === 'completed' || order.status === 'delivered')) {
+                            totalSales += parseFloat(order.total) || 0;
+                            totalOrders++;
+                        }
+                    });
+                }
+                
+                // Update the display elements
+                const totalSalesElement = document.getElementById('totalSalesDisplay');
+                const totalSalesCountElement = document.getElementById('totalSalesCount');
+                
+                if (totalSalesElement) {
+                    totalSalesElement.textContent = `₱${totalSales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                
+                if (totalSalesCountElement) {
+                    totalSalesCountElement.textContent = `${totalOrders.toLocaleString()} orders`;
+                }
+                
+                console.log(`Total Sales Updated: ₱${totalSales.toFixed(2)} from ${totalOrders} completed orders`);
+                
+            } catch (error) {
+                console.error('Error updating total sales display:', error);
             }
         }
 
