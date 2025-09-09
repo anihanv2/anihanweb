@@ -270,20 +270,40 @@
             border-top: 1px solid #e9ecef;
         }
 
-        /* Chart Container Stability */
+        /* Chart Container Responsive Design */
         .chart-container {
             position: relative;
             width: 100%;
-            min-height: 200px;
-            max-height: 200px;
+            min-height: 300px;
+            height: 350px;
             overflow: hidden;
         }
 
         .chart-container canvas {
             width: 100% !important;
             max-width: 100% !important;
-            height: 200px !important;
-            max-height: 200px !important;
+            height: 100% !important;
+            min-height: 300px !important;
+        }
+
+        /* Analytics Card Styling */
+        .analytics-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 24px;
+            min-height: 450px;
+        }
+
+        .analytics-card .card-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 20px;
+        }
+
+        .analytics-card .card-body {
+            padding: 20px;
         }
 
         /* Total Sales Display */
@@ -506,8 +526,8 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="chart-container" style="position: relative; height: 200px; margin-bottom: 15px;">
-                                    <canvas id="salesChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="salesChart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -543,7 +563,9 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <canvas id="stocksChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="stocksChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -581,7 +603,9 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <canvas id="soilChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="soilChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -617,7 +641,9 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <canvas id="hectareChart" width="400" height="200" style="display: block; max-width: 100%; height: 200px;"></canvas>
+                                <div class="chart-container">
+                                    <canvas id="hectareChart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3343,16 +3369,18 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
         }
 
         function exportToWord(chartType, filename) {
+            console.log('📝 Exporting to Word:', chartType);
             const targetElement = document.querySelector('#' + chartType + 'Chart');
             
             if (targetElement) {
                 html2canvas(targetElement).then(canvas => {
                     const imgData = canvas.toDataURL('image/png');
                     
-                    // Prepare data table HTML
+                    // Prepare data table HTML based on chart type
                     let dataTableHTML = '';
                     
                     if (chartType === 'sales' && currentSalesData) {
+                        console.log('📊 Processing sales data...');
                         dataTableHTML = `
                             <h2>Sales Data Table</h2>
                             <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
@@ -3397,7 +3425,107 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                                 </tbody>
                             </table>
                         `;
+                    } else if (chartType === 'soil' && typeof soilChart !== 'undefined' && soilChart) {
+                        console.log('🌱 Processing soil data...');
+                        const soilData = soilChart.data;
+                        console.log('Soil chart data:', soilData);
+                        
+                        if (soilData && soilData.labels && soilData.datasets && soilData.datasets[0]) {
+                            dataTableHTML = `
+                                <h2>Soil Analytics Data Table</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa;">
+                                            <th style="padding: 10px; text-align: left;">Soil Type</th>
+                                            <th style="padding: 10px; text-align: right;">Percentage (%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            
+                            const labels = soilData.labels;
+                            const data = soilData.datasets[0].data;
+                            let total = 0;
+                            
+                            labels.forEach((label, index) => {
+                                const value = data[index] || 0;
+                                total += value;
+                                
+                                dataTableHTML += `
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value}%</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            dataTableHTML += `
+                                        <tr style="background-color: #e9ecef; font-weight: bold;">
+                                            <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total}%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            console.warn('⚠️ Soil chart data not available');
+                            dataTableHTML = `<p><em>No soil data available for export.</em></p>`;
+                        }
+                    } else if (chartType === 'hectare' && typeof hectareChart !== 'undefined' && hectareChart) {
+                        console.log('📊 Processing hectare data...');
+                        const hectareData = hectareChart.data;
+                        console.log('Hectare chart data:', hectareData);
+                        
+                        if (hectareData && hectareData.labels && hectareData.datasets && hectareData.datasets[0]) {
+                            dataTableHTML = `
+                                <h2>Hectare Analytics Data Table</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa;">
+                                            <th style="padding: 10px; text-align: left;">Period</th>
+                                            <th style="padding: 10px; text-align: right;">Hectares</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            
+                            const labels = hectareData.labels;
+                            const data = hectareData.datasets[0].data;
+                            let total = 0;
+                            
+                            labels.forEach((label, index) => {
+                                const value = data[index] || 0;
+                                total += value;
+                                
+                                dataTableHTML += `
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value} ha</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            // Calculate average
+                            const average = (total / labels.length).toFixed(1);
+                            
+                            dataTableHTML += `
+                                        <tr style="background-color: #e9ecef; font-weight: bold;">
+                                            <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total} ha</td>
+                                        </tr>
+                                        <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                            <td style="padding: 10px; border: 1px solid #ddd;">Average</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${average} ha</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            console.warn('⚠️ Hectare chart data not available');
+                            dataTableHTML = `<p><em>No hectare data available for export.</em></p>`;
+                        }
                     } else {
+                        console.warn('⚠️ Chart data not available for:', chartType);
                         dataTableHTML = `<p><em>No data available for ${chartType} chart.</em></p>`;
                     }
                     
@@ -4706,16 +4834,17 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
         }
 
         function exportToWord(chartType, filename) {
-            // Create a comprehensive HTML document for Word export with data
+            console.log('📝 Exporting to Word:', chartType);
             const canvas = document.querySelector('#' + chartType + 'Chart');
             if (canvas) {
                 html2canvas(canvas).then(canvas => {
                     const imgData = canvas.toDataURL('image/png');
                     
-                    // Prepare data table HTML
+                    // Prepare data table HTML based on chart type
                     let dataTableHTML = '';
                     
                     if (chartType === 'sales' && currentSalesData) {
+                        console.log('📊 Processing sales data for Word export...');
                         dataTableHTML = `
                             <h2>Sales Data Table</h2>
                             <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
@@ -4760,14 +4889,158 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                                 </tbody>
                             </table>
                         `;
+                    } else if (chartType === 'soil') {
+                        console.log('🌱 Processing soil data for Word export...');
+                        // Use analyticsData.soil.type which gets updated from database
+                        const soilData = analyticsData.soil.type;
+                        console.log('Soil data for export:', soilData);
+                        
+                        if (soilData && soilData.labels && soilData.data) {
+                            dataTableHTML = `
+                                <h2>Soil Analytics Data Table</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa;">
+                                            <th style="padding: 10px; text-align: left;">Soil Type</th>
+                                            <th style="padding: 10px; text-align: right;">Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            
+                            let total = 0;
+                            soilData.labels.forEach((label, index) => {
+                                const value = soilData.data[index] || 0;
+                                total += value;
+                                
+                                dataTableHTML += `
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value}</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            dataTableHTML += `
+                                        <tr style="background-color: #e9ecef; font-weight: bold;">
+                                            <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            console.warn('⚠️ Soil data not available for Word export');
+                            dataTableHTML = `<p><em>No soil data available for export.</em></p>`;
+                        }
+                    } else if (chartType === 'hectare') {
+                        console.log('📊 Processing hectare data for Word export...');
+                        // Use analyticsData.hectare.monthly which gets updated from database
+                        const hectareData = analyticsData.hectare.monthly;
+                        console.log('Hectare data for export:', hectareData);
+                        
+                        if (hectareData && hectareData.labels && hectareData.data) {
+                            dataTableHTML = `
+                                <h2>Hectare Analytics Data Table</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa;">
+                                            <th style="padding: 10px; text-align: left;">Period</th>
+                                            <th style="padding: 10px; text-align: right;">Hectares</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            
+                            let total = 0;
+                            hectareData.labels.forEach((label, index) => {
+                                const value = hectareData.data[index] || 0;
+                                total += value;
+                                
+                                dataTableHTML += `
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value.toFixed(1)} ha</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            // Calculate average
+                            const average = hectareData.labels.length > 0 ? (total / hectareData.labels.length).toFixed(1) : 0;
+                            
+                            dataTableHTML += `
+                                        <tr style="background-color: #e9ecef; font-weight: bold;">
+                                            <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total.toFixed(1)} ha</td>
+                                        </tr>
+                                        <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                            <td style="padding: 10px; border: 1px solid #ddd;">Average</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${average} ha</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            console.warn('⚠️ Hectare data not available for Word export');
+                            dataTableHTML = `<p><em>No hectare data available for export.</em></p>`;
+                        }
+                    } else if (chartType === 'stocks') {
+                        console.log('📦 Processing stocks data for Word export...');
+                        // Use the current stocks filter to determine which data to show
+                        const stocksFilter = document.getElementById('stocksFilter');
+                        const currentView = stocksFilter ? stocksFilter.value : 'category';
+                        const stocksData = analyticsData.stocks[currentView];
+                        
+                        if (stocksData && stocksData.labels && stocksData.data) {
+                            const headerLabel = currentView === 'category' ? 'Category' : 'Status';
+                            const valueLabel = currentView === 'category' ? 'Quantity' : 'Count';
+                            
+                            dataTableHTML = `
+                                <h2>Stocks Analytics Data Table (${currentView.charAt(0).toUpperCase() + currentView.slice(1)})</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                    <thead>
+                                        <tr style="background-color: #f8f9fa;">
+                                            <th style="padding: 10px; text-align: left;">${headerLabel}</th>
+                                            <th style="padding: 10px; text-align: right;">${valueLabel}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            
+                            let total = 0;
+                            stocksData.labels.forEach((label, index) => {
+                                const value = stocksData.data[index] || 0;
+                                total += value;
+                                
+                                dataTableHTML += `
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value}</td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            dataTableHTML += `
+                                        <tr style="background-color: #e9ecef; font-weight: bold;">
+                                            <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            console.warn('⚠️ Stocks data not available for Word export');
+                            dataTableHTML = `<p><em>No stocks data available for export.</em></p>`;
+                        }
                     } else {
+                        console.warn('⚠️ Chart data not available for:', chartType);
                         dataTableHTML = `<p><em>No data available for ${chartType} chart.</em></p>`;
                     }
                     
                     const html = `
                         <html>
                         <head>
-                            <title>${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics Report</title>
+                            <title>Super Admin ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics Report</title>
                             <style>
                                 body { font-family: Arial, sans-serif; margin: 40px; }
                                 h1 { color: #333; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
@@ -4778,7 +5051,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                             </style>
                         </head>
                         <body>
-                            <h1>${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics Report</h1>
+                            <h1>Super Admin ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics Report</h1>
                             
                             <div class="report-info">
                                 <strong>Report Generated:</strong> ${new Date().toLocaleDateString('en-PH', { 
