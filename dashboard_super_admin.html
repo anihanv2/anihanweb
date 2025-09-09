@@ -199,11 +199,32 @@
             border-radius: 4px;
             font-size: 12px;
             padding: 5px 10px;
+            border: 1px solid #28a745;
+            color: #28a745;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .pagination-controls .btn:hover {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
         }
 
         .pagination-controls .active-page {
-            background: #007bff;
-            border-color: #007bff;
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+        }
+
+        .pagination-controls .btn-outline-secondary {
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .pagination-controls .btn-outline-secondary:hover {
+            background-color: #28a745;
+            border-color: #28a745;
             color: white;
         }
 
@@ -678,7 +699,7 @@
                                     </div>
                                     <div class="pagination-controls">
                                         <button class="btn btn-sm btn-outline-secondary" onclick="changeMunicipalityPage(-1)">&lt;</button>
-                                        <button class="btn btn-sm btn-primary active-page" id="currentMunicipalityPageBtn">1</button>
+                                        <button class="btn btn-sm btn-success active-page" id="currentMunicipalityPageBtn">1</button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="changeMunicipalityPage(1)">&gt;</button>
                                     </div>
                                 </div>
@@ -716,7 +737,7 @@
                                     </div>
                                     <div class="pagination-controls">
                                         <button class="btn btn-sm btn-outline-secondary" onclick="changeCommunityPage(-1)">&lt;</button>
-                                        <button class="btn btn-sm btn-primary active-page" id="currentCommunityPageBtn">1</button>
+                                        <button class="btn btn-sm btn-success active-page" id="currentCommunityPageBtn">1</button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="changeCommunityPage(1)">&gt;</button>
                                     </div>
                                 </div>
@@ -754,7 +775,7 @@
                                     </div>
                                     <div class="pagination-controls">
                                         <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
-                                        <button class="btn btn-sm btn-primary active-page" id="currentPageBtn">1</button>
+                                        <button class="btn btn-sm btn-success active-page" id="currentPageBtn">1</button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">&gt;</button>
                                     </div>
                                 </div>
