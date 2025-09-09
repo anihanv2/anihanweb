@@ -76,6 +76,32 @@
             box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
         }
 
+        /* Communities Modal Styles */
+        #allCommunitiesModal .modal-dialog {
+            max-width: 95%;
+        }
+        
+        #allCommunitiesModal .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        #allCommunitiesModal .table td {
+            vertical-align: middle;
+        }
+        
+        #communitySearchInput {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+        }
+        
+        #communitySearchInput:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
         
 
         /* Users Table Styles */
@@ -179,6 +205,69 @@
             background: #007bff;
             border-color: #007bff;
             color: white;
+        }
+
+        /* Community Table Styles */
+        .community-table-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .community-table-header {
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .community-table-header h5 {
+            margin: 0;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .community-table-body {
+            padding: 0;
+        }
+
+        .community-table-body .table {
+            margin: 0;
+        }
+
+        .community-table-body .table thead th {
+            background: #f8f9fa;
+            border: none;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .community-table-body .table tbody td {
+            padding: 12px 20px;
+            border: none;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .community-table-body .table tbody tr {
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .community-table-body .table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .community-table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
         }
 
         /* Chart Container Stability */
@@ -572,6 +661,44 @@
                     </div>
                 </div>
                 
+                <!-- Community Engagement Analytics Table -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="community-table-card">
+                            <div class="community-table-header">
+                                <h5>Community Engagement Analytics</h5>
+                            </div>
+                            <div class="community-table-body">
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <thead>
+                                            <tr>
+                                                <th>Community Name</th>
+                                                <th>Total Members</th>
+                                                <th>Created Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="communityTableBody">
+                                            <!-- Community data will be loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="community-table-footer">
+                                    <div class="table-info-section">
+                                        <span class="table-info" id="communityTableInfo">Loading community data...</span>
+                                        <a href="#" class="view-all-link" onclick="showAllCommunitiesModal()">View all ></a>
+                                    </div>
+                                    <div class="pagination-controls">
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeCommunityPage(-1)">&lt;</button>
+                                        <button class="btn btn-sm btn-primary active-page" id="currentCommunityPageBtn">1</button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeCommunityPage(1)">&gt;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Users Table -->
                 <div class="row mb-4">
                     <div class="col-12">
@@ -711,6 +838,56 @@
         </div>
     </div>
 
+    <!-- All Communities Modal -->
+    <div class="modal fade" id="allCommunitiesModal" tabindex="-1" aria-labelledby="allCommunitiesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allCommunitiesModalLabel">All Communities</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="communitySearchInput" placeholder="Search communities by name...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>Community Name</th>
+                                    <th>Total Members</th>
+                                    <th>Created Date</th>
+                                    <th>Created By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allCommunitiesTableBody">
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading communities...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allCommunitiesCount">0 communities found</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" onclick="exportAllCommunities('csv')">
+                                <i class="fas fa-file-csv me-1"></i>Export CSV
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="exportAllCommunities('pdf')">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -748,6 +925,7 @@
                 loadAvailableProductsCount();
                 loadUsersData();
                 loadMunicipalitySalesData();
+                loadCommunityData();
                 
                 // Debug municipality sales
                 setTimeout(() => {
@@ -1209,6 +1387,11 @@
         let currentMunicipalityPage = 1;
         let totalMunicipalities = 0;
         const municipalitiesPerPage = 4;
+
+        // Community pagination variables
+        let currentCommunityPage = 1;
+        let totalCommunities = 0;
+        const communitiesPerPage = 4;
 
         // Function to load and display municipality sales data
         // Debug function for municipality sales
@@ -1746,6 +1929,420 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             loadAllMunicipalitySalesData();
         }
 
+        // Community Analytics Functions
+        async function loadCommunityData() {
+            try {
+                console.log('🚀 === LOADING COMMUNITY DATA ===');
+                
+                if (!supabaseClient) {
+                    console.error('❌ Supabase client not available');
+                    updateCommunityTable([]);
+                    return;
+                }
+
+                // Step 1: Get all communities first
+                console.log('📡 Fetching communities...');
+                const { data: communities, error: communitiesError } = await supabaseClient
+                    .from('communities')
+                    .select(`
+                        id,
+                        name,
+                        created_at,
+                        created_by
+                    `);
+                
+                if (communitiesError) {
+                    console.error('❌ Error fetching communities:', communitiesError);
+                    updateCommunityTable([]);
+                    return;
+                }
+                
+                console.log(`📊 Found ${communities?.length || 0} communities`);
+                
+                if (!communities || communities.length === 0) {
+                    console.warn('⚠️ No communities found');
+                    updateCommunityTable([]);
+                    return;
+                }
+
+                // Step 2: Get member counts for each community
+                console.log('📡 Fetching member counts...');
+                const communityData = [];
+                for (const community of communities) {
+                    const { count, error: countError } = await supabaseClient
+                        .from('community_members')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('community_id', community.id);
+
+                    if (countError) {
+                        console.warn(`⚠️ Error getting count for community ${community.name}:`, countError);
+                    }
+
+                    communityData.push({
+                        id: community.id,
+                        name: community.name,
+                        memberCount: count || 0,
+                        createdAt: community.created_at,
+                        createdBy: community.created_by
+                    });
+                }
+
+                // Sort by member count (descending)
+                communityData.sort((a, b) => b.memberCount - a.memberCount);
+
+                totalCommunities = communityData.length;
+
+                // Get paginated data
+                const startIndex = (currentCommunityPage - 1) * communitiesPerPage;
+                const endIndex = startIndex + communitiesPerPage;
+                const paginatedData = communityData.slice(startIndex, endIndex);
+
+                console.log(`✅ Final result: ${communityData.length} communities found`);
+                console.log('🏆 Top communities:', paginatedData);
+
+                updateCommunityTable(paginatedData);
+
+            } catch (error) {
+                console.error('❌ Error in loadCommunityData:', error);
+                updateCommunityTable([]);
+            }
+        }
+
+        // Function to update the community table
+        function updateCommunityTable(communityData) {
+            console.log('🔄 Updating community table with data:', communityData);
+            
+            const tableBody = document.getElementById('communityTableBody');
+            const tableInfo = document.getElementById('communityTableInfo');
+            
+            if (!tableBody) {
+                console.error('❌ Community table body not found');
+                return;
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            if (communityData.length === 0) {
+                console.log('⚠️ No community data to display');
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No communities found.
+                        </td>
+                    </tr>
+                `;
+                if (tableInfo) {
+                    tableInfo.textContent = '0 items of 0';
+                }
+                return;
+            }
+
+            console.log(`📊 Displaying ${communityData.length} communities`);
+
+            // Populate table with community data
+            communityData.forEach(data => {
+                const row = document.createElement('tr');
+                
+                const createdDate = new Date(data.createdAt).toLocaleDateString();
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            <strong>${data.name}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-success fw-bold">${data.memberCount} members</span>
+                    </td>
+                    <td>${createdDate}</td>
+                `;
+                tableBody.appendChild(row);
+                
+                console.log(`🏘️ Added row: ${data.name} - ${data.memberCount} members`);
+            });
+
+            // Update table info and pagination
+            const startItem = ((currentCommunityPage - 1) * communitiesPerPage) + 1;
+            const endItem = Math.min(currentCommunityPage * communitiesPerPage, totalCommunities);
+            
+            if (tableInfo) {
+                tableInfo.textContent = `${startItem} to ${endItem} items of ${totalCommunities}`;
+            }
+
+            // Update current page button
+            const currentCommunityPageBtn = document.getElementById('currentCommunityPageBtn');
+            if (currentCommunityPageBtn) {
+                currentCommunityPageBtn.textContent = currentCommunityPage;
+            }
+
+            console.log('✅ Community table updated successfully');
+        }
+
+        // Function to change community page
+        function changeCommunityPage(direction) {
+            const totalPages = Math.ceil(totalCommunities / communitiesPerPage);
+            
+            if (direction === 1 && currentCommunityPage < totalPages) {
+                currentCommunityPage++;
+                loadCommunityData();
+            } else if (direction === -1 && currentCommunityPage > 1) {
+                currentCommunityPage--;
+                loadCommunityData();
+            }
+        }
+
+        // Function to show all communities modal
+        function showAllCommunitiesModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allCommunitiesModal'));
+            modal.show();
+            loadAllCommunities();
+        }
+
+        // Function to load all communities for modal
+        async function loadAllCommunities() {
+            try {
+                const tableBody = document.getElementById('allCommunitiesTableBody');
+                const countSpan = document.getElementById('allCommunitiesCount');
+                
+                if (!tableBody) {
+                    console.error('❌ Communities table body not found');
+                    return;
+                }
+
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Loading communities...</td></tr>';
+
+                if (!supabaseClient) {
+                    console.error('❌ Supabase client not available');
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Database connection not available</td></tr>';
+                    return;
+                }
+
+                console.log('🔄 Loading all communities for modal...');
+
+                // Step 1: Get all communities first
+                const { data: communities, error: communitiesError } = await supabaseClient
+                    .from('communities')
+                    .select(`
+                        id,
+                        name,
+                        created_at,
+                        created_by
+                    `);
+
+                if (communitiesError) {
+                    console.error('❌ Error loading communities:', communitiesError);
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading communities</td></tr>';
+                    return;
+                }
+
+                console.log(`📊 Found ${communities?.length || 0} communities`);
+
+                if (!communities || communities.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No communities found</td></tr>';
+                    if (countSpan) countSpan.textContent = '0 communities found';
+                    return;
+                }
+
+                // Step 2: Get member counts for each community
+                const communitiesWithCounts = [];
+                for (const community of communities) {
+                    const { count, error: countError } = await supabaseClient
+                        .from('community_members')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('community_id', community.id);
+
+                    if (countError) {
+                        console.warn(`⚠️ Error getting count for community ${community.name}:`, countError);
+                    }
+
+                    communitiesWithCounts.push({
+                        ...community,
+                        memberCount: count || 0
+                    });
+                }
+
+                console.log('📊 Communities with member counts:', communitiesWithCounts);
+
+                // Sort by member count (descending)
+                communitiesWithCounts.sort((a, b) => b.memberCount - a.memberCount);
+
+                // Clear table and populate with data
+                tableBody.innerHTML = '';
+                
+                communitiesWithCounts.forEach(community => {
+                    const row = document.createElement('tr');
+                    const createdDate = new Date(community.created_at).toLocaleDateString();
+                    const creatorName = 'Admin'; // Simplified - can be enhanced later
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-users me-2 text-primary"></i>
+                                <strong>${community.name}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-success fw-bold">${community.memberCount} members</span>
+                        </td>
+                        <td>${createdDate}</td>
+                        <td>${creatorName}</td>
+                    `;
+                    tableBody.appendChild(row);
+                    
+                    console.log(`🏘️ Added community: ${community.name} - ${community.memberCount} members`);
+                });
+
+                if (countSpan) {
+                    countSpan.textContent = `${communitiesWithCounts.length} communities found`;
+                }
+
+                // Store data for search functionality
+                window.allCommunityData = communitiesWithCounts;
+                
+                // Setup search functionality
+                setupCommunitySearch();
+
+                console.log(`✅ All communities modal loaded with ${communitiesWithCounts.length} communities`);
+
+            } catch (error) {
+                console.error('❌ Error in loadAllCommunities:', error);
+                const tableBody = document.getElementById('allCommunitiesTableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading data</td></tr>';
+                }
+            }
+        }
+
+        // Export functions for communities
+        function exportAllCommunities(format) {
+            console.log(`Exporting all communities as ${format}`);
+            // Implementation for CSV/PDF export would go here
+            alert(`Community export in ${format.toUpperCase()} format - Feature coming soon!`);
+        }
+
+        // Search functionality for municipality modal
+        function setupMunicipalitySearch() {
+            const searchInput = document.getElementById('municipalitySearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    filterMunicipalityData(searchTerm);
+                });
+            }
+        }
+
+        function filterMunicipalityData(searchTerm) {
+            if (!window.allMunicipalityData) return;
+            
+            const filteredData = window.allMunicipalityData.filter(data => 
+                data.municipality.toLowerCase().includes(searchTerm)
+            );
+            
+            updateMunicipalityModalTable(filteredData);
+        }
+
+        function updateMunicipalityModalTable(data) {
+            const tableBody = document.getElementById('allMunicipalitySalesTableBody');
+            const countSpan = document.getElementById('allMunicipalitySalesCount');
+            
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No municipalities found</td></tr>';
+                if (countSpan) countSpan.textContent = '0 municipalities found';
+                return;
+            }
+            
+            data.forEach(municipality => {
+                const row = document.createElement('tr');
+                
+                const formattedSales = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2
+                }).format(municipality.totalSales);
+                
+                row.innerHTML = `
+                    <td><strong>${municipality.municipality}</strong></td>
+                    <td>${formattedSales}</td>
+                    <td>${municipality.orderCount}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            if (countSpan) {
+                countSpan.textContent = `${data.length} municipalities found`;
+            }
+        }
+
+        // Search functionality for community modal
+        function setupCommunitySearch() {
+            const searchInput = document.getElementById('communitySearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    filterCommunityData(searchTerm);
+                });
+            }
+        }
+
+        function filterCommunityData(searchTerm) {
+            if (!window.allCommunityData) return;
+            
+            const filteredData = window.allCommunityData.filter(data => 
+                data.name.toLowerCase().includes(searchTerm) ||
+                (data.users?.full_name || '').toLowerCase().includes(searchTerm)
+            );
+            
+            updateCommunityModalTable(filteredData);
+        }
+
+        function updateCommunityModalTable(data) {
+            const tableBody = document.getElementById('allCommunitiesTableBody');
+            const countSpan = document.getElementById('allCommunitiesCount');
+            
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No communities found</td></tr>';
+                if (countSpan) countSpan.textContent = '0 communities found';
+                return;
+            }
+            
+            data.forEach(community => {
+                const row = document.createElement('tr');
+                const memberCount = community.community_members?.[0]?.count || 0;
+                const createdDate = new Date(community.created_at).toLocaleDateString();
+                const creatorName = community.users?.full_name || 'Unknown';
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            <strong>${community.name}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-success fw-bold">${memberCount} members</span>
+                    </td>
+                    <td>${createdDate}</td>
+                    <td>${creatorName}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            if (countSpan) {
+                countSpan.textContent = `${data.length} communities found`;
+            }
+        }
+
         // Function to load all municipality sales data for modal
         async function loadAllMunicipalitySalesData() {
             try {
@@ -1757,64 +2354,119 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading municipality sales...</td></tr>';
 
                 if (!supabaseClient) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Database connection error</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Database connection not available</td></tr>';
                     return;
                 }
 
-                // Use the same working query from the main function
-                const { data: ordersData, error } = await supabaseClient
-                    .from('orders')
-                    .select(`
-                        total,
-                        users!orders_user_id_fkey(municipality)
-                    `);
+                console.log('🔄 Loading all municipality sales for modal...');
 
-                if (error) {
-                    console.error('Error loading all municipality sales:', error);
-                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Error loading data</td></tr>';
-                    return;
-                }
-
-                if (!ordersData || ordersData.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No completed orders found</td></tr>';
+                // Use the same logic as the main function - seller attribution
+                // Step 1: Get all sellers
+                const { data: sellers, error: sellersError } = await supabaseClient
+                    .from('store-owner')
+                    .select('user_id');
+                
+                if (sellersError || !sellers || sellers.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No sellers found</td></tr>';
                     if (countSpan) countSpan.textContent = '0 municipalities found';
                     return;
                 }
 
-                // Aggregate sales by municipality from user data
+                // Step 2: Get seller details with municipality
+                const sellerUserIds = sellers.map(seller => seller.user_id);
+                const { data: sellerUsers, error: usersError } = await supabaseClient
+                    .from('users')
+                    .select('id, full_name, municipality')
+                    .in('id', sellerUserIds);
+                
+                if (usersError || !sellerUsers || sellerUsers.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No seller users found</td></tr>';
+                    if (countSpan) countSpan.textContent = '0 municipalities found';
+                    return;
+                }
+
+                // Step 3: Get products for these sellers
+                const { data: sellerProducts, error: productsError } = await supabaseClient
+                    .from('my_products')
+                    .select('id, user_id, name')
+                    .in('user_id', sellerUserIds);
+                
+                if (productsError || !sellerProducts || sellerProducts.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No products found from sellers</td></tr>';
+                    if (countSpan) countSpan.textContent = '0 municipalities found';
+                    return;
+                }
+
+                // Step 4: Get order items for these products
+                const productIds = sellerProducts.map(product => product.id);
+                const { data: orderItems, error: orderItemsError } = await supabaseClient
+                    .from('order_items')
+                    .select('id, order_id, product_id, quantity, price')
+                    .in('product_id', productIds);
+                
+                if (orderItemsError || !orderItems || orderItems.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No order items found</td></tr>';
+                    if (countSpan) countSpan.textContent = '0 municipalities found';
+                    return;
+                }
+
+                // Step 5: Get orders (all statuses)
+                const orderIds = [...new Set(orderItems.map(item => item.order_id))];
+                const { data: orders, error: ordersError } = await supabaseClient
+                    .from('orders')
+                    .select('id, user_id, total, created_at, status')
+                    .in('id', orderIds);
+                
+                if (ordersError || !orders || orders.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No orders found</td></tr>';
+                    if (countSpan) countSpan.textContent = '0 municipalities found';
+                    return;
+                }
+
+                // Step 6: Calculate sales by municipality (seller attribution)
                 const salesByMunicipality = {};
                 
-                ordersData.forEach(order => {
-                    const municipality = order.users?.municipality;
-                    const total = parseFloat(order.total || 0);
+                for (const order of orders) {
+                    const orderItemsForThisOrder = orderItems.filter(item => item.order_id === order.id);
                     
-                    if (municipality && total > 0) {
-                        if (!salesByMunicipality[municipality]) {
-                            salesByMunicipality[municipality] = {
-                                municipality: municipality,
-                                totalSales: 0,
-                                orderCount: 0
-                            };
+                    for (const item of orderItemsForThisOrder) {
+                        const product = sellerProducts.find(p => p.id === item.product_id);
+                        if (product) {
+                            const seller = sellerUsers.find(u => u.id === product.user_id);
+                            if (seller && seller.municipality) {
+                                const municipality = seller.municipality;
+                                const itemTotal = (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0);
+                                
+                                if (!salesByMunicipality[municipality]) {
+                                    salesByMunicipality[municipality] = {
+                                        municipality: municipality,
+                                        totalSales: 0,
+                                        orderCount: 0
+                                    };
+                                }
+                                salesByMunicipality[municipality].totalSales += itemTotal;
+                                salesByMunicipality[municipality].orderCount += 1;
+                            }
                         }
-                        salesByMunicipality[municipality].totalSales += total;
-                        salesByMunicipality[municipality].orderCount += 1;
                     }
-                });
+                }
+
+                console.log('📊 All municipality sales calculated:', salesByMunicipality);
 
                 // Convert to array and sort by total sales
-                const allMunicipalityData = Object.values(salesByMunicipality)
+                const aggregatedData = Object.values(salesByMunicipality)
                     .sort((a, b) => b.totalSales - a.totalSales);
 
-                // Clear and populate table
-                tableBody.innerHTML = '';
-
-                if (allMunicipalityData.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">No municipality sales found</td></tr>';
+                if (aggregatedData.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No sales data found</td></tr>';
                     if (countSpan) countSpan.textContent = '0 municipalities found';
                     return;
                 }
 
-                allMunicipalityData.forEach(data => {
+                // Clear table and populate with all data
+                tableBody.innerHTML = '';
+                
+                aggregatedData.forEach(data => {
                     const row = document.createElement('tr');
                     
                     const formattedSales = new Intl.NumberFormat('en-PH', {
@@ -1824,7 +2476,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     }).format(data.totalSales);
                     
                     row.innerHTML = `
-                        <td>${data.municipality}</td>
+                        <td><strong>${data.municipality}</strong></td>
                         <td>${formattedSales}</td>
                         <td>${data.orderCount}</td>
                     `;
@@ -1832,11 +2484,13 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 });
 
                 if (countSpan) {
-                    countSpan.textContent = `${allMunicipalityData.length} municipalities found`;
+                    countSpan.textContent = `${aggregatedData.length} municipalities found`;
                 }
 
+                console.log(`✅ All municipality sales modal loaded with ${aggregatedData.length} municipalities`);
+
                 // Store data for search functionality
-                window.allMunicipalityData = allMunicipalityData;
+                window.allMunicipalityData = aggregatedData;
                 
                 // Setup search functionality
                 setupMunicipalitySearch();
@@ -1845,7 +2499,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 console.error('Error in loadAllMunicipalitySalesData:', error);
                 const tableBody = document.getElementById('allMunicipalitySalesTableBody');
                 if (tableBody) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center">Error loading data</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error loading data</td></tr>';
                 }
             }
         }
