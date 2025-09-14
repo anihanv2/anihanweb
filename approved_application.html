@@ -204,6 +204,69 @@
         </div>
     </div>
 
+    <!-- Application Details Modal -->
+    <div class="modal fade" id="applicationDetailsModal" tabindex="-1" aria-labelledby="applicationDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="applicationDetailsModalLabel">Application Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Store Name:</label>
+                                <p class="detail-value" id="modalStoreName">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Owner Name:</label>
+                                <p class="detail-value" id="modalOwnerName">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Email:</label>
+                                <p class="detail-value" id="modalEmail">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Phone:</label>
+                                <p class="detail-value" id="modalPhone">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Municipality:</label>
+                                <p class="detail-value" id="modalMunicipality">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Status:</label>
+                                <p class="detail-value" id="modalStatus">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Date Processed:</label>
+                                <p class="detail-value" id="modalDate">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Application ID:</label>
+                                <p class="detail-value" id="modalAppId">-</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="detail-group">
+                                <label class="detail-label">Address:</label>
+                                <p class="detail-value" id="modalAddress">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <!-- Add Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -434,6 +497,9 @@
             // Check what municipality field exists
             let municipality = 'Not specified';
             let userName = 'Not specified';
+            let email = 'Not specified';
+            let phone = 'Not specified';
+            let address = 'Not specified';
             
             if (app.users) {
                 municipality = app.users.municipality || 
@@ -445,18 +511,36 @@
                 userName = app.users.name || 
                           app.users.full_name || 
                           app.users.username || 
-                          app.users.email || 
                           'Not specified';
+                          
+                email = app.users.email || 'Not specified';
+                phone = app.users.phone || app.users.phone_number || 'Not specified';
+                address = app.users.address || app.users.full_address || 'Not specified';
             }
             
-            alert(`Application Details:
+            // Populate modal with data
+            document.getElementById('modalStoreName').textContent = app.store_name || 'Not specified';
+            document.getElementById('modalOwnerName').textContent = userName;
+            document.getElementById('modalEmail').textContent = email;
+            document.getElementById('modalPhone').textContent = phone;
+            document.getElementById('modalMunicipality').textContent = municipality;
+            document.getElementById('modalStatus').textContent = statusText;
+            document.getElementById('modalDate').textContent = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'Not specified';
+            document.getElementById('modalAppId').textContent = app.id;
+            document.getElementById('modalAddress').textContent = address;
             
-Store Name: ${app.store_name}
-Owner: ${userName}
-Municipality: ${municipality}
-Status: ${statusText}
-Date: ${app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}
-Application ID: ${app.id}`);
+            // Update modal status badge styling
+            const statusElement = document.getElementById('modalStatus');
+            statusElement.className = 'detail-value';
+            if (app.status === 'accepted') {
+                statusElement.classList.add('text-success', 'fw-bold');
+            } else {
+                statusElement.classList.add('text-danger', 'fw-bold');
+            }
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('applicationDetailsModal'));
+            modal.show();
         }
 
         function toggleProfileDropdown() {
