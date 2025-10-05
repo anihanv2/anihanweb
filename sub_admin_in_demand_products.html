@@ -7,18 +7,18 @@
     <link rel="icon" type="image/png" href="images/pic4.png">
     <link rel="shortcut icon" type="image/png" href="images/pic4.png">
     <link rel="apple-touch-icon" href="images/pic4.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="fixed-layout.css">
-    <link rel="stylesheet" href="profile-dropdown.css">
-    <link rel="stylesheet" href="sub_admin_in_demand_products.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?v=5.4" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=5.4">
+    <link rel="stylesheet" href="fixed-layout.css?v=5.4">
+    <link rel="stylesheet" href="profile-dropdown.css?v=5.4">
+    <link rel="stylesheet" href="sub_admin_in_demand_products.css?v=5.5">
 </head>
 <body>
     <!-- Header -->
-    <nav class="navbar navbar-light bg-white shadow-sm">
+    <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
-                <button class="mobile-menu-toggle me-3" onclick="toggleMobileSidebar()">
+                <button class="mobile-menu-toggle me-3 d-md-none" onclick="toggleMobileSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
                 <a class="navbar-brand d-flex align-items-center" href="#">
@@ -26,9 +26,12 @@
                     <span class="brand-text">Anihan</span>
                 </a>
             </div>
-            <div class="user-avatar" onclick="toggleProfileDropdown()">
-                <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
-                <i id="userAvatarIcon" class="fas fa-user"></i>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <div class="user-avatar" onclick="toggleProfileDropdown()">
+                            <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
+                            <i id="userAvatarIcon" class="fas fa-user"></i>
                 <!-- Profile Dropdown -->
                 <div class="profile-dropdown" id="profileDropdown">
                     <div class="profile-dropdown-header">
@@ -59,6 +62,9 @@
                         </button>
                     </div>
                 </div>
+            </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>

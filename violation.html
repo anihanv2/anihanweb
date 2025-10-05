@@ -7,11 +7,11 @@
     <link rel="icon" type="image/png" href="images/pic4.png">
     <link rel="shortcut icon" type="image/png" href="images/pic4.png">
     <link rel="apple-touch-icon" href="images/pic4.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="fixed-layout.css" rel="stylesheet">
-    <link href="profile-dropdown.css" rel="stylesheet">
-    <link rel="stylesheet" href="violation.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?v=5.0" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=5.0">
+    <link href="fixed-layout.css?v=5.1" rel="stylesheet">
+    <link href="profile-dropdown.css?v=5.1" rel="stylesheet">
+    <link rel="stylesheet" href="violation.css?v=5.1">
 </head>
 <body>
     <!-- Header -->
@@ -66,8 +66,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0">
-                <div class="sidebar">
+            <div class="col-md-3 col-lg-2 sidebar bg-white border-end">
                     <nav class="nav flex-column">
                         <a class="nav-link" href="dashboard_super_admin.html">
                             <i class="fas fa-tachometer-alt me-2"></i>
@@ -126,14 +125,13 @@
                             Violation
                         </a>
                     </nav>
-                </div>
             </div>
 
             <!-- Mobile Sidebar Overlay -->
             <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10">
+            <div class="col-md-9 col-lg-10 main-content">
                 <div class="main-content">
                     <div class="card violation-card">
                         <div class="violation-card-header">
@@ -817,7 +815,7 @@
 
         // Mobile sidebar functions - CSS only, no duplicate positioning
         function toggleMobileSidebar() {
-            const sidebar = document.querySelector('.sidebar');
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             
             if (sidebar) {
@@ -853,7 +851,7 @@
         }
 
         function closeMobileSidebar() {
-            const sidebar = document.querySelector('.sidebar');
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             
             if (sidebar) sidebar.classList.remove('mobile-open');

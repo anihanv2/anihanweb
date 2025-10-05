@@ -244,10 +244,10 @@ body {
 }
 
 .search-input:focus {
-    border-color: #28a745 !important;
-    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4) !important;
-    background-color: white !important;
-    outline: none !important;
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4);
+    background-color: white;
+    outline: none;
 }
 
 /* Table */
@@ -405,8 +405,8 @@ body {
 .modal-body .table td:last-child {
     white-space: nowrap;
     width: 1%;
-    padding: 15px 20px !important;
-    vertical-align: middle !important;
+    padding: 15px 20px;
+    vertical-align: middle;
 }
 
 .modal-body .table .btn-sm {

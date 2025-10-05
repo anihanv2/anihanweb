@@ -16,7 +16,7 @@ body {
     left: 0;
     right: 0;
     z-index: 1030;
-    background: white !important;
+    background: white;
 }
 
 .navbar .container-fluid {
@@ -25,10 +25,13 @@ body {
     margin: 0;
     max-width: 100%;
     padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .navbar-brand {
-    color: #333 !important;
+    color: #333;
     font-weight: 600;
     font-size: 1.5rem;
 }
@@ -608,10 +611,10 @@ body {
 }
 
 .search-input:focus {
-    border-color: #28a745 !important;
-    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4) !important;
-    background-color: white !important;
-    outline: none !important;
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4);
+    background-color: white;
+    outline: none;
 }
 
 /* Badge styles */
@@ -704,10 +707,10 @@ body {
 }
 
 .search-input:focus {
-    border-color: #28a745 !important;
-    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4) !important;
-    background-color: white !important;
-    outline: none !important;
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.4);
+    background-color: white;
+    outline: none;
 }
 
 /* Table Styles */
@@ -832,5 +835,226 @@ body {
     
     .search-container {
         max-width: 100%;
+    }
+}
+
+/* Mobile Content Centering - Aggressive Override */
+@media (max-width: 768px) {
+    /* Preserve navbar layout on mobile - CRITICAL FIXES */
+    .navbar {
+        height: 80px !important;
+        padding: 0.5rem 1rem !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1040 !important;
+        background: white !important;
+    }
+    
+    .navbar .container-fluid {
+        height: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-direction: row !important;
+        padding: 0 1rem !important;
+    }
+    
+    .navbar .d-flex {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }
+    
+    /* Mobile menu toggle styling */
+    .mobile-menu-toggle,
+    .mobile-menu-toggle.d-md-none {
+        display: block !important;
+        background: none !important;
+        border: none !important;
+        font-size: 1.2rem !important;
+        color: #333 !important;
+        padding: 0.5rem !important;
+        margin-right: 0.75rem !important;
+        z-index: 1041 !important;
+        cursor: pointer !important;
+    }
+    
+    /* Navbar brand mobile styling */
+    .navbar-brand {
+        font-size: 1.2rem !important;
+        flex-grow: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    .logo-image {
+        width: 30px !important;
+        height: 30px !important;
+        margin-right: 0.5rem !important;
+    }
+    
+    .brand-text {
+        font-size: 1.2rem !important;
+    }
+    
+    /* Profile dropdown mobile fixes */
+    .collapse.navbar-collapse {
+        display: flex !important;
+        flex-basis: auto !important;
+    }
+    
+    .navbar-nav {
+        flex-direction: row !important;
+        align-items: center !important;
+        margin-left: auto !important;
+    }
+    
+    .nav-item.dropdown {
+        position: relative !important;
+    }
+    
+    .user-avatar {
+        width: 35px !important;
+        height: 35px !important;
+        position: relative !important;
+        z-index: 1041 !important;
+    }
+    
+    .profile-dropdown {
+        position: absolute !important;
+        top: 45px !important;
+        right: 0 !important;
+        z-index: 1050 !important;
+        min-width: 250px !important;
+        background: white !important;
+        border: 1px solid #e9ecef !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Override fixed-layout.css for mobile */
+    .main-content {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem !important;
+        margin-top: 80px !important; /* Add top margin for fixed navbar */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        min-height: calc(100vh - 80px) !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Mobile responsive rows and columns */
+    .main-content .row {
+        width: 100% !important;
+        margin: 0 0 1rem 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .main-content .col-md-4,
+    .main-content .col-md-6,
+    .main-content .col-md-12,
+    .main-content [class*="col-"] {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+        padding: 0 0.5rem !important;
+        flex: none !important;
+    }
+    
+    /* Mobile responsive cards */
+    .card, .stats-card, .analytics-card, .users-table-card {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    /* Mobile responsive tables */
+    .table-responsive {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* User Management Table Mobile Responsive */
+    .users-table {
+        min-width: 600px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.75rem 1rem !important;
+        white-space: nowrap !important;
+        min-width: 120px !important;
+    }
+    
+    .users-table th:first-child,
+    .users-table td:first-child {
+        min-width: 150px !important;
+    }
+    
+    .users-table th:nth-child(2),
+    .users-table td:nth-child(2) {
+        min-width: 200px !important;
+    }
+    
+    .table {
+        width: 100% !important;
+        font-size: 0.875rem !important;
+    }
+    
+    /* Mobile responsive charts */
+    .chart-container, .chart-container-stable {
+        width: 100% !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Mobile responsive forms and buttons */
+    .btn {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .form-control, .form-select {
+        width: 100% !important;
+    }
+    
+    /* Preserve main content d-flex behavior but make responsive */
+    .main-content .d-flex:not(.navbar .d-flex):not(.navbar-nav) {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    .main-content .d-flex.justify-content-between:not(.navbar .d-flex) {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1rem !important;
+    }
+    
+    /* Mobile responsive search containers */
+    .search-container {
+        width: 100% !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    /* Responsive modals */
+    .modal-dialog {
+        margin: 1rem !important;
+        max-width: calc(100% - 2rem) !important;
+    }
+}
+
+/* Desktop - Hide mobile menu toggle */
+@media (min-width: 769px) {
+    .mobile-menu-toggle,
+    .mobile-menu-toggle.d-md-none {
+        display: none !important;
     }
 }

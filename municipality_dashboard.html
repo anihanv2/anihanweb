@@ -7,11 +7,11 @@
     <link rel="icon" type="image/png" href="images/pic4.png">
     <link rel="shortcut icon" type="image/png" href="images/pic4.png">
     <link rel="apple-touch-icon" href="images/pic4.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="fixed-layout.css">
-    <link href="profile-dropdown.css" rel="stylesheet">
-    <link rel="stylesheet" href="municipality_dashboard.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?v=5.4" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=5.4">
+    <link rel="stylesheet" href="fixed-layout.css?v=5.4">
+    <link href="profile-dropdown.css?v=5.4" rel="stylesheet">
+    <link rel="stylesheet" href="municipality_dashboard.css?v=5.4">
     <style>
         .status-filters {
             transition: all 0.3s ease;
@@ -52,19 +52,19 @@
 
         /* Chart Container Stability Styles */
         .chart-container-stable {
-            overflow: hidden !important;
-            position: relative !important;
+            overflow: hidden;
+            position: relative;
         }
 
         .chart-container-stable canvas {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         #salesChart {
-            transition: none !important;
-            animation: none !important;
+            transition: none;
+            animation: none;
         }
 
         /* Chart Container Responsive Design */
@@ -77,10 +77,10 @@
         }
 
         .chart-container canvas {
-            width: 100% !important;
-            max-width: 100% !important;
-            height: 100% !important;
-            min-height: 300px !important;
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            min-height: 300px;
         }
 
         /* Analytics Card Styling */
@@ -291,9 +291,9 @@
         }
 
         .pagination-controls .active-page {
-            background: #28a745 !important;
-            border-color: #28a745 !important;
-            color: white !important;
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
         }
 
         .pagination-controls .btn-outline-secondary {
@@ -350,10 +350,10 @@
 </head>
 <body>
     <!-- Header -->
-    <nav class="navbar navbar-light bg-white shadow-sm">
+    <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
-                <button class="mobile-menu-toggle me-3" onclick="toggleMobileSidebar()">
+                <button class="mobile-menu-toggle me-3 d-md-none" onclick="toggleMobileSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
                 <a class="navbar-brand d-flex align-items-center" href="#">
@@ -361,6 +361,9 @@
                     <span class="brand-text">Anihan</span>
                 </a>
             </div>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
             <div class="user-avatar" onclick="toggleProfileDropdown()">
                 <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
                 <i id="userAvatarIcon" class="fas fa-user"></i>
@@ -395,6 +398,9 @@
                     </div>
                 </div>
             </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -427,7 +433,6 @@
 
             <!-- Main Content -->
             <div class="main-content">
-                <div class="main-content">
                     <!-- Stats Cards -->
                     <div class="row mb-4">
                         <div class="col-md-4">
@@ -632,14 +637,15 @@
                             <h5>User Management</h5>
                         </div>
                         <div class="users-table-body">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Contact Number</th>
-                                    </tr>
-                                </thead>
+                            <div class="table-responsive">
+                                <table class="table users-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Contact Number</th>
+                                        </tr>
+                                    </thead>
                                 <tbody id="usersTableBody">
                                     <tr>
                                         <td colspan="3" class="text-center">
@@ -648,7 +654,8 @@
                                         </td>
                                     </tr>
                                 </tbody>
-                            </table>
+                                </table>
+                            </div>
                         </div>
                         <div class="users-table-footer">
                             <div class="table-info-section">
