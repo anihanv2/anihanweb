@@ -346,36 +346,69 @@ body {
 
 @media (max-width: 576px) {
     .price-card-footer {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        gap: 10px;
     }
     
     .footer-left {
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
+    
+    .footer-left .table-info {
+        font-size: 0.75rem !important;
+        white-space: nowrap;
+    }
+    
+    .footer-left a {
+        font-size: 0.75rem !important;
+        margin-left: 5px !important;
+        white-space: nowrap;
     }
     
     .price-pagination {
-        justify-content: center;
+        justify-content: flex-end;
+        gap: 5px;
+        flex-shrink: 0;
     }
     
+    .price-pagination .btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        min-width: 32px;
+    }
+    
+    /* Mobile Table Responsive - Keep as table */
     .price-table {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        min-width: 100%;
     }
     
     .price-table th,
     .price-table td {
-        padding: 12px 8px;
+        padding: 8px 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 80px;
     }
     
-    /* Hide some columns on very small screens */
-    .price-table th:nth-child(3),
-    .price-table td:nth-child(3),
-    .price-table th:nth-child(6),
-    .price-table td:nth-child(6) {
-        display: none;
+    .price-table th:first-child,
+    .price-table td:first-child {
+        max-width: 100px;
+        min-width: 80px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 

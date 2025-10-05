@@ -75,6 +75,7 @@ body {
     color: #6c757d;
     font-size: 0.9rem;
     z-index: 2;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .form-control {

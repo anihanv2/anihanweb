@@ -344,13 +344,40 @@ body {
     }
 
     .demand-card-footer {
-        padding: 15px 10px;
-        flex-direction: column;
-        gap: 1rem;
+        padding: 10px 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
     }
 
-    .demand-pagination {
-        justify-content: center;
+    .footer-left {
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        flex: 1;
+    }
+    
+    .footer-left span {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    
+    .view-all-link {
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .pagination-controls {
+        justify-content: flex-end;
+        gap: 5px;
+        flex-shrink: 0;
+    }
+    
+    .pagination-btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        min-width: 32px;
     }
 
     /* Hide less important columns on mobile */
@@ -379,6 +406,33 @@ body {
 
     .empty-subtext {
         font-size: 0.9rem;
+    }
+    
+    /* Mobile Table Responsive - Keep as table */
+    .demand-table {
+        font-size: 0.75rem;
+        min-width: 100%;
+    }
+    
+    .demand-table th,
+    .demand-table td {
+        padding: 8px 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90px;
+    }
+    
+    .demand-table th:first-child,
+    .demand-table td:first-child {
+        max-width: 100px;
+        min-width: 80px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 

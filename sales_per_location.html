@@ -9,17 +9,73 @@
     <link rel="apple-touch-icon" href="images/pic4.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">               
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="fixed-layout.css" rel="stylesheet">
     <link href="profile-dropdown.css" rel="stylesheet">
     <link href="sales_per_location.css" rel="stylesheet">
+    <style>
+        /* Remove conflicting layout styles - let fixed-layout.css handle it */
+
+        /* Table styling improvements */
+        .sales-table {
+            border-collapse: collapse !important;
+        }
+        
+        .sales-table tbody tr:hover {
+            background-color: #f8f9fa !important;
+        }
+        
+        .sales-table tbody td {
+            padding: 15px 20px !important;
+            border-bottom: 1px solid #e9ecef !important;
+            vertical-align: middle !important;
+            color: #495057 !important;
+        }
+
+        .sales-table thead th {
+            font-weight: 600 !important;
+            padding: 15px 20px !important;
+            background-color: #f8f9fa !important;
+            border-bottom: 2px solid #e9ecef !important;
+            color: #495057 !important;
+            border-top: none !important;
+        }
+        
+        /* Ensure Bootstrap table classes don't override */
+        .table thead th {
+            background-color: #f8f9fa !important;
+        }
+
+        /* Card improvements */
+        .sales-card {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+            border: none !important;
+            background: white !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+        }
+        
+        .sales-card-header {
+            background: #28a745 !important;
+            color: white !important;
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            padding: 20px 30px !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Top Navigation -->
     <nav class="navbar navbar-light bg-white border-bottom">
         <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
-                <span class="brand-text">Anihan</span>
-            </a>
+            <div class="d-flex align-items-center">
+                <button class="mobile-menu-toggle me-3 d-md-none" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                    <span class="brand-text">Anihan</span>
+                </a>
+            </div>
             <div class="navbar-nav">
                 <div class="nav-item">
                     <div class="user-avatar" onclick="toggleProfileDropdown()">
@@ -153,9 +209,12 @@
                 </div>
             </div>
 
+            <!-- Mobile Sidebar Overlay -->
+            <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
-                <div class="sales-card shadow-sm mt-4">
+                <div class="sales-card shadow-sm mt-4 mx-auto" style="max-width: 1200px;">
                     <div class="sales-card-header d-flex justify-content-between align-items-center">
                         <span>Sales Per Location</span>
                         <div class="search-container">
@@ -620,6 +679,52 @@
                 dropdown.classList.remove('show');
             }
         });
+
+        // Mobile sidebar functions - CSS only, no duplicate positioning
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar) {
+                // Add navigation content when opening
+                if (!sidebar.classList.contains('mobile-open')) {
+                    const mobileMenuContent = `
+                        <div class="nav flex-column nav-pills">
+                            <a class="nav-link" href="dashboard_super_admin.html">Dashboard</a>
+                            <a class="nav-link" href="admin_accounts.html">Admin Accounts</a>
+                            <a class="nav-link" href="for_approval.html">For Approval</a>
+                            <a class="nav-link" href="approved_application.html">Approved Applications</a>
+                            <a class="nav-link" href="add_voucher.html">Add Voucher</a>
+                            <a class="nav-link" href="voucher_records.html">Voucher Records</a>
+                            <a class="nav-link" href="inventory_records.html">Inventory Records</a>
+                            <a class="nav-link" href="price_monitoring.html">Price Monitoring</a>
+                            <a class="nav-link" href="in_demand_products.html">In Demand Products</a>
+                            <a class="nav-link active" href="sales_per_location.html">Sales Per Location</a>
+                            <a class="nav-link" href="violation.html">Violation</a>
+                        </div>
+                    `;
+                    sidebar.innerHTML = mobileMenuContent;
+                }
+                
+                // Just toggle the CSS class - let CSS handle all positioning
+                sidebar.classList.toggle('mobile-open');
+            }
+            
+            if (overlay) {
+                overlay.classList.toggle('active');
+            }
+            
+            document.body.style.overflow = sidebar && sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     </script>
 
     <!-- All Sales Modal -->

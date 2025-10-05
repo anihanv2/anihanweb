@@ -242,6 +242,35 @@
             }
         });
 
+        // Hide/show icons when focusing/blurring input fields
+        const usernameInput = document.getElementById('username');
+        const usernameIcon = usernameInput.parentElement.querySelector('.input-icon');
+        
+        // Hide icon when clicking/focusing on username input
+        usernameInput.addEventListener('focus', function() {
+            usernameIcon.style.opacity = '0';
+            usernameIcon.style.visibility = 'hidden';
+        });
+        
+        // Show icon when blurring username input (if empty)
+        usernameInput.addEventListener('blur', function() {
+            if (this.value === '') {
+                usernameIcon.style.opacity = '1';
+                usernameIcon.style.visibility = 'visible';
+            }
+        });
+        
+        // Hide icon when typing in username input
+        usernameInput.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                usernameIcon.style.opacity = '0';
+                usernameIcon.style.visibility = 'hidden';
+            } else {
+                usernameIcon.style.opacity = '1';
+                usernameIcon.style.visibility = 'visible';
+            }
+        });
+
         // Hide error message when user starts typing
         document.getElementById('username').addEventListener('input', function() {
             document.getElementById('errorMessage').style.display = 'none';

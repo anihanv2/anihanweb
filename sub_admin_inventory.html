@@ -31,10 +31,15 @@
     <!-- Header -->
     <nav class="navbar navbar-light bg-white shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
-                <span class="brand-text">Anihan</span>
-            </a>
+            <div class="d-flex align-items-center">
+                <button class="mobile-menu-toggle me-3" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                    <span class="brand-text">Anihan</span>
+                </a>
+            </div>
             <div class="user-avatar" onclick="toggleProfileDropdown()">
                 <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
                 <i id="userAvatarIcon" class="fas fa-user"></i>
@@ -95,6 +100,9 @@
                     </a>
                 </nav>
             </div>
+            
+            <!-- Sidebar overlay for mobile -->
+            <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
             <!-- Main Content -->
             <div class="main-content">
@@ -110,13 +118,15 @@
                     </div>
                     
                     <div class="table-responsive">
-                            <table class="table inventory-table">
+                            <table class="table inventory-table" data-mobile-responsive="true">
                                 <thead>
-                                    <th>Product Name</th>
-                                    <th>Category</th>
-                                    <th>Stocks</th>
-                                    <th>Price</th>
-                                    <th>Status</th>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Category</th>
+                                        <th>Stocks</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                    </tr>
                                 </thead>
                                 <tbody id="inventoryTableBody">
                                     <tr>
@@ -613,6 +623,31 @@
                 dropdown.classList.remove('show');
             }
         });
+
+        // Mobile sidebar functions
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scrolling when sidebar is open
+            if (sidebar.classList.contains('mobile-open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     </script>
 
     <!-- All Inventory Modal -->

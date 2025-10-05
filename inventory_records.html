@@ -9,26 +9,23 @@
     <link rel="apple-touch-icon" href="images/pic4.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="fixed-layout.css" rel="stylesheet">
     <link href="profile-dropdown.css" rel="stylesheet">
-    <link href="inventory_records.css" rel="stylesheet">
-</head>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Records - Anihan</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="inventory_records.css" rel="stylesheet">
 </head>
 <body>
     <!-- Top Navigation -->
     <nav class="navbar navbar-light bg-white border-bottom">
         <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
-                <span class="brand-text">Anihan</span>
-            </a>
+            <div class="d-flex align-items-center">
+                <button class="mobile-menu-toggle me-3 d-md-none" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                    <span class="brand-text">Anihan</span>
+                </a>
+            </div>
             <div class="navbar-nav">
                 <div class="nav-item">
                     <div class="user-avatar" onclick="toggleProfileDropdown()">
@@ -161,6 +158,9 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Mobile Sidebar Overlay -->
+            <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
@@ -666,6 +666,52 @@
             
             checkSharedProfile();
         });
+
+        // Mobile sidebar functions - CSS only, no duplicate positioning
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar) {
+                // Add navigation content when opening
+                if (!sidebar.classList.contains('mobile-open')) {
+                    const mobileMenuContent = `
+                        <div class="nav flex-column nav-pills">
+                            <a class="nav-link" href="dashboard_super_admin.html">Dashboard</a>
+                            <a class="nav-link" href="admin_accounts.html">Admin Accounts</a>
+                            <a class="nav-link" href="for_approval.html">For Approval</a>
+                            <a class="nav-link" href="approved_application.html">Approved Applications</a>
+                            <a class="nav-link" href="add_voucher.html">Add Voucher</a>
+                            <a class="nav-link" href="voucher_records.html">Voucher Records</a>
+                            <a class="nav-link active" href="inventory_records.html">Inventory Records</a>
+                            <a class="nav-link" href="price_monitoring.html">Price Monitoring</a>
+                            <a class="nav-link" href="in_demand_products.html">In Demand Products</a>
+                            <a class="nav-link" href="sales_per_location.html">Sales Per Location</a>
+                            <a class="nav-link" href="violation.html">Violation</a>
+                        </div>
+                    `;
+                    sidebar.innerHTML = mobileMenuContent;
+                }
+                
+                // Just toggle the CSS class - let CSS handle all positioning
+                sidebar.classList.toggle('mobile-open');
+            }
+            
+            if (overlay) {
+                overlay.classList.toggle('active');
+            }
+            
+            document.body.style.overflow = sidebar && sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     </script>
 
     <!-- All Inventory Modal -->

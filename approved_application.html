@@ -18,6 +18,10 @@
     <nav class="navbar navbar-light bg-white border-bottom">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="#">
+                <!-- Mobile hamburger menu button -->
+                <button class="mobile-menu-toggle me-3" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
                 <span class="brand-text">Anihan</span>
             </a>
@@ -151,6 +155,9 @@
                 </div>
             </div>
 
+            <!-- Mobile Sidebar Overlay -->
+            <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
                 <!-- Approved Applications Table -->
@@ -191,7 +198,7 @@
                                 </div>
                                 <div class="table-footer">
                                     <div class="table-info-section">
-                                        <a href="#" class="view-all">View all ></a>
+                                        <a href="#" class="view-all" onclick="showAllApplicationsModal()">View all ></a>
                                     </div>
                                     <div class="pagination-controls">
                                         <button class="btn btn-sm btn-outline-secondary">&lt;</button>
@@ -260,6 +267,49 @@
                                 <label class="detail-label">Address:</label>
                                 <p class="detail-value" id="modalAddress">-</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Applications Modal -->
+    <div class="modal fade" id="allApplicationsModal" tabindex="-1" aria-labelledby="allApplicationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allApplicationsModalLabel">All Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="applicationSearchInput" placeholder="Search by store name, municipality, status...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Store Name</th>
+                                    <th>Municipality</th>
+                                    <th>Status</th>
+                                    <th>Date Processed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allApplicationsTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Loading applications...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allApplicationsCount">0 applications found</span>
                         </div>
                     </div>
                 </div>
@@ -417,11 +467,11 @@
                 
                 return `
                     <tr>
-                        <td>${app.store_name || 'N/A'}</td>
-                        <td>${municipalityDisplay}</td>
-                        <td><span class="badge ${statusClass}">${statusText}</span></td>
-                        <td>${formattedDate}</td>
-                        <td>
+                        <td data-label="Store Name">${app.store_name || 'N/A'}</td>
+                        <td data-label="Municipality">${municipalityDisplay}</td>
+                        <td data-label="Status"><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td data-label="Date Processed">${formattedDate}</td>
+                        <td data-label="Actions">
                             <button class="btn btn-primary btn-sm" onclick="viewApplicationDetails('${app.id}')">
                                 <i class="fas fa-eye me-1"></i>View Details
                             </button>
@@ -546,6 +596,139 @@
             modal.show();
         }
 
+        // Function to show all applications modal
+        function showAllApplicationsModal() {
+            const modal = new bootstrap.Modal(document.getElementById('allApplicationsModal'));
+            modal.show();
+            
+            // Load all data into modal
+            if (allApplicationsData && allApplicationsData.length > 0) {
+                updateAllApplicationsTable(allApplicationsData);
+            } else {
+                updateAllApplicationsTable([]);
+            }
+            
+            // Setup search functionality
+            setupApplicationSearch();
+        }
+
+        // Function to update the all applications modal table
+        function updateAllApplicationsTable(applicationsData) {
+            const tableBody = document.getElementById('allApplicationsTableBody');
+            const countElement = document.getElementById('allApplicationsCount');
+            
+            if (!tableBody) {
+                console.error('❌ All applications table body not found');
+                return;
+            }
+
+            if (!applicationsData || applicationsData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted p-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No application records found
+                        </td>
+                    </tr>
+                `;
+                if (countElement) countElement.textContent = '0 applications found';
+                return;
+            }
+
+            // Clear existing content
+            tableBody.innerHTML = '';
+
+            // Populate table with application data
+            applicationsData.forEach(app => {
+                const row = document.createElement('tr');
+                
+                // Determine status badge class
+                let statusBadge = '';
+                switch (app.status?.toLowerCase()) {
+                    case 'accepted':
+                        statusBadge = '<span class="badge bg-success">Accepted</span>';
+                        break;
+                    case 'declined':
+                        statusBadge = '<span class="badge bg-danger">Declined</span>';
+                        break;
+                    case 'pending':
+                    default:
+                        statusBadge = '<span class="badge bg-warning">Pending</span>';
+                        break;
+                }
+                
+                // Check what municipality field exists
+                let municipalityDisplay = 'No Municipality Data';
+                if (app.users) {
+                    municipalityDisplay = app.users.municipality || 
+                                        app.users.Municipality || 
+                                        app.users.city || 
+                                        app.users.location || 
+                                        'No Municipality Data';
+                }
+                
+                row.innerHTML = `
+                    <td data-label="Store Name">${app.store_name || 'N/A'}</td>
+                    <td data-label="Municipality">${municipalityDisplay}</td>
+                    <td data-label="Status">${statusBadge}</td>
+                    <td data-label="Date Processed">${app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}</td>
+                    <td data-label="Actions">
+                        <button class="btn btn-sm btn-primary" onclick="viewApplicationDetails('${app.id}')">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Update count
+            if (countElement) {
+                countElement.textContent = `${applicationsData.length} applications found`;
+            }
+
+            console.log('✅ All applications modal table updated with', applicationsData.length, 'applications');
+        }
+
+        // Function to setup search functionality for the modal
+        function setupApplicationSearch() {
+            const searchInput = document.getElementById('applicationSearchInput');
+            if (!searchInput) return;
+            
+            // Remove any existing event listeners
+            searchInput.removeEventListener('input', handleApplicationSearch);
+            
+            // Add new event listener
+            searchInput.addEventListener('input', handleApplicationSearch);
+        }
+
+        // Function to handle application search in modal
+        function handleApplicationSearch(event) {
+            const searchTerm = event.target.value.toLowerCase();
+            
+            if (!allApplicationsData) {
+                console.warn('No application data available for search');
+                return;
+            }
+            
+            let filteredData = allApplicationsData;
+            
+            // Apply search filter
+            if (searchTerm) {
+                filteredData = allApplicationsData.filter(app => 
+                    (app.store_name && app.store_name.toLowerCase().includes(searchTerm)) ||
+                    (app.status && app.status.toLowerCase().includes(searchTerm)) ||
+                    (app.users && (
+                        app.users.municipality?.toLowerCase().includes(searchTerm) ||
+                        app.users.Municipality?.toLowerCase().includes(searchTerm) ||
+                        app.users.city?.toLowerCase().includes(searchTerm) ||
+                        app.users.location?.toLowerCase().includes(searchTerm)
+                    ))
+                );
+            }
+            
+            updateAllApplicationsTable(filteredData);
+        }
+
         function toggleProfileDropdown() {
             const dropdown = document.getElementById('profileDropdown');
             dropdown.classList.toggle('show');
@@ -566,6 +749,52 @@
                 dropdown.classList.remove('show');
             }
         });
+
+        // Mobile sidebar functions - CSS only, no duplicate positioning
+        function toggleMobileSidebar() {
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar) {
+                // Add navigation content when opening
+                if (!sidebar.classList.contains('mobile-open')) {
+                    const mobileMenuContent = `
+                        <div class="nav flex-column nav-pills">
+                            <a class="nav-link" href="dashboard_super_admin.html">Dashboard</a>
+                            <a class="nav-link" href="admin_accounts.html">Admin Accounts</a>
+                            <a class="nav-link" href="for_approval.html">For Approval</a>
+                            <a class="nav-link active" href="approved_application.html">Approved Applications</a>
+                            <a class="nav-link" href="add_voucher.html">Add Voucher</a>
+                            <a class="nav-link" href="voucher_records.html">Voucher Records</a>
+                            <a class="nav-link" href="inventory_records.html">Inventory Records</a>
+                            <a class="nav-link" href="price_monitoring.html">Price Monitoring</a>
+                            <a class="nav-link" href="in_demand_products.html">In Demand Products</a>
+                            <a class="nav-link" href="sales_per_location.html">Sales Per Location</a>
+                            <a class="nav-link" href="violation.html">Violation</a>
+                        </div>
+                    `;
+                    sidebar.innerHTML = mobileMenuContent;
+                }
+                
+                // Just toggle the CSS class - let CSS handle all positioning
+                sidebar.classList.toggle('mobile-open');
+            }
+            
+            if (overlay) {
+                overlay.classList.toggle('active');
+            }
+            
+            document.body.style.overflow = sidebar && sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        }
+
+        function closeMobileSidebar() {
+            const sidebar = document.querySelector('.col-md-3.sidebar') || document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     </script>
 </body>
 </html>
