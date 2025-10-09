@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Email System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 40px 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .status-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .status-success {
+            background-color: #d1edff;
+            border: 1px solid #0ea5e9;
+            color: #0369a1;
+        }
+        .status-error {
+            background-color: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+        }
+        .status-warning {
+            background-color: #fffbeb;
+            border: 1px solid #f59e0b;
+            color: #d97706;
+        }
+        .form-section {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .result-section {
+            background-color: #f1f5f9;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        .btn-test {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .btn-test:hover {
+            background: linear-gradient(135deg, #219a52, #27ae60);
+            color: white;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🌾 Admin Email System Test</h1>
+            <p class="text-muted">Test the email notification system for admin account creation</p>
+        </div>
+
+        <div class="status-box status-warning">
+            <h5>📋 Before Testing</h5>
+            <p><strong>Make sure you have:</strong></p>
+            <ul class="mb-0">
+                <li>Installed PHPMailer: <code>composer require phpmailer/phpmailer</code></li>
+                <li>Valid Gmail configuration in <code>config/email_config.php</code></li>
+                <li>Internet connection for sending emails</li>
+            </ul>
+        </div>
+
+        <div class="form-section">
+            <h4>🧪 Test Email Configuration</h4>
+            <form id="emailTestForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="testName" class="form-label">Test Admin Name</label>
+                        <input type="text" class="form-control" id="testName" value="Test Administrator" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="testEmail" class="form-label">Test Email Address</label>
+                        <input type="email" class="form-control" id="testEmail" placeholder="your-email@example.com" required>
+                        <div class="form-text">Enter your own email to receive the test</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="testRole" class="form-label">Admin Role</label>
+                        <select class="form-select" id="testRole">
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="SUB ADMIN">SUB ADMIN</option>
+                            <option value="SUPER ADMIN">SUPER ADMIN</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="testPassword" class="form-label">Test Password</label>
+                        <input type="text" class="form-control" id="testPassword" value="TempPass123!" required>
+                        <div class="form-text">This will be shown in the email</div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-test btn-lg">
+                    <i class="fas fa-envelope me-2"></i>Send Test Email
+                </button>
+            </form>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <h4>📊 Test Results</h4>
+            <div id="resultContent"></div>
+        </div>
+
+        <div class="form-section">
+            <h4>🔧 System Status Check</h4>
+            <button type="button" class="btn btn-outline-primary" onclick="checkSystemStatus()">
+                Check Configuration
+            </button>
+            <div id="statusResults" class="mt-3"></div>
+        </div>
+
+        <div class="form-section">
+            <h4>📖 How It Works</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>When an admin account is created:</h6>
+                    <ol>
+                        <li>Form submission triggers JavaScript</li>
+                        <li>Data is sent to Supabase database</li>
+                        <li>Welcome email is sent via PHP backend</li>
+                        <li>New admin receives login credentials</li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <h6>Email contains:</h6>
+                    <ul>
+                        <li>Account information and role</li>
+                        <li>Login credentials</li>
+                        <li>Security instructions</li>
+                        <li>System features overview</li>
+                        <li>Direct login link</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('emailTestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('testName').value,
+                email: document.getElementById('testEmail').value,
+                userType: document.getElementById('testRole').value,
+                password: document.getElementById('testPassword').value,
+                contactNumber: '',
+                address: ''
+            };
+            
+            const resultSection = document.getElementById('resultSection');
+            const resultContent = document.getElementById('resultContent');
+            
+            // Show loading state
+            resultContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Sending email...</span>
+                    </div>
+                    <p class="mt-2">Sending test email...</p>
+                </div>
+            `;
+            resultSection.style.display = 'block';
+            
+            try {
+                console.log('Sending test email with data:', formData);
+                
+                const response = await fetch('api/create_admin_account.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Response:', result);
+                
+                if (result.success && result.email_sent) {
+                    resultContent.innerHTML = `
+                        <div class="status-box status-success">
+                            <h5>✅ Email Sent Successfully!</h5>
+                            <p>Test email sent to: <strong>${formData.email}</strong></p>
+                            <p>Check your inbox (and spam folder) for the welcome email.</p>
+                            <small>Sent: ${result.email_details.sent_count} | Failed: ${result.email_details.failed_count}</small>
+                        </div>
+                    `;
+                } else if (result.success && !result.email_sent) {
+                    resultContent.innerHTML = `
+                        <div class="status-box status-warning">
+                            <h5>⚠️ Email Not Sent</h5>
+                            <p>Account creation simulated successfully, but email failed.</p>
+                            <p><strong>Error:</strong> ${result.email_errors ? result.email_errors[0]?.error || 'Unknown email error' : 'Email service unavailable'}</p>
+                        </div>
+                    `;
+                } else {
+                    resultContent.innerHTML = `
+                        <div class="status-box status-error">
+                            <h5>❌ Test Failed</h5>
+                            <p><strong>Error:</strong> ${result.error || 'Unknown error occurred'}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultContent.innerHTML = `
+                    <div class="status-box status-error">
+                        <h5>❌ Connection Error</h5>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Make sure the PHP backend is accessible and PHPMailer is installed.</p>
+                    </div>
+                `;
+            }
+        });
+        
+        async function checkSystemStatus() {
+            const statusResults = document.getElementById('statusResults');
+            
+            statusResults.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                    <span class="ms-2">Checking system status...</span>
+                </div>
+            `;
+            
+            try {
+                // Check if PHP backend is accessible
+                const response = await fetch('api/create_admin_account.php', {
+                    method: 'OPTIONS'
+                });
+                
+                let status = '';
+                
+                if (response.ok) {
+                    status += `<div class="status-box status-success">
+                        <h6>✅ PHP Backend Accessible</h6>
+                        <p>Email API endpoint is responding</p>
+                    </div>`;
+                } else {
+                    status += `<div class="status-box status-error">
+                        <h6>❌ PHP Backend Not Accessible</h6>
+                        <p>Cannot reach api/create_admin_account.php</p>
+                    </div>`;
+                }
+                
+                // Check required files (you can expand this)
+                const requiredFiles = [
+                    'classes/EmailSender.php',
+                    'config/email_config.php',
+                    'templates/email/admin_welcome.php'
+                ];
+                
+                status += `<div class="status-box status-warning">
+                    <h6>📁 Required Files</h6>
+                    <p>Make sure these files exist:</p>
+                    <ul class="mb-0">
+                        ${requiredFiles.map(file => `<li><code>${file}</code></li>`).join('')}
+                    </ul>
+                </div>`;
+                
+                statusResults.innerHTML = status;
+                
+            } catch (error) {
+                statusResults.innerHTML = `
+                    <div class="status-box status-error">
+                        <h6>❌ System Check Failed</h6>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

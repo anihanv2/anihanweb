@@ -1,0 +1,23 @@
+{
+    "name": "anihan/email-system",
+    "description": "PHP Email System for Anihan Agricultural Management Platform",
+    "type": "project",
+    "require": {
+        "phpmailer/phpmailer": "^6.11"
+    },
+    "autoload": {
+        "psr-4": {
+            "Anihan\\": "classes/"
+        }
+    },
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Anihan Development Team",
+            "email": "anihanv2@gmail.com"
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true
+    }
+}

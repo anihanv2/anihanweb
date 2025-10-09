@@ -1587,7 +1587,31 @@ Common issues:
                     console.log('Saved email:', data[0].email);
                 }
                 
-                alert('Admin account added successfully!' + (imageUrl ? ' Image uploaded successfully.' : ' (No image was uploaded)'));
+                // Send welcome email notification
+                console.log('🔄 About to send welcome email...');
+                const emailResult = await sendWelcomeEmail({
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password,
+                    userType: formData.userType,
+                    contactNumber: formData.contactNumber,
+                    address: formData.address,
+                    imageUrl: imageUrl
+                });
+                
+                console.log('📧 Email result:', emailResult);
+                
+                let alertMessage = 'Admin account added successfully!' + (imageUrl ? ' Image uploaded successfully.' : ' (No image was uploaded)');
+                
+                if (emailResult && emailResult.success && emailResult.email_sent) {
+                    alertMessage += '\n\n✅ Welcome email sent successfully to ' + formData.email;
+                } else if (emailResult && emailResult.success && !emailResult.email_sent) {
+                    alertMessage += '\n\n⚠️ Account created but email could not be sent. Please check email configuration.';
+                } else {
+                    alertMessage += '\n\n❌ Account created but email sending failed: ' + (emailResult?.error || 'Unknown error');
+                }
+                
+                alert(alertMessage);
                 
                 // Clear the form
                 document.getElementById('adminForm').reset();
@@ -1604,6 +1628,90 @@ Common issues:
                 } else {
                     alert('Error adding admin account: ' + error.message);
                 }
+            }
+        }
+
+        // Function to send welcome email to new admin
+        async function sendWelcomeEmail(adminData) {
+            try {
+                console.log('=== SENDING WELCOME EMAIL ===');
+                console.log('Admin data for email:', adminData);
+                console.log('Current URL:', window.location.href);
+                console.log('API URL will be:', new URL('api/create_admin_account.php', window.location.href).href);
+                
+                const emailData = {
+                    name: adminData.name,
+                    email: adminData.email,
+                    password: adminData.password,
+                    userType: adminData.userType,
+                    contactNumber: adminData.contactNumber || '',
+                    address: adminData.address || '',
+                    imageUrl: adminData.imageUrl || null
+                };
+                
+                console.log('Sending email data to PHP backend:', emailData);
+                console.log('JSON payload:', JSON.stringify(emailData));
+                
+                const apiUrl = 'api/create_admin_account.php';
+                console.log('Making fetch request to:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(emailData)
+                });
+                
+                console.log('Response received:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('HTTP Error Response Body:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ PHP backend response parsed:', result);
+                
+                if (result.success) {
+                    console.log('🎉 API call successful');
+                    if (result.email_sent) {
+                        console.log(`📧 Email sent to: ${result.email_details.recipients.join(', ')}`);
+                    } else {
+                        console.warn('⚠️ Email could not be sent:', result.email_errors || result.warnings);
+                    }
+                } else {
+                    console.error('❌ API returned failure:', result.error);
+                }
+                
+                return result;
+                
+            } catch (error) {
+                console.error('💥 Exception in sendWelcomeEmail:', error);
+                console.error('Error stack:', error.stack);
+                
+                // Check if it's a network error
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    console.error('🌐 Network error - API might not be accessible');
+                }
+                
+                // Don't throw the error - we don't want email failure to block account creation
+                return {
+                    success: false,
+                    error: error.message,
+                    email_sent: false,
+                    debug_info: {
+                        error_name: error.name,
+                        current_url: window.location.href,
+                        attempted_api_url: 'api/create_admin_account.php'
+                    }
+                };
             }
         }
 
