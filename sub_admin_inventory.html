@@ -4,19 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Records - Sub Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css                if (productsError) {
-                    console.error('❌ Error fetching products:', productsError);
-                    updateDebugStatus(`❌ Database error: ${productsError.message}`);
-                    updateInventoryTable([], 'Error loading products');
-                    return;
-                }
-
-                updateDebugStatus(`📦 Found ${products?.length || 0} total products, filtering...`);
-                console.log('📦 All products fetched:', products?.length || 0);rap.min.css?v=5.3" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=5.3">
-    <link rel="stylesheet" href="fixed-layout.css?v=5.3">
-    <link href="profile-dropdown.css?v=5.3" rel="stylesheet">
-    <link rel="stylesheet" href="municipality_dashboard.css?v=5.3">
+    <link rel="icon" type="image/png" href="images/pic4.png">
+    <link rel="shortcut icon" type="image/png" href="images/pic4.png">
+    <link rel="apple-touch-icon" href="images/pic4.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?v=5.5" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=5.5">
+    <link rel="stylesheet" href="fixed-layout.css?v=5.5">
+    <link rel="stylesheet" href="profile-dropdown.css?v=5.5">
+    <link rel="stylesheet" href="sub_admin_inventory.css?v=5.5">
 </head>
 <html lang="en">
 <head>
@@ -113,8 +108,8 @@
 
             <!-- Main Content -->
             <div class="main-content">
-                <div class="card inventory-card">
-                    <div class="inventory-card-header">
+                <div class="card price-monitoring-card">
+                    <div class="price-monitoring-card-header">
                         <h4 class="mb-0">Inventory Records</h4>
                         <div class="search-container">
                             <div class="search-input-wrapper">
@@ -125,7 +120,7 @@
                     </div>
                     
                     <div class="table-responsive">
-                            <table class="table inventory-table" data-mobile-responsive="true">
+                        <table class="price-table" data-mobile-responsive="true">
                                 <thead>
                                     <tr>
                                         <th>Product Name</th>
@@ -146,17 +141,17 @@
                             </table>
                         </div>
                         
-                        <div class="table-footer">
-                            <div class="table-info-section">
-                                <span class="table-info" id="inventoryTableInfo">0 to 0 items of 0</span>
-                                <a href="#" class="view-all" onclick="showAllInventoryModal()">View all ></a>
-                            </div>
-                            <div class="pagination-controls">
-                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
-                                <button class="btn btn-sm btn-success" id="currentPageBtn">1</button>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">&gt;</button>
-                            </div>
+                    <div class="price-card-footer">
+                        <div class="footer-left">
+                            <span class="table-info" id="inventoryTableInfo" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllInventoryModal()">View all &gt;</a>
                         </div>
+                        <div class="price-pagination">
+                            <button class="btn" onclick="changePage(-1)">&lt;</button>
+                            <button class="btn active" id="currentPageBtn">1</button>
+                            <button class="btn" onclick="changePage(1)">&gt;</button>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>

@@ -623,3 +623,89 @@ body {
         display: none !important;
     }
 }
+
+/* Price Monitoring Card Styles (for consistent design) */
+.price-monitoring-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: none;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.price-monitoring-card-header {
+    background: #28a745;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.price-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+.price-table th {
+    font-weight: 600;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    color: #495057;
+}
+
+.price-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+}
+
+.price-table tr:hover {
+    background: #f8f9fa;
+}
+
+.price-card-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e9ecef;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+}
+
+.price-pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.price-pagination .btn {
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background: white;
+    border: 1px solid #ddd;
+    color: #495057;
+}
+
+.price-pagination .btn:hover {
+    background: #e9ecef;
+}
+
+.price-pagination .btn.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}

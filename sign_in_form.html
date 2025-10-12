@@ -256,7 +256,7 @@
             try {
                 console.log('Sending 2FA code to:', email);
                 
-                const response = await fetch('http://localhost:8000/api/2fa_handler.php', {
+                const response = await fetch('./api/2fa_handler.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -291,7 +291,7 @@
             try {
                 console.log('Verifying 2FA code for:', email);
                 
-                const response = await fetch('http://localhost:8000/api/2fa_handler.php', {
+                const response = await fetch('./api/2fa_handler.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
