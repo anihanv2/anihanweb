@@ -215,9 +215,9 @@
         }
 
         .pagination-controls .active-page {
-            background: #28a745;
-            border-color: #28a745;
-            color: white;
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
         }
 
         .pagination-controls .btn-outline-secondary {
@@ -229,6 +229,13 @@
             background-color: #28a745;
             border-color: #28a745;
             color: white;
+        }
+
+        /* Override any Bootstrap primary colors */
+        .btn-success, .btn-success:focus, .btn-success:active {
+            background-color: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
         }
 
         /* Community Table Styles */
@@ -709,9 +716,9 @@
                                         <a href="#" class="view-all-link" onclick="showAllMunicipalitySalesModal()">View all ></a>
                                     </div>
                                     <div class="pagination-controls">
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeMunicipalityPage(-1)">&lt;</button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="changeMunicipalityPage(-1)">&lt;</button>
                                         <button class="btn btn-sm btn-success active-page" id="currentMunicipalityPageBtn">1</button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeMunicipalityPage(1)">&gt;</button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="changeMunicipalityPage(1)">&gt;</button>
                                     </div>
                                 </div>
                             </div>
@@ -747,9 +754,9 @@
                                         <a href="#" class="view-all-link" onclick="showAllCommunitiesModal()">View all ></a>
                                     </div>
                                     <div class="pagination-controls">
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeCommunityPage(-1)">&lt;</button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="changeCommunityPage(-1)">&lt;</button>
                                         <button class="btn btn-sm btn-success active-page" id="currentCommunityPageBtn">1</button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="changeCommunityPage(1)">&gt;</button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="changeCommunityPage(1)">&gt;</button>
                                     </div>
                                 </div>
                             </div>
@@ -785,9 +792,9 @@
                                         <a href="#" class="view-all-link" onclick="showAllUsersModal()">View all ></a>
                                     </div>
                                     <div class="pagination-controls">
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="changePage(-1)">&lt;</button>
                                         <button class="btn btn-sm btn-success active-page" id="currentPageBtn">1</button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">&gt;</button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="changePage(1)">&gt;</button>
                                     </div>
                                 </div>
                             </div>
@@ -831,7 +838,7 @@
                             <span id="allUsersCount">0 users found</span>
                         </div>
                         <div>
-                            <button class="btn btn-outline-primary btn-sm" onclick="exportAllUsers('csv')">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAllUsers('csv')">
                                 <i class="fas fa-file-csv me-1"></i>Export CSV
                             </button>
                             <button class="btn btn-outline-danger btn-sm" onclick="exportAllUsers('pdf')">
@@ -880,7 +887,7 @@
                             <span id="allMunicipalitySalesCount">0 municipalities found</span>
                         </div>
                         <div>
-                            <button class="btn btn-outline-primary btn-sm" onclick="exportAllMunicipalitySales('csv')">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAllMunicipalitySales('csv')">
                                 <i class="fas fa-file-csv me-1"></i>Export CSV
                             </button>
                             <button class="btn btn-outline-danger btn-sm" onclick="exportAllMunicipalitySales('pdf')">
@@ -930,7 +937,7 @@
                             <span id="allCommunitiesCount">0 communities found</span>
                         </div>
                         <div>
-                            <button class="btn btn-outline-primary btn-sm" onclick="exportAllCommunities('csv')">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAllCommunities('csv')">
                                 <i class="fas fa-file-csv me-1"></i>Export CSV
                             </button>
                             <button class="btn btn-outline-danger btn-sm" onclick="exportAllCommunities('pdf')">
@@ -946,6 +953,9 @@
         </div>
     </div>
 
+
+
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

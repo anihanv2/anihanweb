@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - Anihan Agricultural Management System</title>
+    <link rel="icon" type="image/png" href="images/pic4.png">
+    <link rel="shortcut icon" type="image/png" href="images/pic4.png">
+    <link rel="apple-touch-icon" href="images/pic4.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 50%, #f0f9f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .auth-container {
+                margin: 10px;
+                padding: 30px 20px;
+                border-radius: 15px;
+                max-width: 95%;
+            }
+            
+            .logo-container {
+                margin-bottom: 25px;
+            }
+            
+            .logo-container img {
+                width: 60px !important;
+                height: 60px !important;
+            }
+            
+            .logo-container h3 {
+                font-size: 1.5rem;
+                margin-bottom: 5px;
+            }
+            
+            .logo-container p {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .auth-container {
+                margin: 5px;
+                padding: 25px 15px;
+                border-radius: 12px;
+                max-width: 100%;
+                min-height: auto;
+            }
+            
+            .logo-container {
+                margin-bottom: 20px;
+            }
+            
+            .logo-container img {
+                width: 50px !important;
+                height: 50px !important;
+            }
+            
+            .logo-container h3 {
+                font-size: 1.3rem;
+            }
+            
+            .step-indicator {
+                margin-bottom: 20px;
+            }
+            
+            .step {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+            
+            .verification-code-input {
+                font-size: 18px !important;
+                letter-spacing: 4px !important;
+                padding: 12px !important;
+            }
+            
+            .btn-auth {
+                padding: 12px 20px;
+                font-size: 0.95rem;
+            }
+            
+            .countdown-timer {
+                font-size: 16px;
+            }
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-container img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
+        .auth-form {
+            width: 100%;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+            background: white;
+        }
+
+        .btn-auth {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+            background: linear-gradient(45deg, #0056b3, #004085);
+        }
+
+        .btn-auth:disabled {
+            transform: none;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 5;
+            transition: all 0.3s ease;
+        }
+
+        .form-control {
+            padding-left: 45px;
+        }
+
+        .form-control:focus + .input-icon,
+        .form-control:not(:placeholder-shown) + .input-icon {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .alert-custom {
+            border-radius: 12px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .verification-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .verification-code-input {
+            font-size: 24px;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .countdown-timer {
+            font-weight: 600;
+            color: #007bff;
+            font-size: 18px;
+        }
+
+        .resend-section {
+            margin-top: 20px;
+        }
+
+        .btn-link-custom {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .btn-link-custom:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+
+        .step.inactive {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .step-line {
+            width: 50px;
+            height: 2px;
+            background: #e9ecef;
+            margin: 0 5px;
+        }
+
+        .step-line.completed {
+            background: #28a745;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Logo and Title -->
+        <div class="logo-container">
+            <img src="images/Anihan_Logo.png" alt="Anihan Logo" onerror="this.style.display='none'">
+            <h3 class="text-primary fw-bold">ANIHAN</h3>
+            <p class="text-muted">Agricultural Management System</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">1</div>
+            <div class="step-line" id="line1"></div>
+            <div class="step inactive" id="step2">2</div>
+        </div>
+
+        <!-- Authentication Form -->
+        <form id="authForm" class="auth-form">
+            <!-- Step 1: Login Credentials -->
+            <div id="loginStep" class="fade-in">
+                <div class="input-container">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
+                    <i class="fas fa-envelope input-icon"></i>
+                </div>
+
+                <div class="input-container">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                    <i class="fas fa-lock input-icon"></i>
+                    <button type="button" class="toggle-password" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+
+                <button type="submit" class="btn btn-auth" id="signInBtn">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </button>
+            </div>
+
+            <!-- Step 2: 2FA Verification -->
+            <div id="verificationStep" style="display: none;">
+                <div class="verification-section fade-in">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-shield-alt" style="font-size: 48px; color: #007bff; margin-bottom: 15px;"></i>
+                        <h5>Two-Factor Authentication</h5>
+                        <p class="text-muted">We've sent a 6-digit verification code to:</p>
+                        <p class="fw-bold text-primary" id="verificationEmail"></p>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="text" class="form-control verification-code-input" id="verificationCode" 
+                               placeholder="000000" maxlength="6" pattern="[0-9]{6}" required>
+                    </div>
+
+                    <div class="text-center mb-3">
+                        <p class="mb-1">Code expires in:</p>
+                        <div class="countdown-timer" id="countdown">5:00</div>
+                    </div>
+
+                    <button type="button" class="btn btn-auth mb-3" id="verifyButton">
+                        <i class="fas fa-check me-2"></i>Verify Code
+                    </button>
+
+                    <div class="resend-section text-center">
+                        <button type="button" class="btn-link-custom" id="resendCodeButton">
+                            <i class="fas fa-redo me-1"></i>Didn't receive the code? Resend
+                        </button>
+                        <br>
+                        <button type="button" class="btn-link-custom mt-2" id="backToLoginButton">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Alert Messages -->
+        <div id="alertMessage" style="display: none;"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Global variables
+        let pendingUser = null;
+        let countdownTimer = null;
+
+        // Utility Functions
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert-custom alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showLoading(button, loading, text = '') {
+            if (loading) {
+                button.disabled = true;
+                button.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>${text}`;
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.getAttribute('data-original-text') || text;
+            }
+        }
+
+        function hashPassword(password) {
+            if (typeof CryptoJS !== 'undefined' && CryptoJS.MD5) {
+                return CryptoJS.MD5(password).toString();
+            }
+            // Fallback hash
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(16);
+        }
+
+        // Authentication Functions
+        async function authenticateUser(email, password) {
+            try {
+                const hashedPassword = hashPassword(password);
+                
+                const { data, error } = await supabaseClient
+                    .from('admin_accounts')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', hashedPassword);
+                
+                if (error) throw error;
+                
+                return data && data.length > 0 ? data[0] : null;
+            } catch (error) {
+                console.error('Authentication error:', error);
+                return null;
+            }
+        }
+
+        async function send2FACode(email, userName) {
+            try {
+                const response = await fetch('http://localhost:8000/api/2fa_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'generate_code',
+                        email: email,
+                        user_name: userName
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || '2FA code sending failed');
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('2FA sending error:', error);
+                throw error;
+            }
+        }
+
+        async function verify2FACode(email, code) {
+            try {
+                const response = await fetch('http://localhost:8000/api/2fa_handler.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'verify_code',
+                        email: email,
+                        code: code
+                    })
+                });
+                
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('2FA verification error:', error);
+                throw error;
+            }
+        }
+
+        // UI Functions
+        function showVerificationStep(email) {
+            document.getElementById('loginStep').style.display = 'none';
+            document.getElementById('verificationStep').style.display = 'block';
+            document.getElementById('verificationEmail').textContent = email;
+            
+            // Update step indicator
+            document.getElementById('step1').className = 'step completed';
+            document.getElementById('line1').className = 'step-line completed';
+            document.getElementById('step2').className = 'step active';
+            
+            // Start countdown
+            startCountdown(300); // 5 minutes
+            
+            // Focus on verification input
+            setTimeout(() => {
+                document.getElementById('verificationCode').focus();
+            }, 100);
+        }
+
+        function showLoginStep() {
+            document.getElementById('verificationStep').style.display = 'none';
+            document.getElementById('loginStep').style.display = 'block';
+            
+            // Reset step indicator
+            document.getElementById('step1').className = 'step active';
+            document.getElementById('line1').className = 'step-line';
+            document.getElementById('step2').className = 'step inactive';
+            
+            // Clear countdown
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+            }
+            
+            // Reset variables
+            pendingUser = null;
+            document.getElementById('verificationCode').value = '';
+        }
+
+        function startCountdown(seconds) {
+            const countdownElement = document.getElementById('countdown');
+            let timeLeft = seconds;
+            
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+            }
+            
+            countdownTimer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                countdownElement.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+                countdownElement.style.color = timeLeft <= 60 ? '#dc3545' : '#007bff';
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    countdownElement.textContent = 'Expired';
+                    countdownElement.style.color = '#dc3545';
+                    showAlert('Verification code has expired. Please request a new one.', 'error');
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+
+        function completeLogin() {
+            console.log('completeLogin() called');
+            console.log('pendingUser:', pendingUser);
+            
+            if (!pendingUser) {
+                console.error('No pending user found!');
+                showAlert('Authentication error. Please try again.', 'error');
+                return;
+            }
+            
+            console.log('Storing user session and redirecting...');
+            
+            // Store user session
+            sessionStorage.setItem('currentUser', JSON.stringify({
+                id: pendingUser.id,
+                name: pendingUser.name,
+                email: pendingUser.email,
+                userType: pendingUser.user_type
+            }));
+            
+            // Clear pending authentication
+            sessionStorage.removeItem('pendingAuth');
+            
+            // Show success message
+            showAlert('Login successful! Redirecting...', 'success');
+            
+            console.log('User type:', pendingUser.user_type);
+            
+            // Redirect based on user role
+            setTimeout(() => {
+                if (pendingUser.user_type === 'SUPER ADMIN') {
+                    console.log('Redirecting to dashboard');
+                    window.location.href = 'dashboard_super_admin.html';
+                } else if (pendingUser.user_type === 'SUB ADMIN') {
+                    console.log('Redirecting to municipality dashboard');
+                    window.location.href = 'municipality_dashboard.html';
+                } else {
+                    console.log('Redirecting to dashboard (default)');
+                    window.location.href = 'dashboard_super_admin.html';
+                }
+            }, 1500);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if coming from sign-in form with pending authentication
+            const urlParams = new URLSearchParams(window.location.search);
+            const pendingAuth = sessionStorage.getItem('pendingAuth');
+            
+            if (pendingAuth) {
+                try {
+                    const authData = JSON.parse(pendingAuth);
+                    
+                    // Check if the stored auth is not too old (5 minutes max)
+                    const now = Date.now();
+                    const authAge = now - authData.timestamp;
+                    const maxAge = 5 * 60 * 1000; // 5 minutes
+                    
+                    if (authAge < maxAge) {
+                        // Valid pending auth, go directly to verification step
+                        pendingUser = authData.user;
+                        showVerificationStep(authData.email);
+                    } else {
+                        // Auth too old, clear and redirect back
+                        sessionStorage.removeItem('pendingAuth');
+                        showAlert('Session expired. Please sign in again.', 'error');
+                        setTimeout(() => {
+                            window.location.href = 'sign_in_form.html';
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('Error parsing pending auth:', error);
+                    sessionStorage.removeItem('pendingAuth');
+                    window.location.href = 'sign_in_form.html';
+                }
+            } else {
+                // No pending auth, redirect back to sign-in
+                window.location.href = 'sign_in_form.html';
+            }
+            
+            // Store original button texts
+            document.getElementById('signInBtn').setAttribute('data-original-text', 
+                '<i class="fas fa-sign-in-alt me-2"></i>Sign In');
+            document.getElementById('verifyButton').setAttribute('data-original-text', 
+                '<i class="fas fa-check me-2"></i>Verify Code');
+
+            // Toggle password visibility
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordField = document.getElementById('password');
+                const icon = this.querySelector('i');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    passwordField.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
+            });
+
+            // Login form submission
+            document.getElementById('authForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
+                const signInBtn = document.getElementById('signInBtn');
+                
+                if (!email || !password) {
+                    showAlert('Please enter both email and password.', 'error');
+                    return;
+                }
+                
+                showLoading(signInBtn, true, 'Authenticating...');
+                
+                try {
+                    // Authenticate user
+                    const user = await authenticateUser(email, password);
+                    
+                    if (user) {
+                        pendingUser = user;
+                        
+                        // Send 2FA code
+                        showLoading(signInBtn, true, 'Sending verification code...');
+                        await send2FACode(email, user.name);
+                        
+                        // Show verification step
+                        showVerificationStep(email);
+                    } else {
+                        showAlert('Invalid email or password. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    showAlert('Authentication failed. Please check your connection and try again.', 'error');
+                } finally {
+                    showLoading(signInBtn, false, '<i class="fas fa-sign-in-alt me-2"></i>Sign In');
+                }
+            });
+
+            // 2FA verification
+            document.getElementById('verifyButton').addEventListener('click', async function() {
+                const code = document.getElementById('verificationCode').value.trim();
+                const verifyBtn = this;
+                
+                console.log('Verify button clicked');
+                console.log('Pending user:', pendingUser);
+                console.log('Entered code:', code);
+                
+                if (!code) {
+                    showAlert('Please enter the verification code.', 'error');
+                    return;
+                }
+                
+                if (code.length !== 6) {
+                    showAlert('Verification code must be 6 digits.', 'error');
+                    return;
+                }
+                
+                if (!pendingUser || !pendingUser.email) {
+                    showAlert('Session expired. Please login again.', 'error');
+                    showLoginStep();
+                    return;
+                }
+                
+                showLoading(verifyBtn, true, 'Verifying...');
+                
+                try {
+                    console.log('Calling verify2FACode with:', pendingUser.email, code);
+                    const result = await verify2FACode(pendingUser.email, code);
+                    console.log('Verification result:', result);
+                    
+                    if (result.success) {
+                        console.log('Verification successful, calling completeLogin()');
+                        completeLogin();
+                    } else {
+                        console.log('Verification failed:', result.error);
+                        showAlert(result.error || 'Invalid verification code. Please try again.', 'error');
+                        document.getElementById('verificationCode').value = '';
+                        document.getElementById('verificationCode').focus();
+                    }
+                } catch (error) {
+                    console.error('Verification error:', error);
+                    showAlert('Verification failed. Please try again.', 'error');
+                } finally {
+                    showLoading(verifyBtn, false, '<i class="fas fa-check me-2"></i>Verify Code');
+                }
+            });
+
+            // Resend code
+            document.getElementById('resendCodeButton').addEventListener('click', async function() {
+                if (!pendingUser) {
+                    showAlert('Session expired. Please login again.', 'error');
+                    showLoginStep();
+                    return;
+                }
+                
+                try {
+                    await send2FACode(pendingUser.email, pendingUser.name);
+                    showAlert('Verification code sent successfully.', 'success');
+                    startCountdown(300);
+                } catch (error) {
+                    showAlert('Failed to resend code. Please try again.', 'error');
+                }
+            });
+
+            // Back to login
+            document.getElementById('backToLoginButton').addEventListener('click', function() {
+                // Clear pending authentication
+                sessionStorage.removeItem('pendingAuth');
+                
+                // Go back to sign-in form
+                window.location.href = 'sign_in_form.html';
+            });
+
+            // Auto-format verification code
+            document.getElementById('verificationCode').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 6) value = value.substring(0, 6);
+                e.target.value = value;
+            });
+
+            // Enter key handlers
+            document.getElementById('verificationCode').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('verifyButton').click();
+                }
+            });
+
+            // Hide alerts when user starts typing
+            ['email', 'password', 'verificationCode'].forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    document.getElementById('alertMessage').style.display = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

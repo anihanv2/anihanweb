@@ -23,33 +23,73 @@
 
             <!-- Login Form -->
             <form id="loginForm" class="login-form">
-                <div class="mb-3">
-                    <label for="username" class="form-label">NAME</label>
-                    <div class="input-container">
-                        <i class="fas fa-user input-icon"></i>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your name" required>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">PASSWORD</label>
-                    <div class="input-container">
-                        <i class="fas fa-lock input-icon"></i>
-                        <div class="input-group">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="•••••" required>
-                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                <!-- Step 1: Email and Password -->
+                <div id="loginStep1">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">EMAIL</label>
+                        <div class="input-container">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" required>
                         </div>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">PASSWORD</label>
+                        <div class="input-container">
+                            <i class="fas fa-lock input-icon"></i>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="•••••" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-signin w-100" id="goToAuthBtn">Sign In</button>
                 </div>
 
-                <button type="submit" class="btn btn-signin w-100">Sign In</button>
+                <!-- Step 2: 2FA Verification -->
+                <div id="loginStep2" style="display: none;">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-shield-alt" style="font-size: 48px; color: #007bff; margin-bottom: 15px;"></i>
+                        <h5>Verify Your Identity</h5>
+                        <p class="text-muted">We've sent a 6-digit code to your email</p>
+                        <p class="fw-bold" id="verificationEmail"></p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="verificationCode" class="form-label">VERIFICATION CODE</label>
+                        <div class="input-container">
+                            <i class="fas fa-key input-icon"></i>
+                            <input type="text" class="form-control text-center" id="verificationCode" name="verificationCode" 
+                                   placeholder="000000" maxlength="6" pattern="[0-9]{6}" 
+                                   style="font-size: 24px; letter-spacing: 8px; font-family: monospace;" required>
+                        </div>
+                        <div class="form-text text-center">
+                            Code expires in <span id="countdown">5:00</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-signin w-100 mb-2" id="verifyButton">
+                        <i class="fas fa-check me-2"></i>Verify Code
+                    </button>
+                    
+                    <div class="text-center">
+                        <button type="button" class="btn btn-link" id="resendCodeButton">
+                            Didn't receive code? Resend
+                        </button>
+                        <br>
+                        <button type="button" class="btn btn-link btn-sm" id="backToLoginButton">
+                            ← Back to Login
+                        </button>
+                    </div>
+                </div>
             </form>
 
             <!-- Error Message -->
             <div id="errorMessage" class="alert alert-danger mt-3" style="display: none;">
-                Invalid name or password. Please try again.
+                Invalid email or password. Please try again.
             </div>
         </div>
     </div>
@@ -64,6 +104,10 @@
         const SUPABASE_URL = 'https://ontuivohwjfkxjwrjnot.supabase.co'
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9udHVpdm9od2pma3hqd3Jqbm90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2Njg3MTAsImV4cCI6MjA3MDI0NDcxMH0.jGQhshEtfnABK8xNF98WxB10c66vIkTzAoLrhxbeQwE'
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        // Global variables for 2FA
+        let pendingUser = null;
+        let countdownTimer = null;
 
         // Password hashing function 
         function hashPassword(password) {
@@ -98,10 +142,10 @@
         };
 
         // Function to authenticate user against database
-        async function authenticateUser(name, password) {
+        async function authenticateUser(email, password) {
             try {
                 console.log('=== LOGIN ATTEMPT ===');
-                console.log('Input name:', name);
+                console.log('Input email:', email);
                 console.log('Input password length:', password.length);
                 
                 const hashedPassword = hashPassword(password);
@@ -112,7 +156,7 @@
                 const { data: admin, error } = await supabaseClient
                     .from('admin_accounts')
                     .select('*')
-                    .eq('name', name)
+                    .eq('email', email)
                     .eq('password', hashedPassword)
                     .single();
                 
@@ -121,13 +165,13 @@
                 if (error || !admin) {
                     console.log('Authentication failed - trying alternative queries...');
                     
-                    // Try to find user by name only to see if user exists
+                    // Try to find user by email only to see if user exists
                     const { data: userCheck, error: userError } = await supabaseClient
                         .from('admin_accounts')
-                        .select('name, password')
-                        .eq('name', name);
+                        .select('email, password')
+                        .eq('email', email);
                     
-                    console.log('User check by name:', { userCheck, userError });
+                    console.log('User check by email:', { userCheck, userError });
                     
                     if (userCheck && userCheck.length > 0) {
                         console.log('User exists but password doesn\'t match');
@@ -149,17 +193,218 @@
         }
 
         // Show loading state
-        function showLoading(show) {
+        function showLoading(show, message = 'Signing in...') {
             const submitBtn = document.querySelector('.btn-signin');
+            const verifyBtn = document.getElementById('verifyButton');
             const errorMessage = document.getElementById('errorMessage');
             
             if (show) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing in...';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>${message}`;
+                }
+                if (verifyBtn) {
+                    verifyBtn.disabled = true;
+                    verifyBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>${message}`;
+                }
                 errorMessage.style.display = 'none';
             } else {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Sign In';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Sign In';
+                }
+                if (verifyBtn) {
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = '<i class="fas fa-check me-2"></i>Verify Code';
+                }
+            }
+        }
+        
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.className = 'error-message';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.className = 'success-message';
+            errorMessage.style.backgroundColor = '#d4edda';
+            errorMessage.style.color = '#155724';
+            errorMessage.style.border = '1px solid #c3e6cb';
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+                errorMessage.className = 'error-message';
+                errorMessage.style.backgroundColor = '';
+                errorMessage.style.color = '';
+                errorMessage.style.border = '';
+            }, 3000);
+        }
+
+        // 2FA Functions
+        async function send2FACode(email, userName) {
+            try {
+                console.log('Sending 2FA code to:', email);
+                
+                const response = await fetch('http://localhost:8000/api/2fa_handler.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'generate_code',
+                        email: email,
+                        user_name: userName
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || '2FA code sending failed');
+                }
+                
+                console.log('2FA code sent successfully');
+                return result;
+                
+            } catch (error) {
+                console.error('Error sending 2FA code:', error);
+                throw error;
+            }
+        }
+        
+        async function verify2FACode(email, code) {
+            try {
+                console.log('Verifying 2FA code for:', email);
+                
+                const response = await fetch('http://localhost:8000/api/2fa_handler.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'verify_code',
+                        email: email,
+                        code: code
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('2FA verification result:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('Error verifying 2FA code:', error);
+                throw error;
+            }
+        }
+        
+        function showStep2(email) {
+            showLoading(false);
+            document.getElementById('loginStep1').style.display = 'none';
+            document.getElementById('loginStep2').style.display = 'block';
+            document.getElementById('verificationEmail').textContent = email;
+            
+            // Start countdown timer
+            startCountdown(300); // 5 minutes
+            
+            // Focus on verification code input
+            setTimeout(() => {
+                document.getElementById('verificationCode').focus();
+            }, 100);
+        }
+        
+        function showStep1() {
+            document.getElementById('loginStep2').style.display = 'none';
+            document.getElementById('loginStep1').style.display = 'block';
+            
+            // Clear countdown
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+            }
+            
+            // Clear pending user
+            pendingUser = null;
+            
+            // Clear verification code
+            document.getElementById('verificationCode').value = '';
+        }
+        
+        function startCountdown(seconds) {
+            const countdownElement = document.getElementById('countdown');
+            let timeLeft = seconds;
+            
+            // Clear existing timer
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+            }
+            
+            countdownTimer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                countdownElement.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    countdownElement.textContent = 'Expired';
+                    countdownElement.style.color = '#dc3545';
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+        
+        function resetPasswordField() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.querySelector('#togglePassword i');
+            if (passwordField.type === 'text') {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+        
+        function completeLogin() {
+            if (!pendingUser) {
+                console.error('No pending user for login completion');
+                return;
+            }
+            
+            // Store user session data
+            sessionStorage.setItem('currentUser', JSON.stringify({
+                id: pendingUser.id,
+                name: pendingUser.name,
+                email: pendingUser.email,
+                userType: pendingUser.user_type
+            }));
+            
+            // Redirect based on user role using hash routing
+            if (pendingUser.user_type === 'SUPER ADMIN') {
+                window.location.href = 'dashboard_super_admin.html';
+            } else if (pendingUser.user_type === 'SUB ADMIN') {
+                window.location.href = 'municipality_dashboard.html';
+            } else {
+                // Default fallback
+                window.location.href = 'dashboard_super_admin.html';
             }
         }
 
@@ -179,11 +424,11 @@
             }
         });
 
-        // Form Submission Handler
+        // Form Submission Handler - Step 1: Email and Password
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const errorMessage = document.getElementById('errorMessage');
             
@@ -194,45 +439,31 @@
             errorMessage.style.display = 'none';
             
             try {
-                // Authenticate user against database
-                const authenticatedUser = await authenticateUser(username, password);
+                // Authenticate user against database (Step 1)
+                const authenticatedUser = await authenticateUser(email, password);
                 
                 if (authenticatedUser) {
-                    // Store user session data
-                    sessionStorage.setItem('currentUser', JSON.stringify({
-                        id: authenticatedUser.id,
-                        name: authenticatedUser.name,
-                        email: authenticatedUser.email,
-                        userType: authenticatedUser.user_type
-                    }));
+                    // Store user temporarily for 2FA verification
+                    pendingUser = authenticatedUser;
                     
-                    // Redirect based on user role
-                    if (authenticatedUser.user_type === 'SUPER ADMIN') {
-                        window.location.href = 'dashboard_super_admin.html';
-                    } else if (authenticatedUser.user_type === 'SUB ADMIN') {
-                        window.location.href = 'municipality_dashboard.html';
-                    } else {
-                        // Default fallback
-                        window.location.href = 'dashboard_super_admin.html';
-                    }
+                    // Send 2FA code
+                    await send2FACode(email, authenticatedUser.name);
+                    
+                    // Show 2FA verification step
+                    showStep2(email);
+                    
                 } else {
                     // Authentication failed
                     showLoading(false);
-                    errorMessage.textContent = 'Invalid username or password. Please try again.';
+                    errorMessage.textContent = 'Invalid email or password. Please try again.';
                     errorMessage.style.display = 'block';
                     
                     // Clear form fields
-                    document.getElementById('username').value = '';
+                    document.getElementById('email').value = '';
                     document.getElementById('password').value = '';
                     
                     // Reset password field to hidden
-                    const passwordField = document.getElementById('password');
-                    const eyeIcon = document.getElementById('eyeIcon');
-                    if (passwordField.type === 'text') {
-                        passwordField.type = 'password';
-                        eyeIcon.classList.remove('fa-eye');
-                        eyeIcon.classList.add('fa-eye-slash');
-                    }
+                    resetPasswordField();
                 }
             } catch (error) {
                 showLoading(false);
@@ -243,41 +474,178 @@
         });
 
         // Hide/show icons when focusing/blurring input fields
-        const usernameInput = document.getElementById('username');
-        const usernameIcon = usernameInput.parentElement.querySelector('.input-icon');
+        const emailInput = document.getElementById('email');
+        const emailIcon = emailInput.parentElement.querySelector('.input-icon');
         
-        // Hide icon when clicking/focusing on username input
-        usernameInput.addEventListener('focus', function() {
-            usernameIcon.style.opacity = '0';
-            usernameIcon.style.visibility = 'hidden';
+        // Hide icon when clicking/focusing on email input
+        emailInput.addEventListener('focus', function() {
+            emailIcon.style.opacity = '0';
+            emailIcon.style.visibility = 'hidden';
         });
         
-        // Show icon when blurring username input (if empty)
-        usernameInput.addEventListener('blur', function() {
+        // Show icon when blurring email input (if empty)
+        emailInput.addEventListener('blur', function() {
             if (this.value === '') {
-                usernameIcon.style.opacity = '1';
-                usernameIcon.style.visibility = 'visible';
+                emailIcon.style.opacity = '1';
+                emailIcon.style.visibility = 'visible';
             }
         });
         
-        // Hide icon when typing in username input
-        usernameInput.addEventListener('input', function() {
+        // Hide icon when typing in email input
+        emailInput.addEventListener('input', function() {
             if (this.value.length > 0) {
-                usernameIcon.style.opacity = '0';
-                usernameIcon.style.visibility = 'hidden';
+                emailIcon.style.opacity = '0';
+                emailIcon.style.visibility = 'hidden';
             } else {
-                usernameIcon.style.opacity = '1';
-                usernameIcon.style.visibility = 'visible';
+                emailIcon.style.opacity = '1';
+                emailIcon.style.visibility = 'visible';
+            }
+        });
+
+        // Handle sign in button click
+        document.getElementById('goToAuthBtn').addEventListener('click', async function() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            const signInBtn = this;
+            
+            if (!email || !password) {
+                errorMessage.textContent = 'Please enter both email and password.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Show loading state
+            signInBtn.disabled = true;
+            signInBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Authenticating...';
+            errorMessage.style.display = 'none';
+            
+            try {
+                // Authenticate user
+                const authenticatedUser = await authenticateUser(email, password);
+                
+                if (authenticatedUser) {
+                    // Store user data and redirect to 2FA verification
+                    sessionStorage.setItem('pendingAuth', JSON.stringify({
+                        user: authenticatedUser,
+                        email: email,
+                        timestamp: Date.now()
+                    }));
+                    
+                    // Send 2FA code
+                    await send2FACode(email, authenticatedUser.name);
+                    
+                    // Redirect to authentication page (2FA step)
+                    window.location.href = 'authentication.html';
+                } else {
+                    errorMessage.textContent = 'Invalid email or password. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Authentication error:', error);
+                errorMessage.textContent = 'Authentication failed. Please check your connection and try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                signInBtn.disabled = false;
+                signInBtn.innerHTML = 'Sign In';
             }
         });
 
         // Hide error message when user starts typing
-        document.getElementById('username').addEventListener('input', function() {
+        document.getElementById('email').addEventListener('input', function() {
             document.getElementById('errorMessage').style.display = 'none';
         });
 
         document.getElementById('password').addEventListener('input', function() {
             document.getElementById('errorMessage').style.display = 'none';
+        });
+
+        // 2FA Event Handlers
+        document.getElementById('verifyButton').addEventListener('click', async function() {
+            const code = document.getElementById('verificationCode').value.trim();
+            
+            if (!code) {
+                showError('Please enter the verification code.');
+                return;
+            }
+            
+            if (code.length !== 6) {
+                showError('Verification code must be 6 digits.');
+                return;
+            }
+            
+            if (!pendingUser || !pendingUser.email) {
+                showError('Session expired. Please login again.');
+                showStep1();
+                return;
+            }
+            
+            try {
+                showLoading(true, 'Verifying code...');
+                
+                const result = await verify2FACode(pendingUser.email, code);
+                
+                if (result.success) {
+                    showLoading(false);
+                    // Complete the login process
+                    completeLogin();
+                } else {
+                    showLoading(false);
+                    showError(result.error || 'Invalid verification code. Please try again.');
+                    document.getElementById('verificationCode').value = '';
+                    document.getElementById('verificationCode').focus();
+                }
+                
+            } catch (error) {
+                showLoading(false);
+                showError('Failed to verify code. Please try again.');
+                console.error('2FA verification error:', error);
+            }
+        });
+        
+        document.getElementById('resendCodeButton').addEventListener('click', async function() {
+            if (!pendingUser || !pendingUser.email) {
+                showError('Session expired. Please login again.');
+                showStep1();
+                return;
+            }
+            
+            try {
+                showLoading(true, 'Resending code...');
+                
+                await send2FACode(pendingUser.email, pendingUser.name);
+                
+                showLoading(false);
+                showSuccess('Verification code sent to your email.');
+                
+                // Restart countdown
+                startCountdown(300);
+                
+            } catch (error) {
+                showLoading(false);
+                showError('Failed to resend code. Please try again.');
+                console.error('Resend code error:', error);
+            }
+        });
+        
+        document.getElementById('backToLoginButton').addEventListener('click', function() {
+            showStep1();
+        });
+        
+        // Allow Enter key to submit verification code
+        document.getElementById('verificationCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('verifyButton').click();
+            }
+        });
+        
+        // Auto-format verification code input (numbers only, max 6 digits)
+        document.getElementById('verificationCode').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            if (value.length > 6) {
+                value = value.substring(0, 6);
+            }
+            e.target.value = value;
         });
     </script>
 </body>

@@ -236,6 +236,9 @@
         </div>
     </div>
 
+
+
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     
     <!-- Add Supabase Client (required by shared-profile.js) -->
@@ -1158,17 +1161,50 @@ async function debugImageUrls() {
                 if (!sidebar.classList.contains('mobile-open')) {
                     const mobileMenuContent = `
                         <div class="nav flex-column nav-pills">
-                            <a class="nav-link" href="dashboard_super_admin.html">Dashboard</a>
-                            <a class="nav-link" href="admin_accounts.html">Admin Accounts</a>
-                            <a class="nav-link" href="for_approval.html">For Approval</a>
-                            <a class="nav-link" href="approved_application.html">Approved Applications</a>
-                            <a class="nav-link" href="add_voucher.html">Add Voucher</a>
-                            <a class="nav-link" href="voucher_records.html">Voucher Records</a>
-                            <a class="nav-link" href="inventory_records.html">Inventory Records</a>
-                            <a class="nav-link active" href="price_monitoring.html">Price Monitoring</a>
-                            <a class="nav-link" href="in_demand_products.html">In Demand Products</a>
-                            <a class="nav-link" href="sales_per_location.html">Sales Per Location</a>
-                            <a class="nav-link" href="violation.html">Violation</a>
+                            <a class="nav-link d-flex align-items-center text-start" href="dashboard_super_admin.html">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="admin_accounts.html">
+                                <i class="fas fa-user-shield me-2"></i>
+                                Admin Accounts
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="for_approval.html">
+                                <i class="fas fa-user-clock me-2"></i>
+                                For Approval
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="approved_application.html">
+                                <i class="fas fa-user-check me-2"></i>
+                                Approved Applications
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="inventory_records.html">
+                                <i class="fas fa-clipboard-list me-2"></i>
+                                Inventory Records
+                            </a>
+                            <a class="nav-link active d-flex align-items-center text-start" href="price_monitoring.html">
+                                <i class="fas fa-dollar-sign me-2"></i>
+                                Price Monitoring
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="in_demand_products.html">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                In Demand Products
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="sales_per_location.html">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                Sales Per Location
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="add_voucher.html">
+                                <i class="fas fa-plus me-2"></i>
+                                Add Voucher
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="voucher_records.html">
+                                <i class="fas fa-list me-2"></i>
+                                Voucher Records
+                            </a>
+                            <a class="nav-link d-flex align-items-center text-start" href="violation.html">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Violation
+                            </a>
                         </div>
                     `;
                     sidebar.innerHTML = mobileMenuContent;
