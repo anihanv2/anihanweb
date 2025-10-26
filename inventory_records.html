@@ -399,6 +399,33 @@
             }
         }
 
+        // Function to decode base64 descriptions
+        function decodeDescription(description) {
+            if (!description) return '';
+            
+            // Convert to string if it's not already
+            description = String(description);
+            
+            try {
+                // Check if description has a colon separator (format: base64:suffix)
+                // If so, extract only the base64 part
+                let base64Part = description;
+                if (description.includes(':')) {
+                    base64Part = description.split(':')[0];
+                    console.log('Found colon separator, extracting base64 part:', base64Part);
+                }
+                
+                // Try to decode as base64
+                const decoded = atob(base64Part);
+                console.log('Decoding:', base64Part.substring(0, 30) + '... => ' + decoded.substring(0, 50));
+                return decoded;
+            } catch (e) {
+                // If it fails, return the original description
+                console.warn('Failed to decode description (not base64):', description.substring(0, 30), e);
+                return description;
+            }
+        }
+
         // Populate the inventory table
         function populateInventoryTable(products) {
             console.log('Populating table with products:', products);
@@ -429,12 +456,13 @@
             console.log(`Creating ${displayProducts.length} product rows`);
             displayProducts.forEach((product, index) => {
                 console.log(`Creating row ${index + 1} for product:`, product);
+                console.log(`Raw description for ${product.name}:`, product.description);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
                         <div class="product-info">
                             <div class="product-name">${escapeHtml(product.name || 'N/A')}</div>
-                            <div class="product-description text-muted small">${escapeHtml(product.description || '')}</div>
+                            <div class="product-description text-muted small">${escapeHtml(decodeDescription(product.description) || '')}</div>
                         </div>
                     </td>
                     <td>
@@ -521,7 +549,7 @@
                             <span class="badge bg-success">Available</span>
                         </td>
                         <td>
-                            <span class="text-muted">${escapeHtml(product.description || 'No description')}</span>
+                            <span class="text-muted">${escapeHtml(decodeDescription(product.description) || 'No description')}</span>
                         </td>
                     </tr>
                 `;
@@ -540,7 +568,7 @@
                     const filteredData = inventoryData.filter(product => 
                         (product.name || '').toLowerCase().includes(searchTerm) ||
                         (product.category || '').toLowerCase().includes(searchTerm) ||
-                        (product.description || '').toLowerCase().includes(searchTerm)
+                        (decodeDescription(product.description) || '').toLowerCase().includes(searchTerm)
                     );
                     
                     if (filteredData.length === 0) {
@@ -574,7 +602,7 @@
                                         <span class="badge bg-success">Available</span>
                                     </td>
                                     <td>
-                                        <span class="text-muted">${escapeHtml(product.description || 'No description')}</span>
+                                        <span class="text-muted">${escapeHtml(decodeDescription(product.description) || 'No description')}</span>
                                     </td>
                                 </tr>
                             `;
