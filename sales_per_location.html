@@ -250,12 +250,12 @@
                     <div class="sales-card-footer">
                         <div class="footer-left">
                             <span id="salesItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
-                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllSalesModal()">View all &gt;</a>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="event.preventDefault(); showAllSalesModal()">View all &gt;</a>
                         </div>
                         <div class="sales-pagination">
-                            <button class="btn">&lt;</button>
-                            <button class="btn active">1</button>
-                            <button class="btn">&gt;</button>
+                            <button class="btn" onclick="changePage(-1)">&lt;</button>
+                            <button class="btn active" id="currentPageBtn">1</button>
+                            <button class="btn" onclick="changePage(1)">&gt;</button>
                         </div>
                     </div>
                 </div>
@@ -274,6 +274,11 @@
     <script>
         // Use Supabase client from shared-profile.js
         // Wait for shared-profile.js to initialize supabaseClient
+
+        // Pagination variables
+        let currentPage = 1;
+        let totalSalesLocations = 0;
+        const locationsPerPage = 10;
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -297,6 +302,13 @@
                 }
 
                 const client = window.supabaseClient || supabaseClient;
+
+                // First get total count
+                const { count } = await client
+                    .from('order_items')
+                    .select('*', { count: 'exact', head: true });
+
+                totalSalesLocations = count || 0;
 
                 // Get product sales data with store information using the same join approach as price monitoring
                 const { data: salesData, error } = await client
@@ -322,7 +334,8 @@
                                 )
                             )
                         )
-                    `);
+                    `)
+                    .range((currentPage - 1) * locationsPerPage, currentPage * locationsPerPage - 1);
 
                 console.log('📈 Sales data query result:', { 
                     dataCount: salesData?.length || 0, 
@@ -460,11 +473,8 @@
             // Store all sales data globally for modal use
             window.allSalesData = salesData;
 
-            // Display first 10 items (simulate pagination)
-            const displaySales = salesData.slice(0, 10);
-
-            // Generate table rows
-            const tableRows = displaySales.map(item => `
+            // Generate table rows (pagination handled by query)
+            const tableRows = salesData.map(item => `
                 <tr>
                     <td>
                         <div class="location-info">
@@ -494,25 +504,101 @@
 
             tableBody.innerHTML = tableRows;
             
-            // Update items count
+            // Update items count with pagination info
             if (itemsCount) {
-                const startItem = 1;
-                const endItem = Math.min(10, salesData.length);
-                itemsCount.textContent = `${startItem} to ${endItem} items of ${salesData.length}`;
+                const startItem = ((currentPage - 1) * locationsPerPage) + 1;
+                const endItem = Math.min(currentPage * locationsPerPage, totalSalesLocations);
+                itemsCount.textContent = `${startItem} to ${endItem} items of ${totalSalesLocations}`;
+            }
+
+            // Update current page button
+            const currentPageBtn = document.getElementById('currentPageBtn');
+            if (currentPageBtn) {
+                currentPageBtn.textContent = currentPage;
             }
             
-            console.log(`✅ Updated table with ${displaySales.length} of ${salesData.length} records`);
+            console.log(`✅ Updated table with ${salesData.length} of ${totalSalesLocations} records`);
+        }
+
+        // Function to change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(totalSalesLocations / locationsPerPage);
+            
+            if (direction === 1 && currentPage < totalPages) {
+                currentPage++;
+                loadSalesPerLocationData();
+            } else if (direction === -1 && currentPage > 1) {
+                currentPage--;
+                loadSalesPerLocationData();
+            }
         }
 
         // Function to show all sales modal
-        function showAllSalesModal() {
+        async function showAllSalesModal() {
             const modal = new bootstrap.Modal(document.getElementById('allSalesModal'));
             modal.show();
             
-            // Load all data into modal
-            if (window.allSalesData && window.allSalesData.length > 0) {
-                updateAllSalesTable(window.allSalesData);
-            } else {
+            // Fetch all sales data for the modal
+            try {
+                const client = window.supabaseClient || supabaseClient;
+                const { data: allSalesData, error } = await client
+                    .from('order_items')
+                    .select(`
+                        quantity,
+                        orders!inner(
+                            id,
+                            total,
+                            status
+                        ),
+                        my_products!inner(
+                            id,
+                            name,
+                            category,
+                            price,
+                            user_id,
+                            users!my_products_user_id_fkey (
+                                id,
+                                municipality,
+                                store-owner!store-owner_user_id_fkey (
+                                    store_name
+                                )
+                            )
+                        )
+                    `);
+                
+                if (error) {
+                    console.error('Error fetching all sales:', error);
+                    updateAllSalesTable([]);
+                } else {
+                    // Process data similar to main function
+                    const processedData = {};
+                    allSalesData.forEach(item => {
+                        const product = item.my_products;
+                        const user = product?.users;
+                        const municipality = user?.municipality || 'Unknown';
+                        const quantity = parseInt(item.quantity) || 0;
+                        const price = parseFloat(product?.price) || 0;
+                        const totalAmount = quantity * price;
+                        
+                        if (processedData[municipality]) {
+                            processedData[municipality].totalQuantity += quantity;
+                            processedData[municipality].totalSales += totalAmount;
+                            processedData[municipality].orderCount += 1;
+                        } else {
+                            processedData[municipality] = {
+                                municipality: municipality,
+                                totalQuantity: quantity,
+                                totalSales: totalAmount,
+                                orderCount: 1
+                            };
+                        }
+                    });
+                    
+                    const salesData = Object.values(processedData).sort((a, b) => b.totalSales - a.totalSales);
+                    updateAllSalesTable(salesData);
+                }
+            } catch (error) {
+                console.error('Error in showAllSalesModal:', error);
                 updateAllSalesTable([]);
             }
         }

@@ -168,13 +168,13 @@
                         
                         <div class="table-footer">
                             <div class="table-info-section">
-                                <span class="table-info">Showing 5 of 25 violations</span>
-                                <a href="#" class="view-all" onclick="showAllViolationsModal()">View all ></a>
+                                <span class="table-info" id="violationItemsCount">Showing 5 of 25 violations</span>
+                                <a href="#" class="view-all" onclick="event.preventDefault(); showAllViolationsModal()">View all ></a>
                             </div>
                             <div class="pagination-controls">
-                                <button class="btn btn-sm btn-outline-secondary">&lt;</button>
-                                <button class="btn btn-sm btn-success">1</button>
-                                <button class="btn btn-sm btn-outline-secondary">&gt;</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(-1)">&lt;</button>
+                                <button class="btn btn-sm btn-success" id="currentPageBtn">1</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="changePage(1)">&gt;</button>
                             </div>
                         </div>
                     </div>
@@ -209,6 +209,7 @@
         // Global variables to store violations data
         let allViolationsData = [];
         let currentPage = 1;
+        let totalViolations = 0;
         const itemsPerPage = 10;
 
         // Function to load violations data from store_reports database
@@ -228,11 +229,19 @@
                 // Show loading state
                 showLoadingState();
 
-                // Fetch data from store_reports table
+                // First get total count
+                const { count } = await client
+                    .from('store_reports')
+                    .select('*', { count: 'exact', head: true });
+
+                totalViolations = count || 0;
+
+                // Fetch data from store_reports table with pagination
                 const { data: reports, error } = await client
                     .from('store_reports')
                     .select('*')
-                    .order('date', { ascending: false }); // Sort by date, newest first
+                    .order('date', { ascending: false })
+                    .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1); // Sort by date, newest first
 
                 console.log('Store reports data:', { reports, error });
 
@@ -606,13 +615,31 @@
 
         // Function to update pagination info
         function updatePaginationInfo() {
-            const totalReports = allViolationsData.length;
-            const startItem = totalReports === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-            const endItem = Math.min(currentPage * itemsPerPage, totalReports);
+            const startItem = totalViolations === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, totalViolations);
             
-            const infoElement = document.querySelector('.table-info');
+            const infoElement = document.getElementById('violationItemsCount');
             if (infoElement) {
-                infoElement.textContent = `Showing ${startItem} to ${endItem} of ${totalReports} violations`;
+                infoElement.textContent = `Showing ${startItem} to ${endItem} of ${totalViolations} violations`;
+            }
+
+            // Update current page button
+            const currentPageBtn = document.getElementById('currentPageBtn');
+            if (currentPageBtn) {
+                currentPageBtn.textContent = currentPage;
+            }
+        }
+
+        // Function to change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(totalViolations / itemsPerPage);
+            
+            if (direction === 1 && currentPage < totalPages) {
+                currentPage++;
+                loadViolationsData();
+            } else if (direction === -1 && currentPage > 1) {
+                currentPage--;
+                loadViolationsData();
             }
         }
 
@@ -643,14 +670,26 @@
         }
 
         // Function to show all violations modal
-        function showAllViolationsModal() {
+        async function showAllViolationsModal() {
             const modal = new bootstrap.Modal(document.getElementById('allViolationsModal'));
             modal.show();
             
-            // Load all data into modal
-            if (allViolationsData && allViolationsData.length > 0) {
-                updateAllViolationsTable(allViolationsData);
-            } else {
+            // Fetch all violations for the modal
+            try {
+                const client = window.supabaseClient || supabaseClient;
+                const { data: allReports, error } = await client
+                    .from('store_reports')
+                    .select('*')
+                    .order('date', { ascending: false });
+                
+                if (error) {
+                    console.error('Error fetching all violations:', error);
+                    updateAllViolationsTable([]);
+                } else {
+                    updateAllViolationsTable(allReports || []);
+                }
+            } catch (error) {
+                console.error('Error in showAllViolationsModal:', error);
                 updateAllViolationsTable([]);
             }
             

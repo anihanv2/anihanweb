@@ -256,12 +256,12 @@
                     <div class="demand-card-footer">
                         <div class="footer-left">
                             <span id="demandItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
-                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllInDemandModal()">View all &gt;</a>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="event.preventDefault(); showAllInDemandModal()">View all &gt;</a>
                         </div>
                         <div class="demand-pagination">
-                            <button class="btn">&lt;</button>
-                            <button class="btn active">1</button>
-                            <button class="btn">&gt;</button>
+                            <button class="btn" onclick="changePage(-1)">&lt;</button>
+                            <button class="btn active" id="currentPageBtn">1</button>
+                            <button class="btn" onclick="changePage(1)">&gt;</button>
                         </div>
                     </div>
                 </div>
@@ -279,6 +279,11 @@
     <script src="shared-profile.js"></script>
     <script>
         // Use Supabase client from shared-profile.js
+        
+        // Pagination variables
+        let currentPage = 1;
+        let totalDemandProducts = 0;
+        const productsPerPage = 10;
         
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -302,6 +307,13 @@
                 }
 
                 const client = window.supabaseClient || supabaseClient;
+
+                // First get total count
+                const { count } = await client
+                    .from('order_items')
+                    .select('*', { count: 'exact', head: true });
+
+                totalDemandProducts = count || 0;
 
                 // Get product sales data with store information using the same join approach as price monitoring
                 const { data: salesData, error } = await client
@@ -327,7 +339,8 @@
                                 )
                             )
                         )
-                    `);
+                    `)
+                    .range((currentPage - 1) * productsPerPage, currentPage * productsPerPage - 1);
 
                 console.log('📈 Sales data query result:', { 
                     dataCount: salesData?.length || 0, 
@@ -496,11 +509,8 @@
             // Store all data globally for modal use
             window.allInDemandProducts = demandData;
 
-            // Display first 10 items (simulate pagination)
-            const displayData = demandData.slice(0, 10);
-
-            // Generate table rows
-            const tableRows = displayData.map((item, index) => `
+            // Generate table rows (pagination handled by query)
+            const tableRows = demandData.map((item, index) => `
                 <tr>
                     <td>
                         <div class="location-info d-flex align-items-center">
@@ -512,7 +522,7 @@
                         <div class="product-info">
                             <div class="product-name fw-semibold">${item.productName}</div>
                             <small class="text-muted">${item.category}</small>
-                            ${index === 0 ? '<span class="badge bg-success ms-2"><i class="fas fa-crown"></i> Most Demanded</span>' : ''}
+                            ${index === 0 && currentPage === 1 ? '<span class="badge bg-success ms-2"><i class="fas fa-crown"></i> Most Demanded</span>' : ''}
                         </div>
                     </td>
                     <td>
@@ -526,25 +536,104 @@
 
             tableBody.innerHTML = tableRows;
 
-            // Update items count
+            // Update items count with pagination info
             if (itemsCount) {
-                const startItem = 1;
-                const endItem = Math.min(10, demandData.length);
-                itemsCount.textContent = `${startItem} to ${endItem} items of ${demandData.length}`;
+                const startItem = ((currentPage - 1) * productsPerPage) + 1;
+                const endItem = Math.min(currentPage * productsPerPage, totalDemandProducts);
+                itemsCount.textContent = `${startItem} to ${endItem} items of ${totalDemandProducts}`;
             }
 
-            console.log(`✅ Updated demand table with ${displayData.length} of ${demandData.length} records`);
+            // Update current page button
+            const currentPageBtn = document.getElementById('currentPageBtn');
+            if (currentPageBtn) {
+                currentPageBtn.textContent = currentPage;
+            }
+
+            console.log(`✅ Updated demand table with ${demandData.length} of ${totalDemandProducts} records`);
+        }
+
+        // Function to change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(totalDemandProducts / productsPerPage);
+            
+            if (direction === 1 && currentPage < totalPages) {
+                currentPage++;
+                loadInDemandProductsData();
+            } else if (direction === -1 && currentPage > 1) {
+                currentPage--;
+                loadInDemandProductsData();
+            }
         }
 
         // Function to show all in demand products modal
-        function showAllInDemandModal() {
+        async function showAllInDemandModal() {
             const modal = new bootstrap.Modal(document.getElementById('allInDemandModal'));
             modal.show();
             
-            // Load all data into modal
-            if (window.allInDemandProducts && window.allInDemandProducts.length > 0) {
-                updateAllInDemandTable(window.allInDemandProducts);
-            } else {
+            // Fetch all products for the modal
+            try {
+                const client = window.supabaseClient || supabaseClient;
+                const { data: allSalesData, error } = await client
+                    .from('order_items')
+                    .select(`
+                        quantity,
+                        orders!inner(
+                            id,
+                            total,
+                            status
+                        ),
+                        my_products!inner(
+                            id,
+                            name,
+                            category,
+                            price,
+                            user_id,
+                            users!my_products_user_id_fkey (
+                                id,
+                                municipality,
+                                store-owner!store-owner_user_id_fkey (
+                                    store_name
+                                )
+                            )
+                        )
+                    `);
+                
+                if (error) {
+                    console.error('Error fetching all products:', error);
+                    updateAllInDemandTable([]);
+                } else {
+                    // Process data similar to main function
+                    const processedData = {};
+                    allSalesData.forEach(item => {
+                        const product = item.my_products;
+                        const user = product?.users;
+                        const storeOwner = user?.['store-owner']?.[0];
+                        const storeName = storeOwner?.store_name || 'Unknown Store';
+                        const municipality = user?.municipality || 'Unknown Location';
+                        const productName = product?.name || 'Unknown Product';
+                        const quantity = parseInt(item.quantity) || 0;
+                        const key = `${municipality}-${productName}`;
+                        
+                        if (processedData[key]) {
+                            processedData[key].quantity += quantity;
+                            processedData[key].orderCount += 1;
+                        } else {
+                            processedData[key] = {
+                                municipality: municipality,
+                                productName: productName,
+                                category: product?.category || 'Unknown',
+                                quantity: quantity,
+                                orderCount: 1,
+                                storeName: storeName,
+                            };
+                        }
+                    });
+                    
+                    const demandData = Object.values(processedData).sort((a, b) => b.quantity - a.quantity);
+                    updateAllInDemandTable(demandData);
+                }
+            } catch (error) {
+                console.error('Error in showAllInDemandModal:', error);
                 updateAllInDemandTable([]);
             }
         }

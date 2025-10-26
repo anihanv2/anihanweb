@@ -208,12 +208,12 @@
                     <div class="voucher-card-footer">
                         <div class="footer-left">
                             <span id="voucherItemsCount" style="color:#495057;font-size:0.95rem;">0 to 0 items of 0</span>
-                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="showAllVouchersModal()">View all &gt;</a>
+                            <a href="#" style="color:#2563eb;font-size:0.95rem;margin-left:1rem;" onclick="event.preventDefault(); showAllVouchersModal()">View all &gt;</a>
                         </div>
                         <div class="voucher-pagination">
-                            <button class="btn">&lt;</button>
-                            <button class="btn active">1</button>
-                            <button class="btn">&gt;</button>
+                            <button class="btn" onclick="changePage(-1)">&lt;</button>
+                            <button class="btn active" id="currentPageBtn">1</button>
+                            <button class="btn" onclick="changePage(1)">&gt;</button>
                         </div>
                     </div>
                 </div>
@@ -232,6 +232,11 @@
     <script>
         // Initialize Supabase client
         let voucherSupabaseClient;
+        
+        // Pagination variables
+        let currentPage = 1;
+        let totalVouchers = 0;
+        const vouchersPerPage = 10;
         
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -277,11 +282,19 @@
             try {
                 console.log('🔍 Fetching voucher data...');
                 
-                // Fetch all vouchers ordered by created_at descending (newest first)
+                // First get total count
+                const { count } = await voucherSupabaseClient
+                    .from('vouchers')
+                    .select('*', { count: 'exact', head: true });
+
+                totalVouchers = count || 0;
+                
+                // Fetch vouchers with pagination ordered by created_at descending (newest first)
                 const { data: vouchers, error } = await voucherSupabaseClient
                     .from('vouchers')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('created_at', { ascending: false })
+                    .range((currentPage - 1) * vouchersPerPage, currentPage * vouchersPerPage - 1);
                 
                 if (error) {
                     throw error;
@@ -319,11 +332,8 @@
             // Store all vouchers globally for modal use
             window.allVouchers = vouchers;
 
-            // Display first 10 items (simulate pagination)
-            const displayVouchers = vouchers.slice(0, 10);
-            
-            // Generate table rows
-            const rows = displayVouchers.map(voucher => {
+            // Generate table rows (pagination handled by query)
+            const rows = vouchers.map(voucher => {
                 const createdDate = new Date(voucher.created_at).toLocaleDateString();
                 const endDate = new Date(voucher.date_end).toLocaleDateString();
                 const currentDate = new Date();
@@ -371,23 +381,53 @@
             
             tableBody.innerHTML = rows;
 
-            // Update items count
+            // Update items count with pagination info
             if (itemsCount) {
-                const startItem = 1;
-                const endItem = Math.min(10, vouchers.length);
-                itemsCount.textContent = `${startItem} to ${endItem} items of ${vouchers.length}`;
+                const startItem = ((currentPage - 1) * vouchersPerPage) + 1;
+                const endItem = Math.min(currentPage * vouchersPerPage, totalVouchers);
+                itemsCount.textContent = `${startItem} to ${endItem} items of ${totalVouchers}`;
+            }
+
+            // Update current page button
+            const currentPageBtn = document.getElementById('currentPageBtn');
+            if (currentPageBtn) {
+                currentPageBtn.textContent = currentPage;
+            }
+        }
+
+        // Function to change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(totalVouchers / vouchersPerPage);
+            
+            if (direction === 1 && currentPage < totalPages) {
+                currentPage++;
+                loadVoucherData();
+            } else if (direction === -1 && currentPage > 1) {
+                currentPage--;
+                loadVoucherData();
             }
         }
 
         // Function to show all vouchers modal
-        function showAllVouchersModal() {
+        async function showAllVouchersModal() {
             const modal = new bootstrap.Modal(document.getElementById('allVouchersModal'));
             modal.show();
             
-            // Load all data into modal
-            if (window.allVouchers && window.allVouchers.length > 0) {
-                updateAllVouchersTable(window.allVouchers);
-            } else {
+            // Fetch all vouchers for the modal
+            try {
+                const { data: allVouchers, error } = await voucherSupabaseClient
+                    .from('vouchers')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    console.error('Error fetching all vouchers:', error);
+                    updateAllVouchersTable([]);
+                } else {
+                    updateAllVouchersTable(allVouchers || []);
+                }
+            } catch (error) {
+                console.error('Error in showAllVouchersModal:', error);
                 updateAllVouchersTable([]);
             }
         }
