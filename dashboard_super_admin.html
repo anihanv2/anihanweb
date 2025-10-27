@@ -2287,8 +2287,142 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
         // Export functions for communities
         function exportAllCommunities(format) {
             console.log(`Exporting all communities as ${format}`);
-            // Implementation for CSV/PDF export would go here
-            alert(`Community export in ${format.toUpperCase()} format - Feature coming soon!`);
+            
+            if (!window.allCommunityData || window.allCommunityData.length === 0) {
+                alert('No community data available to export');
+                return;
+            }
+
+            if (format === 'csv') {
+                exportCommunitiesToCSV();
+            } else if (format === 'pdf') {
+                exportCommunitiesToPDF();
+            }
+        }
+
+        function exportCommunitiesToCSV() {
+            const headers = ['Community Name', 'Members', 'Created Date', 'Created By'];
+            const rows = window.allCommunityData.map(community => {
+                const createdDate = new Date(community.created_at).toLocaleDateString();
+                const creatorName = community.users?.full_name || 'Admin';
+                return [
+                    community.name,
+                    community.memberCount,
+                    createdDate,
+                    creatorName
+                ];
+            });
+
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csvContent += row.map(cell => {
+                    // Escape quotes and wrap in quotes if contains comma
+                    const cellStr = String(cell);
+                    if (cellStr.includes(',') || cellStr.includes('"')) {
+                        return '"' + cellStr.replace(/"/g, '""') + '"';
+                    }
+                    return cellStr;
+                }).join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            const date = new Date().toISOString().split('T')[0];
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `all_communities_${date}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log('✅ Communities exported to CSV successfully');
+        }
+
+        function exportCommunitiesToPDF() {
+            // Create a temporary table for PDF export
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Community Name</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Members</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Created Date</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Created By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${window.allCommunityData.map(community => {
+                            const createdDate = new Date(community.created_at).toLocaleDateString();
+                            const creatorName = community.users?.full_name || 'Admin';
+                            return `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${community.name}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${community.memberCount}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${createdDate}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${creatorName}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.body.appendChild(tempDiv);
+
+            const table = tempDiv.querySelector('table');
+            
+            html2canvas(table, {
+                scale: 2,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                
+                // Add title
+                pdf.setFontSize(16);
+                pdf.text('Community Engagement Analytics', 14, 15);
+                
+                // Add date
+                pdf.setFontSize(10);
+                const date = new Date().toLocaleDateString();
+                pdf.text(`Generated: ${date}`, 14, 22);
+                
+                // Calculate dimensions
+                const imgWidth = 180;
+                const pageHeight = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 30;
+
+                // Add image to PDF
+                pdf.addImage(imgData, 'PNG', 14, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - position);
+
+                // Add new pages if content is too long
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight + 30;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 14, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                // Save PDF
+                const dateStr = new Date().toISOString().split('T')[0];
+                pdf.save(`all_communities_${dateStr}.pdf`);
+                
+                // Clean up
+                document.body.removeChild(tempDiv);
+                console.log('✅ Communities exported to PDF successfully');
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                document.body.removeChild(tempDiv);
+                alert('Error generating PDF. Please try again.');
+            });
         }
 
         // Search functionality for municipality modal
@@ -3099,87 +3233,108 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
 
         // Function to export users to PDF
         function exportUsersToPDF() {
-            // Create a temporary table for PDF export
-            const tempTable = document.createElement('table');
-            tempTable.style.width = '100%';
-            tempTable.style.borderCollapse = 'collapse';
+            // Create a temporary div with table for PDF export
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+                    <thead>
+                        <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Name</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Email</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Contact</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Role</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Date Joined</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${window.allUsersData.map(user => {
+                            const dateJoined = user.created_at ? 
+                                new Date(user.created_at).toLocaleDateString('en-US') : 'N/A';
+                            
+                            let role = 'User';
+                            if (user.user_type) {
+                                role = user.user_type;
+                            } else if (user.role) {
+                                role = user.role;
+                            } else if (user.is_admin) {
+                                role = 'Admin';
+                            }
+
+                            let status = 'Active';
+                            if (user.is_active === false) {
+                                status = 'Inactive';
+                            } else if (user.email_verified === false) {
+                                status = 'Unverified';
+                            }
+
+                            return `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${user.full_name || user.name || user.email || 'N/A'}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${user.email || 'N/A'}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${user.phone_number || user.phone || 'N/A'}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${role}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${dateJoined}</td>
+                                    <td style="padding: 10px; border: 1px solid #dee2e6;">${status}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.body.appendChild(tempDiv);
+
+            const table = tempDiv.querySelector('table');
             
-            const headers = ['Name', 'Email', 'Contact', 'Role', 'Date Joined', 'Status'];
-            const thead = tempTable.createTHead();
-            const headerRow = thead.insertRow();
-            headers.forEach(header => {
-                const th = document.createElement('th');
-                th.textContent = header;
-                th.style.border = '1px solid #ddd';
-                th.style.padding = '8px';
-                th.style.backgroundColor = '#f5f5f5';
-                headerRow.appendChild(th);
-            });
-
-            const tbody = tempTable.createTBody();
-            window.allUsersData.forEach(user => {
-                const row = tbody.insertRow();
-                
-                const dateJoined = user.created_at ? 
-                    new Date(user.created_at).toLocaleDateString('en-US') : 'N/A';
-                
-                let role = 'User';
-                if (user.user_type) {
-                    role = user.user_type;
-                } else if (user.role) {
-                    role = user.role;
-                } else if (user.is_admin) {
-                    role = 'Admin';
-                }
-
-                let status = 'Active';
-                if (user.is_active === false) {
-                    status = 'Inactive';
-                } else if (user.email_verified === false) {
-                    status = 'Unverified';
-                }
-
-                const data = [
-                    user.full_name || user.name || user.email || 'N/A',
-                    user.email || 'N/A',
-                    user.phone_number || user.phone || 'N/A',
-                    role,
-                    dateJoined,
-                    status
-                ];
-
-                data.forEach(cellData => {
-                    const td = row.insertCell();
-                    td.textContent = cellData;
-                    td.style.border = '1px solid #ddd';
-                    td.style.padding = '8px';
-                });
-            });
-
-            // Use html2canvas and jsPDF to create PDF
-            html2canvas(tempTable).then(canvas => {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF();
-                
+            html2canvas(table, {
+                scale: 2,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
-                const imgWidth = 210;
-                const pageHeight = 295;
+                const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // Landscape for more columns
+                
+                // Add title
+                pdf.setFontSize(16);
+                pdf.text('All Users Report', 14, 15);
+                
+                // Add date
+                pdf.setFontSize(10);
+                const date = new Date().toLocaleDateString();
+                pdf.text(`Generated: ${date}`, 14, 22);
+                
+                // Calculate dimensions (landscape A4: 297mm x 210mm)
+                const imgWidth = 270;
+                const pageHeight = 210;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
                 let heightLeft = imgHeight;
-                
-                let position = 0;
-                
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-                
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
+                let position = 30;
+
+                // Add image to PDF
+                pdf.addImage(imgData, 'PNG', 14, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - position);
+
+                // Add new pages if content is too long
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight + 30;
                     pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    pdf.addImage(imgData, 'PNG', 14, position, imgWidth, imgHeight);
                     heightLeft -= pageHeight;
                 }
+
+                // Save PDF
+                const dateStr = new Date().toISOString().split('T')[0];
+                pdf.save(`all_users_${dateStr}.pdf`);
                 
-                pdf.save(`all_users_${new Date().toISOString().split('T')[0]}.pdf`);
+                // Clean up
+                document.body.removeChild(tempDiv);
+                console.log('✅ Users exported to PDF successfully');
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                document.body.removeChild(tempDiv);
+                alert('Error generating PDF. Please try again.');
             });
         }
 
