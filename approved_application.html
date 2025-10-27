@@ -291,7 +291,7 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-striped">
-                            <thead>
+                            <thead class="table-success">
                                 <tr>
                                     <th>Store Name</th>
                                     <th>Municipality</th>
@@ -311,6 +311,14 @@
                         <div>
                             <span id="allApplicationsCount">0 applications found</span>
                         </div>
+                        <div>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAllApplications('csv')">
+                                <i class="fas fa-file-csv me-1"></i>Export CSV
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="exportAllApplications('pdf')">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -324,6 +332,8 @@
 
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Add Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Shared Profile System -->
@@ -752,6 +762,172 @@
                 dropdown.classList.remove('show');
             }
         });
+
+        // Export all applications functions
+        function exportAllApplications(format) {
+            if (!allApplicationsData || allApplicationsData.length === 0) {
+                alert('No applications to export');
+                return;
+            }
+
+            if (format === 'csv') {
+                exportApplicationsToCSV();
+            } else if (format === 'pdf') {
+                exportApplicationsToPDF();
+            }
+        }
+
+        // Export to CSV
+        function exportApplicationsToCSV() {
+            const headers = ['Store Name', 'Municipality', 'Status', 'Date Processed', 'Crops Type', 'Land Size', 'Operation Time'];
+            const rows = allApplicationsData.map(app => {
+                const municipality = app.users?.municipality || app.users?.Municipality || 'N/A';
+                const statusText = app.status === 'accepted' ? 'Accepted' : 'Declined';
+                const formattedDate = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A';
+                const landSize = app.land_size ? `${app.land_size} ha` : 'N/A';
+                
+                return [
+                    app.store_name || 'N/A',
+                    municipality,
+                    statusText,
+                    formattedDate,
+                    app.crops_type || 'N/A',
+                    landSize,
+                    app.operation_time || 'N/A'
+                ];
+            });
+
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csvContent += row.map(cell => {
+                    const cellStr = String(cell);
+                    if (cellStr.includes(',') || cellStr.includes('"')) {
+                        return '"' + cellStr.replace(/"/g, '""') + '"';
+                    }
+                    return cellStr;
+                }).join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            const date = new Date().toISOString().split('T')[0];
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `approved_applications_${date}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log('✅ Applications exported to CSV successfully');
+        }
+
+        // Export to PDF
+        function exportApplicationsToPDF() {
+            if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+                alert('PDF export library not loaded. Please refresh the page and try again.');
+                return;
+            }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.width = '1200px';
+            tempDiv.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px;">
+                    <thead>
+                        <tr style="background-color: #198754; color: white; border-bottom: 2px solid #146c43;">
+                            <th style="padding: 10px; text-align: left; border: 1px solid #146c43;">Store Name</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #146c43;">Municipality</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #146c43;">Status</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #146c43;">Date Processed</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #146c43;">Crops Type</th>
+                            <th style="padding: 10px; text-align: left; border: 1px solid #146c43;">Land Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allApplicationsData.map((app, index) => {
+                            const municipality = app.users?.municipality || app.users?.Municipality || 'N/A';
+                            const statusText = app.status === 'accepted' ? 'Accepted' : 'Declined';
+                            const formattedDate = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A';
+                            const landSize = app.land_size ? `${app.land_size} ha` : 'N/A';
+                            const bgColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
+                            const statusColor = app.status === 'accepted' ? '#198754' : '#dc3545';
+                            
+                            return `
+                                <tr style="background-color: ${bgColor};">
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">${app.store_name || 'N/A'}</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">${municipality}</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6; color: ${statusColor}; font-weight: bold;">${statusText}</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">${formattedDate}</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">${app.crops_type || 'N/A'}</td>
+                                    <td style="padding: 8px; border: 1px solid #dee2e6;">${landSize}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.body.appendChild(tempDiv);
+
+            const table = tempDiv.querySelector('table');
+            
+            html2canvas(table, {
+                scale: 2,
+                logging: false,
+                backgroundColor: '#ffffff',
+                useCORS: true
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                
+                pdf.setFontSize(18);
+                pdf.setTextColor(25, 135, 84);
+                pdf.text('Approved Applications Report', 14, 15);
+                
+                pdf.setFontSize(11);
+                pdf.setTextColor(100, 100, 100);
+                const date = new Date().toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                pdf.text(`Generated: ${date}`, 14, 22);
+                pdf.text(`Total Applications: ${allApplicationsData.length}`, 14, 28);
+                
+                const pageWidth = 297;
+                const pageHeight = 210;
+                const imgWidth = 270;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 35;
+
+                pdf.addImage(imgData, 'PNG', 14, position, imgWidth, imgHeight);
+                heightLeft -= (pageHeight - position - 10);
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight + 10;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 14, position, imgWidth, imgHeight);
+                    heightLeft -= (pageHeight - 20);
+                }
+
+                const dateStr = new Date().toISOString().split('T')[0];
+                pdf.save(`approved_applications_${dateStr}.pdf`);
+                
+                document.body.removeChild(tempDiv);
+                console.log('✅ Applications exported to PDF successfully');
+                
+            }).catch(error => {
+                console.error('Error generating PDF:', error);
+                if (document.body.contains(tempDiv)) {
+                    document.body.removeChild(tempDiv);
+                }
+                alert('Error generating PDF. Please try again. Error: ' + error.message);
+            });
+        }
 
         // Mobile sidebar functions - CSS only, no duplicate positioning
         function toggleMobileSidebar() {

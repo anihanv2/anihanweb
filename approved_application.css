@@ -444,13 +444,13 @@ body {
 
 /* Modal Styles */
 .modal-header {
-    background-color: #007bff;
-    color: white;
-    border-bottom: none;
+    background-color: #ffffff;
+    color: #212529;
+    border-bottom: 1px solid #dee2e6;
 }
 
 .modal-header .btn-close {
-    filter: invert(1);
+    filter: none;
 }
 
 .modal-title {
