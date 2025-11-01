@@ -165,7 +165,7 @@
                     <div class="col-12">
                         <div class="approval-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><b>Processed Applications</b></h5>
+                                <h5 class="mb-0"><b>Processed User Applications</b></h5>
                                 <!-- Search Bar and Filter -->
                                 <div class="d-flex gap-2">
                                     <select class="form-select form-select-sm" id="statusFilter" onchange="filterByStatus()">
@@ -184,8 +184,9 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th>Store Name</th>
+                                                <th>Full Name</th>
                                                 <th>Municipality</th>
+                                                <th>Password</th>
                                                 <th>Status</th>
                                                 <th>Date Processed</th>
                                                 <th>Actions</th>
@@ -226,26 +227,34 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="detail-group">
-                                <label class="detail-label">Store Name:</label>
-                                <p class="detail-value" id="modalStoreName">-</p>
-                            </div>
-                            <div class="detail-group">
-                                <label class="detail-label">Owner Name:</label>
-                                <p class="detail-value" id="modalOwnerName">-</p>
+                                <label class="detail-label">Full Name:</label>
+                                <p class="detail-value" id="modalFullName">-</p>
                             </div>
                             <div class="detail-group">
                                 <label class="detail-label">Email:</label>
                                 <p class="detail-value" id="modalEmail">-</p>
                             </div>
                             <div class="detail-group">
-                                <label class="detail-label">Phone:</label>
+                                <label class="detail-label">Phone Number:</label>
                                 <p class="detail-value" id="modalPhone">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Password:</label>
+                                <p class="detail-value" id="modalPassword" style="font-family: monospace; color: #333;">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Municipality:</label>
+                                <p class="detail-value" id="modalMunicipality">-</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="detail-group">
-                                <label class="detail-label">Municipality:</label>
-                                <p class="detail-value" id="modalMunicipality">-</p>
+                                <label class="detail-label">Barangay:</label>
+                                <p class="detail-value" id="modalBarangay">-</p>
+                            </div>
+                            <div class="detail-group">
+                                <label class="detail-label">Address:</label>
+                                <p class="detail-value" id="modalAddress">-</p>
                             </div>
                             <div class="detail-group">
                                 <label class="detail-label">Status:</label>
@@ -255,17 +264,16 @@
                                 <label class="detail-label">Date Processed:</label>
                                 <p class="detail-value" id="modalDate">-</p>
                             </div>
-                            <div class="detail-group">
-                                <label class="detail-label">Application ID:</label>
-                                <p class="detail-value" id="modalAppId">-</p>
-                            </div>
                         </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
                             <div class="detail-group">
-                                <label class="detail-label">Address:</label>
-                                <p class="detail-value" id="modalAddress">-</p>
+                                <label class="detail-label">Indigency Certificate:</label>
+                                <div class="border rounded p-3 bg-light text-center">
+                                    <img id="modal_certificate_image_approved" src="" alt="Certificate" style="max-width: 100%; max-height: 500px; display: none;" class="rounded">
+                                    <p id="modal_certificate_placeholder_approved" class="text-muted mb-0">No certificate uploaded</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -366,14 +374,15 @@
                 
                 console.log('Supabase client:', window.supabaseClient);
                 
-                // Get all applications that have been processed (accepted or declined)
-                const { data: processedApps, error } = await window.supabaseClient
-                    .from('store-owner')
-                    .select('id, store_name, status, created_at, user_id')
-                    .in('status', ['accepted', 'declined']);
+                // Get all users that have been processed (accepted or declined)
+                const { data: processedUsers, error } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .in('status', ['accepted', 'declined'])
+                    .order('created_at', { ascending: false });
 
-                console.log('Processed applications query - Error:', error);
-                console.log('Processed applications query - Data:', processedApps);
+                console.log('Processed users query - Error:', error);
+                console.log('Processed users query - Data:', processedUsers);
 
                 const tableBody = document.getElementById('approvedApplicationsTableBody');
                 if (!tableBody) {
@@ -393,7 +402,7 @@
                     return;
                 }
 
-                if (!processedApps || processedApps.length === 0) {
+                if (!processedUsers || processedUsers.length === 0) {
                     console.log('No processed applications found');
                     tableBody.innerHTML = `
                         <tr>
@@ -403,33 +412,10 @@
                     return;
                 }
 
-                console.log(`Found ${processedApps.length} processed applications`);
-
-                // Get user data for each application
-                const applicationsWithUsers = [];
-                for (const app of processedApps) {
-                    try {
-                        const { data: userData, error: userError } = await window.supabaseClient
-                            .from('users')
-                            .select('*')
-                            .eq('id', app.user_id)
-                            .single();
-
-                        applicationsWithUsers.push({
-                            ...app,
-                            users: userError ? null : userData
-                        });
-                    } catch (userErr) {
-                        console.log('Could not get user data for application:', app.id);
-                        applicationsWithUsers.push({
-                            ...app,
-                            users: null
-                        });
-                    }
-                }
+                console.log(`Found ${processedUsers.length} processed applications`);
 
                 // Store data globally for filtering
-                allApplicationsData = applicationsWithUsers;
+                allApplicationsData = processedUsers;
 
                 // Display the data
                 displayApplications(allApplicationsData);
@@ -468,20 +454,41 @@
                 const statusText = app.status === 'accepted' ? 'Accepted' : 'Declined';
                 const formattedDate = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A';
                 
-                // Check what municipality field exists
-                let municipalityDisplay = 'No Municipality Data';
-                if (app.users) {
-                    municipalityDisplay = app.users.municipality || 
-                                        app.users.Municipality || 
-                                        app.users.city || 
-                                        app.users.location || 
-                                        'No Municipality Data';
+                // Get password from password_encrypted or password_hash field
+                let password = 'N/A';
+                
+                // Priority 1: Try password_encrypted (format: "base64_password:hash")
+                if (app.password_encrypted && typeof app.password_encrypted === 'string' && app.password_encrypted.trim() !== '') {
+                    try {
+                        const parts = app.password_encrypted.split(':');
+                        if (parts.length >= 2) {
+                            const base64Part = parts[0];
+                            password = decodeURIComponent(escape(atob(base64Part)));
+                        } else {
+                            password = decodeURIComponent(escape(atob(app.password_encrypted)));
+                        }
+                    } catch (e) {
+                        console.error('Error decrypting password_encrypted:', e);
+                    }
+                }
+                
+                // Priority 2: Try password_hash field (format: "plaintext_password:hash")
+                if (password === 'N/A' && app.password_hash && typeof app.password_hash === 'string' && app.password_hash.trim() !== '') {
+                    if (app.password_hash.includes(':')) {
+                        // Password is stored as "password:hash" - take the first part (plain text)
+                        const parts = app.password_hash.split(':');
+                        password = parts[0];
+                    } else {
+                        // No colon separator, use the whole value
+                        password = app.password_hash;
+                    }
                 }
                 
                 return `
                     <tr>
-                        <td data-label="Store Name">${app.store_name || 'N/A'}</td>
-                        <td data-label="Municipality">${municipalityDisplay}</td>
+                        <td data-label="Full Name">${app.full_name || 'N/A'}</td>
+                        <td data-label="Municipality">${app.municipality || 'N/A'}</td>
+                        <td data-label="Password"><span style="font-family: monospace; color: #333;">${password}</span></td>
                         <td data-label="Status"><span class="badge ${statusClass}">${statusText}</span></td>
                         <td data-label="Date Processed">${formattedDate}</td>
                         <td data-label="Actions">
@@ -509,13 +516,10 @@
             // Apply search filter
             if (searchTerm) {
                 filteredData = filteredData.filter(app => 
-                    (app.store_name && app.store_name.toLowerCase().includes(searchTerm)) ||
-                    (app.users && (
-                        app.users.municipality?.toLowerCase().includes(searchTerm) ||
-                        app.users.Municipality?.toLowerCase().includes(searchTerm) ||
-                        app.users.city?.toLowerCase().includes(searchTerm) ||
-                        app.users.location?.toLowerCase().includes(searchTerm)
-                    ))
+                    (app.full_name && app.full_name.toLowerCase().includes(searchTerm)) ||
+                    (app.email && app.email.toLowerCase().includes(searchTerm)) ||
+                    (app.municipality && app.municipality.toLowerCase().includes(searchTerm)) ||
+                    (app.barangay && app.barangay.toLowerCase().includes(searchTerm))
                 );
             }
             
@@ -537,13 +541,10 @@
             // Apply search filter
             if (searchTerm) {
                 filteredData = filteredData.filter(app => 
-                    (app.store_name && app.store_name.toLowerCase().includes(searchTerm)) ||
-                    (app.users && (
-                        app.users.municipality?.toLowerCase().includes(searchTerm) ||
-                        app.users.Municipality?.toLowerCase().includes(searchTerm) ||
-                        app.users.city?.toLowerCase().includes(searchTerm) ||
-                        app.users.location?.toLowerCase().includes(searchTerm)
-                    ))
+                    (app.full_name && app.full_name.toLowerCase().includes(searchTerm)) ||
+                    (app.email && app.email.toLowerCase().includes(searchTerm)) ||
+                    (app.municipality && app.municipality.toLowerCase().includes(searchTerm)) ||
+                    (app.barangay && app.barangay.toLowerCase().includes(searchTerm))
                 );
             }
             
@@ -560,40 +561,65 @@
             
             const statusText = app.status === 'accepted' ? 'Accepted' : 'Declined';
             
-            // Check what municipality field exists
-            let municipality = 'Not specified';
-            let userName = 'Not specified';
-            let email = 'Not specified';
-            let phone = 'Not specified';
-            let address = 'Not specified';
+            // Populate modal with data
+            document.getElementById('modalFullName').textContent = app.full_name || 'Not specified';
+            document.getElementById('modalEmail').textContent = app.email || 'Not specified';
+            document.getElementById('modalPhone').textContent = app.phone_number || 'Not specified';
             
-            if (app.users) {
-                municipality = app.users.municipality || 
-                             app.users.Municipality || 
-                             app.users.city || 
-                             app.users.location || 
-                             'Not specified';
-                             
-                userName = app.users.name || 
-                          app.users.full_name || 
-                          app.users.username || 
-                          'Not specified';
-                          
-                email = app.users.email || 'Not specified';
-                phone = app.users.phone || app.users.phone_number || 'Not specified';
-                address = app.users.address || app.users.full_address || 'Not specified';
+            // Get password from password_encrypted or password_hash field
+            let password = 'Not specified';
+            
+            // Priority 1: Try password_encrypted (format: "base64_password:hash")
+            if (app.password_encrypted && typeof app.password_encrypted === 'string' && app.password_encrypted.trim() !== '') {
+                try {
+                    const parts = app.password_encrypted.split(':');
+                    if (parts.length >= 2) {
+                        const base64Part = parts[0];
+                        password = decodeURIComponent(escape(atob(base64Part)));
+                    } else {
+                        password = decodeURIComponent(escape(atob(app.password_encrypted)));
+                    }
+                } catch (e) {
+                    console.error('Error decrypting password_encrypted:', e);
+                }
             }
             
-            // Populate modal with data
-            document.getElementById('modalStoreName').textContent = app.store_name || 'Not specified';
-            document.getElementById('modalOwnerName').textContent = userName;
-            document.getElementById('modalEmail').textContent = email;
-            document.getElementById('modalPhone').textContent = phone;
-            document.getElementById('modalMunicipality').textContent = municipality;
+            // Priority 2: Try password_hash field (format: "plaintext_password:hash")
+            if (password === 'Not specified' && app.password_hash && typeof app.password_hash === 'string' && app.password_hash.trim() !== '') {
+                if (app.password_hash.includes(':')) {
+                    // Password is stored as "password:hash" - take the first part (plain text)
+                    const parts = app.password_hash.split(':');
+                    password = parts[0];
+                } else {
+                    // No colon separator, use the whole value
+                    password = app.password_hash;
+                }
+            }
+            
+            document.getElementById('modalPassword').textContent = password;
+            document.getElementById('modalMunicipality').textContent = app.municipality || 'Not specified';
+            document.getElementById('modalBarangay').textContent = app.barangay || 'Not specified';
+            document.getElementById('modalAddress').textContent = app.address || 'Not specified';
             document.getElementById('modalStatus').textContent = statusText;
             document.getElementById('modalDate').textContent = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'Not specified';
-            document.getElementById('modalAppId').textContent = app.id;
-            document.getElementById('modalAddress').textContent = address;
+            
+            // Handle indigency certificate image
+            const certificateImage = document.getElementById('modal_certificate_image_approved');
+            const certificatePlaceholder = document.getElementById('modal_certificate_placeholder_approved');
+            
+            if (app.indigency_certificate_base64) {
+                // Check if it's already a data URL or just base64
+                const imageData = app.indigency_certificate_base64.startsWith('data:') 
+                    ? app.indigency_certificate_base64 
+                    : `data:image/jpeg;base64,${app.indigency_certificate_base64}`;
+                
+                certificateImage.src = imageData;
+                certificateImage.style.display = 'block';
+                certificatePlaceholder.style.display = 'none';
+            } else {
+                certificateImage.style.display = 'none';
+                certificatePlaceholder.style.display = 'block';
+            }
             
             // Update modal status badge styling
             const statusElement = document.getElementById('modalStatus');

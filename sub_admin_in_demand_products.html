@@ -72,32 +72,60 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="sidebar">
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="municipality_dashboard.html">
+            <div class="col-md-3 col-lg-2 sidebar bg-white border-end">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link d-flex align-items-center text-start" href="municipality_dashboard.html">
                         <i class="fas fa-tachometer-alt me-2"></i>
                         Dashboard
                     </a>
-                    <a class="nav-link" href="sub_admin_inventory.html">
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="sub_admin_inventory.html">
                         <i class="fas fa-boxes me-2"></i>
                         Inventory Records
                     </a>
-                    <a class="nav-link" href="sub_admin_price_monitoring.html">
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="sub_admin_price_monitoring.html">
                         <i class="fas fa-dollar-sign me-2"></i>
                         Price Monitoring
                     </a>
-                    <a class="nav-link active" href="sub_admin_in_demand_products.html">
+                    
+                    <a class="nav-link active d-flex align-items-center text-start" href="sub_admin_in_demand_products.html">
                         <i class="fas fa-chart-line me-2"></i>
                         In Demand Products
                     </a>
-                </nav>
+                    
+                    <!-- Account Approval Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#accountApprovalSubmenu" 
+                                aria-expanded="false" aria-controls="accountApprovalSubmenu">
+                            <span>
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Account Approval
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse" id="accountApprovalSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="sub_admin_for_approval.html">
+                                    <i class="fas fa-user-clock me-2"></i>
+                                    For Approval
+                                </a>
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="sub_admin_approved_application.html">
+                                    <i class="fas fa-user-check me-2"></i>
+                                    Approved Applications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Sidebar overlay for mobile -->
             <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
             <!-- Main Content -->
-            <div class="main-content">
+            <div class="col-md-9 col-lg-10 main-content">
                 <!-- Demand Card -->
                 <div class="card demand-card">
                     <!-- Card Header -->

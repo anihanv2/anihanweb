@@ -305,16 +305,16 @@
         .chart-container {
             position: relative;
             width: 100%;
-            min-height: 300px;
-            height: 350px;
-            overflow: hidden;
+            height: 400px;
+            max-height: 400px;
+            padding: 15px;
+            overflow: visible;
         }
 
         .chart-container canvas {
-            width: 100%;
-            max-width: 100%;
-            height: 100%;
-            min-height: 300px;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            height: auto !important;
         }
 
         /* Analytics Card Styling */
@@ -324,7 +324,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             margin-bottom: 24px;
-            min-height: 450px;
+            min-height: 500px;
         }
 
         .analytics-card .card-header {
@@ -335,6 +335,13 @@
 
         .analytics-card .card-body {
             padding: 20px;
+            overflow: hidden;
+        }
+        
+        /* Ensure charts fit properly in their containers */
+        .analytics-card canvas {
+            display: block;
+            box-sizing: border-box;
         }
 
         /* Total Sales Display */
@@ -577,7 +584,7 @@
                                 <h5>Stocks Analytics</h5>
                                 <div class="chart-controls">
                                     <select class="form-select form-select-sm me-2" id="stocksFilter" style="width: 100px;">
-                                        <option value="category">Category</option>
+                                        <option value="name">Name</option>
                                         <option value="status">Status</option>
                                     </select>
                                     <div class="dropdown">
@@ -687,6 +694,48 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Crop Insight Analytics -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="analytics-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Crop Insight - Harvest vs Overproduction</h5>
+                                <div class="chart-controls">
+                                    <select class="form-select form-select-sm me-2" id="cropInsightFilter" style="width: 150px;" onchange="updateCropInsightChart(this.value)">
+                                        <option value="all">All Crops</option>
+                                        <option value="top10">Top 10 Crops</option>
+                                        <option value="overproduced">Overproduced Only</option>
+                                    </select>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-bars"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="console.log('CSV clicked'); exportChart('cropInsight', 'csv');">
+                                                <i class="fas fa-file-csv me-2"></i>Save as CSV
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="console.log('PDF clicked'); exportChart('cropInsight', 'pdf');">
+                                                <i class="fas fa-file-pdf me-2"></i>Save as PDF
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="console.log('Word clicked'); exportChart('cropInsight', 'word');">
+                                                <i class="fas fa-file-word me-2"></i>Save as Word
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0);" onclick="console.log('Picture clicked'); exportChart('cropInsight', 'picture');">
+                                                <i class="fas fa-image me-2"></i>Save as Picture
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="cropInsightChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Top Municipality in terms of Sales Table -->
                 <div class="row mb-4">
@@ -779,6 +828,7 @@
                                                 <th>Name</th>
                                                 <th>Email</th>
                                                 <th>Contact Number</th>
+                                                <th>Password</th>
                                             </tr>
                                         </thead>
                                         <tbody id="usersTableBody">
@@ -824,11 +874,12 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Contact Number</th>
+                                    <th>Password</th>
                                 </tr>
                             </thead>
                             <tbody id="allUsersTableBody">
                                 <tr>
-                                    <td colspan="3" class="text-center">Loading users...</td>
+                                    <td colspan="4" class="text-center">Loading users...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -960,6 +1011,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <!-- Add Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Add CryptoJS for MD5 hashing -->
@@ -1355,17 +1407,19 @@
                     return;
                 }
 
-                // First get total count
+                // First get total count (only accepted users)
                 const { count } = await supabaseClient
                     .from('users')
-                    .select('*', { count: 'exact', head: true });
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'accepted');
 
                 totalUsers = count || 0;
 
-                // Fetch users from the users table with pagination
+                // Fetch users from the users table with pagination (only accepted users)
                 const { data: users, error } = await supabaseClient
                     .from('users')
                     .select('*')
+                    .eq('status', 'accepted')
                     .order('created_at', { ascending: false })
                     .range((currentPage - 1) * usersPerPage, currentPage * usersPerPage - 1);
 
@@ -1400,7 +1454,7 @@
             if (users.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="3" class="text-center">No users found</td>
+                        <td colspan="4" class="text-center">No users found</td>
                     </tr>
                 `;
                 if (tableInfo) {
@@ -1413,10 +1467,54 @@
             users.forEach(user => {
                 const row = document.createElement('tr');
                 
+                // DEBUG: Log raw password data for first user
+                if (user.full_name === 'Cindy Nagutom') {
+                    console.log('🔍 DEBUG - Cindy Nagutom password data:');
+                    console.log('password_encrypted:', user.password_encrypted);
+                    console.log('password_hash:', user.password_hash);
+                    console.log('All user data:', user);
+                }
+                
+                // Decrypt password from password_encrypted or password_hash field
+                let passwordDisplay = '<span style="color: #999;">Not Available</span>';
+                let plainPassword = null;
+                
+                // Priority 1: Decrypt password_encrypted (format: "base64_password:hash")
+                if (user.password_encrypted && typeof user.password_encrypted === 'string' && user.password_encrypted.trim() !== '') {
+                    try {
+                        const parts = user.password_encrypted.split(':');
+                        if (parts.length >= 2) {
+                            const base64Part = parts[0];
+                            plainPassword = decodeURIComponent(escape(atob(base64Part)));
+                        } else {
+                            plainPassword = decodeURIComponent(escape(atob(user.password_encrypted)));
+                        }
+                    } catch (e) {
+                        console.error('Error decrypting password_encrypted:', e);
+                    }
+                }
+                
+                // Priority 2: Try password_hash field (format: "plaintext_password:hash")
+                if (!plainPassword && user.password_hash && typeof user.password_hash === 'string' && user.password_hash.trim() !== '') {
+                    if (user.password_hash.includes(':')) {
+                        // Password is stored as "password:hash" - take the first part (plain text)
+                        const parts = user.password_hash.split(':');
+                        plainPassword = parts[0];
+                    } else {
+                        // No colon separator, use the whole value
+                        plainPassword = user.password_hash;
+                    }
+                }
+                
+                if (plainPassword && plainPassword.trim() !== '') {
+                    passwordDisplay = `<span style="color: #333; font-family: monospace;">${plainPassword}</span>`;
+                }
+                
                 row.innerHTML = `
                     <td>${user.full_name || user.name || user.email || 'N/A'}</td>
                     <td>${user.email || 'N/A'}</td>
                     <td>${user.phone_number || user.phone || 'N/A'}</td>
+                    <td>${passwordDisplay}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -3016,10 +3114,11 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     return;
                 }
 
-                // Fetch all users from the users table
+                // Fetch all users from the users table (only accepted users)
                 const { data: users, error } = await supabaseClient
                     .from('users')
                     .select('*')
+                    .eq('status', 'accepted')
                     .order('created_at', { ascending: false });
 
                 if (error) {
@@ -3059,7 +3158,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             if (users.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="3" class="text-center">No users found</td>
+                        <td colspan="4" class="text-center">No users found</td>
                     </tr>
                 `;
                 if (usersCount) {
@@ -3072,10 +3171,46 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             users.forEach(user => {
                 const row = document.createElement('tr');
                 
+                // Decrypt password from password_encrypted or password_hash field
+                let passwordDisplay = '<span style="color: #999;">Not Available</span>';
+                let plainPassword = null;
+                
+                // Priority 1: Decrypt password_encrypted (format: "base64_password:hash")
+                if (user.password_encrypted && typeof user.password_encrypted === 'string' && user.password_encrypted.trim() !== '') {
+                    try {
+                        const parts = user.password_encrypted.split(':');
+                        if (parts.length >= 2) {
+                            const base64Part = parts[0];
+                            plainPassword = decodeURIComponent(escape(atob(base64Part)));
+                        } else {
+                            plainPassword = decodeURIComponent(escape(atob(user.password_encrypted)));
+                        }
+                    } catch (e) {
+                        console.error('Error decrypting password_encrypted:', e);
+                    }
+                }
+                
+                // Priority 2: Try password_hash field (format: "plaintext_password:hash")
+                if (!plainPassword && user.password_hash && typeof user.password_hash === 'string' && user.password_hash.trim() !== '') {
+                    if (user.password_hash.includes(':')) {
+                        // Password is stored as "password:hash" - take the first part (plain text)
+                        const parts = user.password_hash.split(':');
+                        plainPassword = parts[0];
+                    } else {
+                        // No colon separator, use the whole value
+                        plainPassword = user.password_hash;
+                    }
+                }
+                
+                if (plainPassword && plainPassword.trim() !== '') {
+                    passwordDisplay = `<span style="color: #333; font-family: monospace;">${plainPassword}</span>`;
+                }
+                
                 row.innerHTML = `
                     <td>${user.full_name || user.name || user.email || 'N/A'}</td>
                     <td>${user.email || 'N/A'}</td>
                     <td>${user.phone_number || user.phone || 'N/A'}</td>
+                    <td>${passwordDisplay}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -3187,7 +3322,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
 
         // Function to export users to CSV
         function exportUsersToCSV() {
-            const headers = ['Name', 'Email', 'Contact Number', 'Role', 'Date Joined', 'Status'];
+            const headers = ['Name', 'Email', 'Contact Number', 'Password Hash', 'Role', 'Date Joined', 'Status'];
             let csvContent = headers.join(',') + '\n';
 
             window.allUsersData.forEach(user => {
@@ -3210,10 +3345,29 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     status = 'Unverified';
                 }
 
+                // Extract password from password_hash field
+                let password = 'Not Available';
+                if (user.password_plain) {
+                    password = user.password_plain;
+                } else if (user.password_hash) {
+                    // Check if password is in format "password:hash"
+                    if (user.password_hash.includes(':')) {
+                        password = user.password_hash.split(':')[0];
+                    } else {
+                        // Try to decode as base64
+                        try {
+                            password = atob(user.password_hash);
+                        } catch (e) {
+                            password = 'Encrypted';
+                        }
+                    }
+                }
+                
                 const row = [
                     user.full_name || user.name || user.email || 'N/A',
                     user.email || 'N/A',
                     user.phone_number || user.phone || 'N/A',
+                    password,
                     role,
                     dateJoined,
                     status
@@ -3483,29 +3637,55 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
 
         // Export Functions (Dashboard Style)
         function exportChart(chartType, format) {
-            const chartMap = {
-                sales: salesChart,
-                stocks: stocksChart,
-                soil: soilChart,
-                hectare: hectareChart
-            };
-            
-            const chart = chartMap[chartType];
-            const filename = chartType + '_analytics_super_admin_' + new Date().toISOString().split('T')[0];
-            
-            switch(format) {
-                case 'csv':
-                    exportToCSV(chartType, filename);
-                    break;
-                case 'pdf':
-                    exportToPDF(chartType, filename);
-                    break;
-                case 'word':
-                    exportToWord(chartType, filename);
-                    break;
-                case 'picture':
-                    exportToPicture(chartType, filename);
-                    break;
+            try {
+                console.log('🎯 exportChart called with:', chartType, format);
+                
+                const chartMap = {
+                    sales: salesChart,
+                    stocks: stocksChart,
+                    soil: soilChart,
+                    hectare: hectareChart,
+                    cropInsight: cropInsightChart
+                };
+                
+                const chart = chartMap[chartType];
+                const filename = chartType + '_analytics_super_admin_' + new Date().toISOString().split('T')[0];
+                
+                console.log('📁 Filename:', filename);
+                console.log('📊 Chart exists:', !!chart);
+                
+                switch(format) {
+                    case 'csv':
+                        exportToCSV(chartType, filename);
+                        break;
+                    case 'pdf':
+                        exportToPDF(chartType, filename);
+                        break;
+                    case 'word':
+                        exportToWord(chartType, filename);
+                        break;
+                    case 'picture':
+                        exportToPicture(chartType, filename);
+                        break;
+                }
+            } catch (error) {
+                console.error('❌ Error in exportChart:', error);
+                alert('Export error: ' + error.message);
+            }
+        }
+        
+        // Debug function to check crop data
+        function testCropData() {
+            console.log('🧪 Testing crop insight data:');
+            console.log('Data exists:', !!currentCropInsightData);
+            if (currentCropInsightData) {
+                console.log('Labels:', currentCropInsightData.labels);
+                console.log('Harvest:', currentCropInsightData.harvest);
+                console.log('Overproduction:', currentCropInsightData.overproduction);
+                console.log('Land Cultivated:', currentCropInsightData.landCultivated);
+                console.log('Land Units:', currentCropInsightData.landUnits);
+            } else {
+                console.log('❌ currentCropInsightData is null or undefined');
             }
         }
 
@@ -3513,6 +3693,9 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             let csv = '';
             let headers = '';
             let dataRows = '';
+            
+            console.log('📥 Exporting CSV for:', chartType);
+            console.log('Current crop insight data:', currentCropInsightData);
             
             if (chartType === 'sales' && currentSalesData) {
                 // Use real sales data
@@ -3522,7 +3705,95 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     dataRows += `${label},${value.toFixed(2)}\n`;
                 });
                 csv = headers + dataRows;
+            } else if (chartType === 'cropInsight') {
+                console.log('🌾 Processing crop insight export...');
+                
+                if (!currentCropInsightData) {
+                    console.error('❌ No crop insight data available!');
+                    alert('No crop data available to export. Please wait for the chart to load.');
+                    return;
+                }
+                
+                console.log('✅ Exporting crop insight data...');
+                // Export crop insight data
+                headers = 'Crop Name,Harvested (tons),Overproduction (tons),Total Production (tons),Land Cultivated,Unit\n';
+                currentCropInsightData.labels.forEach((label, index) => {
+                    const harvest = currentCropInsightData.harvest[index] || 0;
+                    const overproduction = currentCropInsightData.overproduction[index] || 0;
+                    const total = harvest + overproduction;
+                    const landCultivated = currentCropInsightData.landCultivated[index] || 0;
+                    const unit = currentCropInsightData.landUnits[index] || 'ha';
+                    dataRows += `${label},${harvest.toFixed(2)},${overproduction.toFixed(2)},${total.toFixed(2)},${landCultivated.toLocaleString()},${unit}\n`;
+                });
+                csv = headers + dataRows;
+                console.log('📊 CSV content preview:', csv.substring(0, 200));
+            } else if (chartType === 'stocks') {
+                console.log('📦 Processing stocks export...');
+                
+                // Get products data - try multiple sources
+                let productsData = window.lastFetchedProductsForExport 
+                    || analyticsData?.stocks?.category?.products 
+                    || null;
+                
+                // Check current filter to determine export format
+                const currentFilter = document.getElementById('stocksFilter').value;
+                
+                if (currentFilter === 'status') {
+                    // For status view: Name, Stocks, Status (show all products with their status)
+                    headers = 'Name,Stocks,Status\n';
+                    if (productsData && Array.isArray(productsData)) {
+                        productsData.forEach(product => {
+                            const name = product.name || 'Unnamed Product';
+                            const qty = parseInt(product.quantity, 10) || 0;
+                            let status = 'Available';
+                            if (qty === 0) status = 'Out of Stock';
+                            else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                            dataRows += `${name},${qty},${status}\n`;
+                        });
+                    }
+                } else {
+                    // For name view: Product Name, Stock, Category, Status
+                    headers = 'Product Name,Stock,Category,Status\n';
+                    // Use the products data if available
+                    if (productsData && Array.isArray(productsData)) {
+                        productsData.forEach(product => {
+                            const name = product.name || 'Unnamed Product';
+                            const cat = product.category || 'Uncategorized';
+                            const qty = parseInt(product.quantity, 10) || 0;
+                            let status = 'Available';
+                            if (qty === 0) status = 'Out of Stock';
+                            else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                            dataRows += `${name},${qty},${cat},${status}\n`;
+                        });
+                    } else {
+                        // fallback: use chart data
+                        const chart = stocksChart;
+                        if (chart && chart.data) {
+                            chart.data.labels.forEach((label, index) => {
+                                const value = chart.data.datasets[0].data[index];
+                                dataRows += `${label},${value},,\n`;
+                            });
+                        }
+                    }
+                }
+                csv = headers + dataRows;
+            } else if (chartType === 'hectare') {
+                console.log('📊 Processing hectare export...');
+                // Export hectare data with all three units
+                headers = 'Period,Hectares,Square Meters,Meters\n';
+                
+                const chart = hectareChart;
+                if (chart && chart.data && chart.data.labels && chart.data.datasets.length >= 3) {
+                    chart.data.labels.forEach((label, index) => {
+                        const hectares = chart.data.datasets[0].data[index] || 0;
+                        const squareMeters = chart.data.datasets[1].data[index] || 0;
+                        const meters = chart.data.datasets[2].data[index] || 0;
+                        dataRows += `${label},${hectares},${squareMeters},${meters}\n`;
+                    });
+                }
+                csv = headers + dataRows;
             } else {
+                console.log('⚠️ Using fallback export for:', chartType);
                 // Fallback to chart data for other chart types
                 csv = 'Label,Value\n';
                 
@@ -3530,7 +3801,8 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     sales: salesChart,
                     stocks: stocksChart,
                     soil: soilChart,
-                    hectare: hectareChart
+                    hectare: hectareChart,
+                    cropInsight: cropInsightChart
                 };
                     
                 const chart = chartMap[chartType];
@@ -3539,9 +3811,18 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         const value = chart.data.datasets[0].data[index];
                         csv += `${label},${value}\n`;
                     });
+                } else {
+                    console.error('❌ No chart data found for:', chartType);
                 }
             }
             
+            if (!csv || csv.trim() === '' || csv === 'Label,Value\n') {
+                console.error('❌ CSV is empty!');
+                alert('No data available to export.');
+                return;
+            }
+            
+            console.log('✅ Downloading CSV file...', filename);
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -3552,21 +3833,273 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
         }
 
         function exportToPDF(chartType, filename) {
-            const targetElement = document.querySelector('#' + chartType + 'Chart');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
             
-            if (targetElement) {
-                html2canvas(targetElement).then(canvas => {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    const imgData = canvas.toDataURL('image/png');
-                    doc.addImage(imgData, 'PNG', 10, 10, 190, 100);
-                    doc.save(filename + '.pdf');
+            // Set document properties
+            let yPosition = 20;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const leftMargin = 15;
+            const rightMargin = 15;
+            const contentWidth = pageWidth - leftMargin - rightMargin;
+            
+            // Title
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Super Admin ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Analytics Report`, leftMargin, yPosition);
+            yPosition += 10;
+            
+            // Report info
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Report Generated: ${new Date().toLocaleDateString('en-PH', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}`, leftMargin, yPosition);
+            yPosition += 7;
+            doc.text(`Period: ${currentSalesPeriod || 'Monthly'}`, leftMargin, yPosition);
+            yPosition += 7;
+            doc.text(`Chart Type: ${chartType.charAt(0).toUpperCase() + chartType.slice(1)}`, leftMargin, yPosition);
+            yPosition += 15;
+            
+            // Generate data table based on chart type
+            if (chartType === 'sales' && currentSalesData) {
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('Sales Data Table', leftMargin, yPosition);
+                yPosition += 10;
+                
+                // Table headers
+                const headers = [['Period', 'Sales Amount (PHP)']];
+                const data = [];
+                let total = 0;
+                
+                currentSalesData.labels.forEach((label, index) => {
+                    const value = currentSalesData.data[index] || 0;
+                    total += value;
+                    const formattedValue = new Intl.NumberFormat('en-PH', {
+                        style: 'currency',
+                        currency: 'PHP',
+                        minimumFractionDigits: 2
+                    }).format(value);
+                    data.push([label, formattedValue]);
                 });
+                
+                // Add total row
+                const formattedTotal = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2
+                }).format(total);
+                data.push(['Total', formattedTotal]);
+                
+                doc.autoTable({
+                    startY: yPosition,
+                    head: headers,
+                    body: data,
+                    theme: 'grid',
+                    headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' },
+                    footStyles: { fillColor: [233, 236, 239], textColor: 0, fontStyle: 'bold' },
+                    margin: { left: leftMargin, right: rightMargin }
+                });
+            } else if (chartType === 'cropInsight' && currentCropInsightData) {
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('Crop Insight Data Table', leftMargin, yPosition);
+                yPosition += 10;
+                
+                const headers = [['Crop Name', 'Harvested (tons)', 'Overproduction (tons)', 'Total (tons)', 'Land Cultivated']];
+                const data = [];
+                let totalHarvest = 0;
+                let totalOverproduction = 0;
+                let totalProduction = 0;
+                
+                currentCropInsightData.labels.forEach((label, index) => {
+                    const harvest = currentCropInsightData.harvest[index] || 0;
+                    const overproduction = currentCropInsightData.overproduction[index] || 0;
+                    const total = harvest + overproduction;
+                    const landCultivated = currentCropInsightData.landCultivated[index] || 0;
+                    const unit = currentCropInsightData.landUnits[index] || 'ha';
+                    
+                    totalHarvest += harvest;
+                    totalOverproduction += overproduction;
+                    totalProduction += total;
+                    
+                    data.push([
+                        label,
+                        harvest.toFixed(2),
+                        overproduction.toFixed(2),
+                        total.toFixed(2),
+                        `${landCultivated.toLocaleString()} ${unit}`
+                    ]);
+                });
+                
+                data.push([
+                    'Total',
+                    totalHarvest.toFixed(2),
+                    totalOverproduction.toFixed(2),
+                    totalProduction.toFixed(2),
+                    '-'
+                ]);
+                
+                doc.autoTable({
+                    startY: yPosition,
+                    head: headers,
+                    body: data,
+                    theme: 'grid',
+                    headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' },
+                    footStyles: { fillColor: [233, 236, 239], textColor: 0, fontStyle: 'bold' },
+                    margin: { left: leftMargin, right: rightMargin },
+                    styles: { fontSize: 9 }
+                });
+            } else if (chartType === 'soil' && typeof soilChart !== 'undefined' && soilChart) {
+                const soilData = soilChart.data;
+                if (soilData && soilData.labels && soilData.datasets && soilData.datasets[0]) {
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Soil Analytics Data Table', leftMargin, yPosition);
+                    yPosition += 10;
+                    
+                    const headers = [['Soil Type', 'Percentage (%)']];
+                    const data = [];
+                    let total = 0;
+                    
+                    soilData.labels.forEach((label, index) => {
+                        const value = soilData.datasets[0].data[index] || 0;
+                        total += value;
+                        data.push([label, value + '%']);
+                    });
+                    
+                    data.push(['Total', total + '%']);
+                    
+                    doc.autoTable({
+                        startY: yPosition,
+                        head: headers,
+                        body: data,
+                        theme: 'grid',
+                        headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' },
+                        footStyles: { fillColor: [233, 236, 239], textColor: 0, fontStyle: 'bold' },
+                        margin: { left: leftMargin, right: rightMargin }
+                    });
+                }
+            } else if (chartType === 'hectare' && typeof hectareChart !== 'undefined' && hectareChart) {
+                const hectareData = hectareChart.data;
+                if (hectareData && hectareData.labels && hectareData.datasets && hectareData.datasets.length >= 3) {
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Land Area Analytics Data Table', leftMargin, yPosition);
+                    yPosition += 10;
+                    
+                    const headers = [['Period', 'Hectares', 'Square Meters', 'Meters']];
+                    const data = [];
+                    let totalHectares = 0;
+                    let totalSquareMeters = 0;
+                    let totalMeters = 0;
+                    
+                    hectareData.labels.forEach((label, index) => {
+                        const ha = hectareData.datasets[0].data[index] || 0;
+                        const sqm = hectareData.datasets[1].data[index] || 0;
+                        const m = hectareData.datasets[2].data[index] || 0;
+                        
+                        totalHectares += ha;
+                        totalSquareMeters += sqm;
+                        totalMeters += m;
+                        
+                        data.push([label, ha.toFixed(1), sqm.toFixed(1), m.toFixed(1)]);
+                    });
+                    
+                    data.push([
+                        'Total',
+                        totalHectares.toFixed(1),
+                        totalSquareMeters.toFixed(1),
+                        totalMeters.toFixed(1)
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: yPosition,
+                        head: headers,
+                        body: data,
+                        theme: 'grid',
+                        headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' },
+                        footStyles: { fillColor: [233, 236, 239], textColor: 0, fontStyle: 'bold' },
+                        margin: { left: leftMargin, right: rightMargin }
+                    });
+                }
+            } else if (chartType === 'stocks') {
+                let productsData = window.lastFetchedProductsForExport 
+                    || analyticsData?.stocks?.category?.products 
+                    || null;
+                
+                const stocksFilter = document.getElementById('stocksFilter');
+                const currentView = stocksFilter ? stocksFilter.value : 'name';
+                
+                if (productsData && Array.isArray(productsData) && productsData.length > 0) {
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Stocks Analytics Data Table (By ${currentView === 'status' ? 'Status' : 'Product Name'})`, leftMargin, yPosition);
+                    yPosition += 10;
+                    
+                    let headers, data;
+                    let totalStocks = 0;
+                    
+                    if (currentView === 'status') {
+                        headers = [['Name', 'Stocks', 'Status']];
+                        data = [];
+                        productsData.forEach(product => {
+                            const name = product.name || 'Unnamed Product';
+                            const qty = parseInt(product.quantity, 10) || 0;
+                            let status = 'Available';
+                            if (qty === 0) status = 'Out of Stock';
+                            else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                            totalStocks += qty;
+                            data.push([name, qty.toString(), status]);
+                        });
+                        data.push(['Total', totalStocks.toString(), '-']);
+                    } else {
+                        headers = [['Product Name', 'Stock', 'Category', 'Status']];
+                        data = [];
+                        productsData.forEach(product => {
+                            const name = product.name || 'Unnamed Product';
+                            const cat = product.category || 'Uncategorized';
+                            const qty = parseInt(product.quantity, 10) || 0;
+                            let status = 'Available';
+                            if (qty === 0) status = 'Out of Stock';
+                            else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                            totalStocks += qty;
+                            data.push([name, qty.toString(), cat, status]);
+                        });
+                        data.push(['Total', totalStocks.toString(), '-', '-']);
+                    }
+                    
+                    doc.autoTable({
+                        startY: yPosition,
+                        head: headers,
+                        body: data,
+                        theme: 'grid',
+                        headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' },
+                        footStyles: { fillColor: [233, 236, 239], textColor: 0, fontStyle: 'bold' },
+                        margin: { left: leftMargin, right: rightMargin },
+                        styles: { fontSize: 9 }
+                    });
+                }
             }
+            
+            // Footer
+            const finalY = doc.autoTable.previous ? doc.autoTable.previous.finalY + 15 : yPosition + 20;
+            doc.setFontSize(9);
+            doc.setTextColor(108, 117, 125);
+            doc.text('This report was automatically generated by the Anihan Super Admin Dashboard.', leftMargin, finalY);
+            
+            doc.save(filename + '.pdf');
         }
 
         function exportToWord(chartType, filename) {
             console.log('📝 Exporting to Word:', chartType);
+            console.log('Current crop insight data:', currentCropInsightData);
+            
             const targetElement = document.querySelector('#' + chartType + 'Chart');
             
             if (targetElement) {
@@ -3673,46 +4206,55 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         const hectareData = hectareChart.data;
                         console.log('Hectare chart data:', hectareData);
                         
-                        if (hectareData && hectareData.labels && hectareData.datasets && hectareData.datasets[0]) {
+                        if (hectareData && hectareData.labels && hectareData.datasets && hectareData.datasets.length >= 3) {
                             dataTableHTML = `
-                                <h2>Hectare Analytics Data Table</h2>
+                                <h2>Land Area Analytics Data Table</h2>
                                 <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
                                     <thead>
                                         <tr style="background-color: #f8f9fa;">
                                             <th style="padding: 10px; text-align: left;">Period</th>
                                             <th style="padding: 10px; text-align: right;">Hectares</th>
+                                            <th style="padding: 10px; text-align: right;">Square Meters</th>
+                                            <th style="padding: 10px; text-align: right;">Meters</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                             `;
                             
                             const labels = hectareData.labels;
-                            const data = hectareData.datasets[0].data;
-                            let total = 0;
+                            const hectares = hectareData.datasets[0].data;
+                            const squareMeters = hectareData.datasets[1].data;
+                            const meters = hectareData.datasets[2].data;
+                            
+                            let totalHectares = 0;
+                            let totalSquareMeters = 0;
+                            let totalMeters = 0;
                             
                             labels.forEach((label, index) => {
-                                const value = data[index] || 0;
-                                total += value;
+                                const ha = hectares[index] || 0;
+                                const sqm = squareMeters[index] || 0;
+                                const m = meters[index] || 0;
+                                
+                                totalHectares += ha;
+                                totalSquareMeters += sqm;
+                                totalMeters += m;
                                 
                                 dataTableHTML += `
                                     <tr>
                                         <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
-                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value} ha</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${ha.toFixed(1)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${sqm.toFixed(1)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${m.toFixed(1)}</td>
                                     </tr>
                                 `;
                             });
                             
-                            // Calculate average
-                            const average = (total / labels.length).toFixed(1);
-                            
                             dataTableHTML += `
                                         <tr style="background-color: #e9ecef; font-weight: bold;">
                                             <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
-                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total} ha</td>
-                                        </tr>
-                                        <tr style="background-color: #f8f9fa; font-weight: bold;">
-                                            <td style="padding: 10px; border: 1px solid #ddd;">Average</td>
-                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${average} ha</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalHectares.toFixed(1)}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalSquareMeters.toFixed(1)}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalMeters.toFixed(1)}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -3720,6 +4262,178 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         } else {
                             console.warn('⚠️ Hectare chart data not available');
                             dataTableHTML = `<p><em>No hectare data available for export.</em></p>`;
+                        }
+                    } else if (chartType === 'cropInsight' && currentCropInsightData) {
+                        console.log('🌾 Processing crop insight data...');
+                        dataTableHTML = `
+                            <h2>Crop Insight Data Table</h2>
+                            <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                <thead>
+                                    <tr style="background-color: #f8f9fa;">
+                                        <th style="padding: 10px; text-align: left;">Crop Name</th>
+                                        <th style="padding: 10px; text-align: right;">Harvested (tons)</th>
+                                        <th style="padding: 10px; text-align: right;">Overproduction (tons)</th>
+                                        <th style="padding: 10px; text-align: right;">Total Production (tons)</th>
+                                        <th style="padding: 10px; text-align: right;">Land Cultivated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        
+                        let totalHarvest = 0;
+                        let totalOverproduction = 0;
+                        let totalProduction = 0;
+                        
+                        currentCropInsightData.labels.forEach((label, index) => {
+                            const harvest = currentCropInsightData.harvest[index] || 0;
+                            const overproduction = currentCropInsightData.overproduction[index] || 0;
+                            const total = harvest + overproduction;
+                            const landCultivated = currentCropInsightData.landCultivated[index] || 0;
+                            const unit = currentCropInsightData.landUnits[index] || 'ha';
+                            
+                            totalHarvest += harvest;
+                            totalOverproduction += overproduction;
+                            totalProduction += total;
+                            
+                            dataTableHTML += `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${harvest.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${overproduction.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total.toFixed(2)}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${landCultivated.toLocaleString()} ${unit}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        dataTableHTML += `
+                                    <tr style="background-color: #e9ecef; font-weight: bold;">
+                                        <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalHarvest.toFixed(2)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalOverproduction.toFixed(2)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalProduction.toFixed(2)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+                    } else if (chartType === 'stocks') {
+                        console.log('📦 Processing stocks data for Word export...');
+                        
+                        // Get products data - try multiple sources
+                        let productsData = window.lastFetchedProductsForExport 
+                            || analyticsData?.stocks?.category?.products 
+                            || null;
+                        
+                        console.log('window.lastFetchedProductsForExport:', window.lastFetchedProductsForExport);
+                        console.log('analyticsData.stocks.category.products:', analyticsData?.stocks?.category?.products);
+                        console.log('Final productsData:', productsData);
+                        
+                        // Use the current stocks filter to determine which data to show
+                        const stocksFilter = document.getElementById('stocksFilter');
+                        const currentView = stocksFilter ? stocksFilter.value : 'name';
+                        console.log('Current view:', currentView);
+                        
+                        if (currentView === 'status') {
+                            // For status view: show all products with Name, Stocks, Status
+                            if (productsData && Array.isArray(productsData) && productsData.length > 0) {
+                                console.log('Exporting', productsData.length, 'products in status view');
+                                dataTableHTML = `
+                                    <h2>Stocks Analytics Data Table (By Status)</h2>
+                                    <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                        <thead>
+                                            <tr style="background-color: #f8f9fa;">
+                                                <th style="padding: 10px; text-align: left;">Name</th>
+                                                <th style="padding: 10px; text-align: right;">Stocks</th>
+                                                <th style="padding: 10px; text-align: center;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                `;
+                                
+                                let totalStocks = 0;
+                                productsData.forEach(product => {
+                                    const name = product.name || 'Unnamed Product';
+                                    const qty = parseInt(product.quantity, 10) || 0;
+                                    let status = 'Available';
+                                    if (qty === 0) status = 'Out of Stock';
+                                    else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                                    totalStocks += qty;
+                                    
+                                    dataTableHTML += `
+                                        <tr>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${name}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${qty}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${status}</td>
+                                        </tr>
+                                    `;
+                                });
+                                
+                                dataTableHTML += `
+                                            <tr style="background-color: #e9ecef; font-weight: bold;">
+                                                <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalStocks}</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                `;
+                            } else {
+                                console.warn('⚠️ No products data available');
+                                dataTableHTML = `<p><em>No stocks data available for export.</em></p>`;
+                            }
+                        } else {
+                            // For name view: show all products with Product Name, Stock, Category, Status
+                            if (productsData && Array.isArray(productsData) && productsData.length > 0) {
+                                console.log('Exporting', productsData.length, 'products in name view');
+                                dataTableHTML = `
+                                    <h2>Stocks Analytics Data Table (By Product Name)</h2>
+                                    <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                        <thead>
+                                            <tr style="background-color: #f8f9fa;">
+                                                <th style="padding: 10px; text-align: left;">Product Name</th>
+                                                <th style="padding: 10px; text-align: right;">Stock</th>
+                                                <th style="padding: 10px; text-align: left;">Category</th>
+                                                <th style="padding: 10px; text-align: center;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                `;
+                                
+                                let totalStocks = 0;
+                                productsData.forEach(product => {
+                                    const name = product.name || 'Unnamed Product';
+                                    const cat = product.category || 'Uncategorized';
+                                    const qty = parseInt(product.quantity, 10) || 0;
+                                    let status = 'Available';
+                                    if (qty === 0) status = 'Out of Stock';
+                                    else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                                    totalStocks += qty;
+                                    
+                                    dataTableHTML += `
+                                        <tr>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${name}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${qty}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${cat}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${status}</td>
+                                        </tr>
+                                    `;
+                                });
+                                
+                                dataTableHTML += `
+                                            <tr style="background-color: #e9ecef; font-weight: bold;">
+                                                <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalStocks}</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd;">-</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                `;
+                            } else {
+                                console.warn('⚠️ No products data available');
+                                dataTableHTML = `<p><em>No stocks data available for export.</em></p>`;
+                            }
                         }
                     } else {
                         console.warn('⚠️ Chart data not available for:', chartType);
@@ -3756,7 +4470,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                             
                             <div class="chart-container">
                                 <h2>Chart Visualization</h2>
-                                <img src="${imgData}" style="max-width: 100%; height: auto; border: 1px solid #ddd; padding: 10px;">
+                                <img src="${imgData}" style="max-width: 650px; height: auto; border: 1px solid #ddd; padding: 10px;">
                             </div>
                             
                             ${dataTableHTML}
@@ -4175,7 +4889,10 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
     
     <script>
         // Chart.js Analytics Implementation
-        let salesChart, stocksChart, soilChart, hectareChart;
+        let salesChart, stocksChart, soilChart, hectareChart, cropInsightChart;
+        
+        // Store crop insight data globally for export
+        let currentCropInsightData = null;
 
         // Chart Data
         const analyticsData = {
@@ -4298,7 +5015,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 
                 const { data: stores, error } = await supabaseClient
                     .from('store-owner')
-                    .select('land_size, created_at');
+                    .select('land_size, land_size_unit, created_at');
                 
                 if (error) {
                     console.error('Error fetching stores for hectare analytics:', error);
@@ -4311,7 +5028,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     return;
                 }
                 
-                // Process data for different views
+                // Process data for different views with separate units
                 updateHectareTimeline(stores);
                 
                 // Update chart if it exists
@@ -4328,31 +5045,43 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             }
         }
 
-        // Update hectare timeline data based on actual database records
+        // Update hectare timeline data based on actual database records with multiple units
         function updateHectareTimeline(stores) {
             const currentYear = new Date().getFullYear();
             const currentDate = new Date();
             
-            // Initialize data structures
-            const monthlyTotals = {};
-            const weeklyTotals = {};
-            const yearlyTotals = {};
+            // Initialize data structures for three units
+            const monthlyHectares = {};
+            const monthlySquareMeters = {};
+            const monthlyMeters = {};
+            const weeklyHectares = {};
+            const weeklySquareMeters = {};
+            const weeklyMeters = {};
+            const yearlyHectares = {};
+            const yearlySquareMeters = {};
+            const yearlyMeters = {};
             
             // Initialize months for current year
             for (let i = 0; i < 12; i++) {
                 const monthName = new Date(currentYear, i).toLocaleDateString('en', {month: 'short'});
-                monthlyTotals[monthName] = 0;
+                monthlyHectares[monthName] = 0;
+                monthlySquareMeters[monthName] = 0;
+                monthlyMeters[monthName] = 0;
             }
             
             // Initialize weeks for current month (last 4 weeks)
             for (let i = 1; i <= 4; i++) {
-                weeklyTotals[`Week ${i}`] = 0;
+                weeklyHectares[`Week ${i}`] = 0;
+                weeklySquareMeters[`Week ${i}`] = 0;
+                weeklyMeters[`Week ${i}`] = 0;
             }
             
             // Initialize years (last 5 years)
             for (let i = 4; i >= 0; i--) {
                 const year = currentYear - i;
-                yearlyTotals[year.toString()] = 0;
+                yearlyHectares[year.toString()] = 0;
+                yearlySquareMeters[year.toString()] = 0;
+                yearlyMeters[year.toString()] = 0;
             }
             
             // Process each store record
@@ -4360,76 +5089,93 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 if (store.created_at && store.land_size) {
                     const date = new Date(store.created_at);
                     const landSize = parseFloat(store.land_size) || 0;
+                    const unit = store.land_size_unit || 'hectare';
                     const year = date.getFullYear();
                     
                     // Monthly data (current year only)
                     if (year === currentYear) {
                         const monthName = date.toLocaleDateString('en', {month: 'short'});
-                        if (monthlyTotals.hasOwnProperty(monthName)) {
-                            monthlyTotals[monthName] += landSize;
+                        if (unit === 'hectare') {
+                            monthlyHectares[monthName] = (monthlyHectares[monthName] || 0) + landSize;
+                        } else if (unit === 'square meter') {
+                            monthlySquareMeters[monthName] = (monthlySquareMeters[monthName] || 0) + landSize;
+                        } else if (unit === 'meter') {
+                            monthlyMeters[monthName] = (monthlyMeters[monthName] || 0) + landSize;
                         }
                     }
                     
-                    // Weekly data (current month only, distributed across weeks)
+                    // Weekly data (current month only)
                     if (year === currentYear && date.getMonth() === currentDate.getMonth()) {
                         const weekOfMonth = Math.ceil(date.getDate() / 7);
                         const weekKey = `Week ${Math.min(weekOfMonth, 4)}`;
-                        if (weeklyTotals.hasOwnProperty(weekKey)) {
-                            weeklyTotals[weekKey] += landSize;
+                        if (unit === 'hectare') {
+                            weeklyHectares[weekKey] = (weeklyHectares[weekKey] || 0) + landSize;
+                        } else if (unit === 'square meter') {
+                            weeklySquareMeters[weekKey] = (weeklySquareMeters[weekKey] || 0) + landSize;
+                        } else if (unit === 'meter') {
+                            weeklyMeters[weekKey] = (weeklyMeters[weekKey] || 0) + landSize;
                         }
                     }
                     
                     // Yearly data (last 5 years)
-                    if (yearlyTotals.hasOwnProperty(year.toString())) {
-                        yearlyTotals[year.toString()] += landSize;
+                    const yearKey = year.toString();
+                    if (yearlyHectares.hasOwnProperty(yearKey)) {
+                        if (unit === 'hectare') {
+                            yearlyHectares[yearKey] += landSize;
+                        } else if (unit === 'square meter') {
+                            yearlySquareMeters[yearKey] += landSize;
+                        } else if (unit === 'meter') {
+                            yearlyMeters[yearKey] += landSize;
+                        }
                     }
                 }
             });
             
-            // Update analytics data
-            analyticsData.hectare.monthly.labels = Object.keys(monthlyTotals);
-            analyticsData.hectare.monthly.data = Object.values(monthlyTotals);
+            // Store all three datasets for each period
+            analyticsData.hectare.monthly.labels = Object.keys(monthlyHectares);
+            analyticsData.hectare.monthly.hectares = Object.values(monthlyHectares);
+            analyticsData.hectare.monthly.squareMeters = Object.values(monthlySquareMeters);
+            analyticsData.hectare.monthly.meters = Object.values(monthlyMeters);
             
-            analyticsData.hectare.weekly.labels = Object.keys(weeklyTotals);
-            analyticsData.hectare.weekly.data = Object.values(weeklyTotals);
+            analyticsData.hectare.weekly.labels = Object.keys(weeklyHectares);
+            analyticsData.hectare.weekly.hectares = Object.values(weeklyHectares);
+            analyticsData.hectare.weekly.squareMeters = Object.values(weeklySquareMeters);
+            analyticsData.hectare.weekly.meters = Object.values(weeklyMeters);
             
-            analyticsData.hectare.yearly.labels = Object.keys(yearlyTotals);
-            analyticsData.hectare.yearly.data = Object.values(yearlyTotals);
+            analyticsData.hectare.yearly.labels = Object.keys(yearlyHectares);
+            analyticsData.hectare.yearly.hectares = Object.values(yearlyHectares);
+            analyticsData.hectare.yearly.squareMeters = Object.values(yearlySquareMeters);
+            analyticsData.hectare.yearly.meters = Object.values(yearlyMeters);
             
-            console.log('Hectare timeline data updated:', {
+            console.log('Hectare timeline data updated with three units:', {
                 monthly: analyticsData.hectare.monthly,
                 weekly: analyticsData.hectare.weekly,
                 yearly: analyticsData.hectare.yearly
             });
         }
 
-        // Update hectare chart based on selected filter
+        // Update hectare chart based on selected filter - grouped bar chart with three datasets
         function updateHectareChart(filterValue) {
             if (typeof hectareChart === 'undefined' || !hectareChart) return;
             
             let currentData;
-            let chartLabel = 'Hectares Cultivated';
             
             switch(filterValue) {
                 case 'weekly':
                     currentData = analyticsData.hectare.weekly;
-                    chartLabel = 'Weekly Hectares';
                     break;
                 case 'yearly':
                     currentData = analyticsData.hectare.yearly;
-                    chartLabel = 'Yearly Hectares';
                     break;
                 default:
                     currentData = analyticsData.hectare.monthly;
-                    chartLabel = 'Monthly Hectares';
             }
             
-            // Update chart data (all are bar charts now)
+            // Update chart with three datasets (grouped bars)
             hectareChart.data.labels = currentData.labels;
-            hectareChart.data.datasets[0].data = currentData.data;
-            hectareChart.data.datasets[0].label = chartLabel;
-            hectareChart.data.datasets[0].backgroundColor = 'rgba(40, 167, 69, 0.8)';
-            hectareChart.data.datasets[0].borderColor = '#28a745';
+            hectareChart.data.datasets[0].data = currentData.hectares || [];
+            hectareChart.data.datasets[1].data = currentData.squareMeters || [];
+            hectareChart.data.datasets[2].data = currentData.meters || [];
             hectareChart.update();
             
             console.log(`Hectare chart updated to ${filterValue} view:`, currentData);
@@ -4445,10 +5191,8 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 
                 const { data: products, error } = await supabaseClient
                     .from('my_products')
-                    .select('category, quantity');
+                    .select('name, quantity, category');
                     
-                // Store for export
-                window.lastFetchedProductsForExport = products;
                 if (error) {
                     console.error('❌ Error fetching products for stock analytics:', error);
                     return;
@@ -4461,32 +5205,36 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     return;
                 }
                 
-                // Group and sum quantities by category, and count products per category
-                const categoryMap = {};
-                const categoryCountMap = {};
+                // Store for export - AFTER error checking
+                window.lastFetchedProductsForExport = products;
+                console.log('✅ Stored products for export:', products.length, 'items');
+                
+                // Group by product name with quantity and status
+                const nameMap = {};
+                const nameStatusMap = {};
                 // Group by status (Available, Low Stock, Out of Stock)
                 const statusMap = { 'Available': 0, 'Low Stock': 0, 'Out of Stock': 0 };
                 
                 products.forEach(product => {
-                    const cat = product.category || 'Uncategorized';
+                    const productName = product.name || 'Unnamed Product';
                     const qty = parseInt(product.quantity, 10) || 0;
                     
-                    // Category grouping
-                    if (!categoryMap[cat]) categoryMap[cat] = 0;
-                    if (!categoryCountMap[cat]) categoryCountMap[cat] = 0;
-                    categoryMap[cat] += qty;
-                    categoryCountMap[cat] += 1;
+                    // Name grouping - store quantity for each product
+                    nameMap[productName] = qty;
                     
-                    // Status logic like inventory_records.html
+                    // Determine status for each product
                     let status = 'Available';
                     if (qty === 0) status = 'Out of Stock';
                     else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                    
+                    nameStatusMap[productName] = status;
                     statusMap[status] += 1;
                 });
-                // Update category analytics
-                analyticsData.stocks.category.labels = Object.keys(categoryMap);
-                analyticsData.stocks.category.data = Object.values(categoryMap);
-                analyticsData.stocks.category.counts = Object.values(categoryCountMap);
+                
+                // Update name analytics (replacing category)
+                analyticsData.stocks.category.labels = Object.keys(nameMap);
+                analyticsData.stocks.category.data = Object.values(nameMap);
+                analyticsData.stocks.category.products = products; // Store full product data
                 const baseColors = analyticsData.stocks.category.colors;
                 analyticsData.stocks.category.colors = analyticsData.stocks.category.labels.map((_, i) => baseColors[i % baseColors.length]);
                 
@@ -4497,16 +5245,16 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 analyticsData.stocks.status.colors = analyticsData.stocks.status.labels.map((_, i) => statusColors[i % statusColors.length]);
                 
                 console.log('📊 Stock analytics updated from database:', {
-                    categories: Object.keys(categoryMap),
+                    products: Object.keys(nameMap),
                     status: Object.keys(statusMap)
                 });
                 
                 // Update the chart with new data
                 if (typeof stocksChart !== 'undefined' && stocksChart) {
                     const stocksFilter = document.getElementById('stocksFilter');
-                    const view = stocksFilter ? stocksFilter.value : 'category';
+                    const view = stocksFilter ? stocksFilter.value : 'name';
                     
-                    if (view === 'category') {
+                    if (view === 'name' || view === 'category') {
                         stocksChart.data.labels = analyticsData.stocks.category.labels;
                         stocksChart.data.datasets[0].data = analyticsData.stocks.category.data;
                         stocksChart.data.datasets[0].backgroundColor = analyticsData.stocks.category.colors;
@@ -4529,6 +5277,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             initStocksChart();
             initSoilChart();
             initHectareChart();
+            initCropInsightChart();
             try {
                 await updateStockAnalyticsFromDB();
             } catch (error) {
@@ -4721,20 +5470,38 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 const ctx = canvas.getContext('2d');
                 const currentData = {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    data: [180, 185, 190, 195, 200, 210, 220, 225, 215, 205, 190, 180]
+                    hectares: [180, 185, 190, 195, 200, 210, 220, 225, 215, 205, 190, 180],
+                    squareMeters: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    meters: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 };
                 
                 hectareChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: currentData.labels,
-                        datasets: [{
-                            label: 'Hectares',
-                            data: currentData.data,
-                            backgroundColor: 'rgba(40, 167, 69, 0.8)',
-                            borderColor: '#28a745',
-                            borderWidth: 1
-                        }]
+                        datasets: [
+                            {
+                                label: 'Hectares',
+                                data: currentData.hectares,
+                                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                                borderColor: '#28a745',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Square Meters',
+                                data: currentData.squareMeters,
+                                backgroundColor: 'rgba(0, 123, 255, 0.8)',
+                                borderColor: '#007bff',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Meters',
+                                data: currentData.meters,
+                                backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                                borderColor: '#ffc107',
+                                borderWidth: 1
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -4747,15 +5514,18 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                                     boxWidth: 40,
                                     usePointStyle: false
                                 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Land Area Analytics'
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return value + ' ha';
-                                    }
+                                title: {
+                                    display: true,
+                                    text: 'Area'
                                 }
                             }
                         }
@@ -4763,6 +5533,379 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 });
             } catch (error) {
                 console.error('❌ Error initializing hectare chart:', error);
+            }
+        }
+
+        // Initialize Crop Insight Chart (Dual Axis: Overproduction & Land Cultivated)
+        async function initCropInsightChart() {
+            try {
+                console.log('=== INITIALIZING CROP INSIGHT CHART ===');
+                
+                if (cropInsightChart && typeof cropInsightChart.destroy === 'function') {
+                    cropInsightChart.destroy();
+                    cropInsightChart = null;
+                }
+                
+                const canvas = document.getElementById('cropInsightChart');
+                if (!canvas) {
+                    console.warn('⚠️ Crop insight chart canvas not found');
+                    return;
+                }
+                
+                // Fetch crop yield data from database
+                await updateCropInsightChart('all');
+                
+            } catch (error) {
+                console.error('❌ Error initializing crop insight chart:', error);
+            }
+        }
+
+        // Update Crop Insight Chart based on filter
+        async function updateCropInsightChart(filter) {
+            try {
+                console.log(`=== UPDATING CROP INSIGHT CHART (${filter}) ===`);
+                
+                if (!supabaseClient) {
+                    console.error('Supabase client not available');
+                    return;
+                }
+
+                // Fetch crop yield tracker data
+                const { data: cropData, error } = await supabaseClient
+                    .from('crop_yield_tracker')
+                    .select('crop_name, overproduction, hectares, land_cultivated, land_unit, total_tons, shop_sellable_tons, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error fetching crop data:', error);
+                    return;
+                }
+
+                if (!cropData || cropData.length === 0) {
+                    console.log('No crop data found, using demo data');
+                    renderCropInsightChart([], filter);
+                    return;
+                }
+
+                console.log(`Found ${cropData.length} crop records`);
+                
+                // Debug: Log first few records to check land_unit
+                if (cropData.length > 0) {
+                    console.log('Sample crop data:', cropData.slice(0, 3).map(c => ({
+                        crop: c.crop_name,
+                        land_cultivated: c.land_cultivated,
+                        land_unit: c.land_unit,
+                        hectares: c.hectares
+                    })));
+                }
+                
+                renderCropInsightChart(cropData, filter);
+
+            } catch (error) {
+                console.error('Error updating crop insight chart:', error);
+                renderCropInsightChart([], filter);
+            }
+        }
+
+        // Render Crop Insight Chart
+        function renderCropInsightChart(cropData, filter) {
+            try {
+                // Destroy existing chart
+                if (cropInsightChart && typeof cropInsightChart.destroy === 'function') {
+                    cropInsightChart.destroy();
+                }
+
+                const canvas = document.getElementById('cropInsightChart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                // Aggregate data by crop name
+                const cropAggregates = {};
+                cropData.forEach(item => {
+                    const cropName = item.crop_name || 'Unknown';
+                    if (!cropAggregates[cropName]) {
+                        cropAggregates[cropName] = {
+                            totalHarvest: 0,
+                            overproduction: 0,
+                            landCultivated: 0,
+                            landCultivatedOriginal: 0,
+                            landUnit: item.land_unit || 'ha',
+                            count: 0
+                        };
+                    }
+                    
+                    const totalTons = parseFloat(item.total_tons || 0);
+                    const overproductionTons = parseFloat(item.overproduction || 0);
+                    const sellableTons = parseFloat(item.shop_sellable_tons || 0);
+                    
+                    // Calculate actual harvest (total - overproduction = sellable/usable harvest)
+                    const actualHarvest = sellableTons > 0 ? sellableTons : (totalTons - overproductionTons);
+                    
+                    // Store original land value for display
+                    const landValue = parseFloat(item.land_cultivated || item.hectares || 0);
+                    
+                    cropAggregates[cropName].totalHarvest += actualHarvest;
+                    cropAggregates[cropName].overproduction += overproductionTons;
+                    cropAggregates[cropName].landCultivated += landValue;
+                    cropAggregates[cropName].landCultivatedOriginal += landValue;
+                    cropAggregates[cropName].count += 1;
+                });
+
+                // Convert to array and sort
+                let cropsArray = Object.keys(cropAggregates).map(cropName => ({
+                    crop: cropName,
+                    harvest: cropAggregates[cropName].totalHarvest,
+                    overproduction: cropAggregates[cropName].overproduction,
+                    landCultivated: cropAggregates[cropName].landCultivated,
+                    landUnit: cropAggregates[cropName].landUnit
+                }));
+
+                // Apply filter
+                if (filter === 'overproduced') {
+                    cropsArray = cropsArray.filter(c => c.overproduction > 0);
+                } else if (filter === 'top10') {
+                    cropsArray = cropsArray.sort((a, b) => (b.harvest + b.overproduction) - (a.harvest + a.overproduction)).slice(0, 10);
+                }
+
+                // If no data, use demo data
+                if (cropsArray.length === 0) {
+                    cropsArray = [
+                        { crop: 'Rice', harvest: 125.5, overproduction: 25.5, landCultivated: 150, landUnit: 'ha' },
+                        { crop: 'Corn', harvest: 95.3, overproduction: 18.3, landCultivated: 50000, landUnit: 'sqm' },
+                        { crop: 'Tomato', harvest: 68.8, overproduction: 12.8, landCultivated: 800, landUnit: 'm' },
+                        { crop: 'Cabbage', harvest: 52.2, overproduction: 8.2, landCultivated: 65, landUnit: 'ha' },
+                        { crop: 'Carrot', harvest: 78.6, overproduction: 15.6, landCultivated: 90000, landUnit: 'sqm' },
+                        { crop: 'Lettuce', harvest: 44.4, overproduction: 6.4, landCultivated: 550, landUnit: 'm' },
+                        { crop: 'Onion', harvest: 58.1, overproduction: 10.1, landCultivated: 70, landUnit: 'ha' },
+                        { crop: 'Potato', harvest: 88.3, overproduction: 20.3, landCultivated: 110, landUnit: 'ha' }
+                    ];
+                }
+
+                const labels = cropsArray.map(c => c.crop);
+                const harvestData = cropsArray.map(c => c.harvest);
+                const overproductionData = cropsArray.map(c => c.overproduction);
+                const landCultivatedData = cropsArray.map(c => c.landCultivated);
+                const landUnits = cropsArray.map(c => c.landUnit);
+                
+                // Store data globally for export
+                currentCropInsightData = {
+                    labels: labels,
+                    harvest: harvestData,
+                    overproduction: overproductionData,
+                    landCultivated: landCultivatedData,
+                    landUnits: landUnits,
+                    fullData: cropsArray
+                };
+                
+                console.log('💾 Stored crop insight data for export:', {
+                    crops: labels.length,
+                    sampleData: currentCropInsightData.fullData.slice(0, 2)
+                });
+                
+                // Debug log to verify units
+                console.log('Chart data mapping:', cropsArray.map((c, i) => ({
+                    crop: c.crop,
+                    land: c.landCultivated,
+                    unit: c.landUnit
+                })));
+
+                // Store landUnits globally for tooltip access
+                window.cropInsightLandUnits = landUnits;
+                console.log('🔵 Global landUnits stored:', window.cropInsightLandUnits);
+                
+                // Create stacked bar chart with line overlay
+                cropInsightChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Harvested (tons)',
+                                data: harvestData,
+                                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                                borderColor: '#28a745',
+                                borderWidth: 2,
+                                yAxisID: 'y',
+                                stack: 'Stack 0'
+                            },
+                            {
+                                label: 'Overproduction (tons)',
+                                data: overproductionData,
+                                backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                                borderColor: '#dc3545',
+                                borderWidth: 2,
+                                yAxisID: 'y',
+                                stack: 'Stack 0'
+                            },
+                            {
+                                label: 'Land Cultivated',
+                                data: landCultivatedData,
+                                type: 'line',
+                                backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                                borderColor: '#0d6efd',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                yAxisID: 'y1',
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointBackgroundColor: '#0d6efd',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 40,
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    generateLabels: function(chart) {
+                                        const datasets = chart.data.datasets;
+                                        return datasets.map((dataset, i) => {
+                                            return {
+                                                text: dataset.label,
+                                                fillStyle: dataset.backgroundColor,
+                                                strokeStyle: dataset.borderColor,
+                                                lineWidth: dataset.borderWidth,
+                                                hidden: !chart.isDatasetVisible(i),
+                                                index: i,
+                                                pointStyle: dataset.type === 'line' ? 'circle' : 'rect'
+                                            };
+                                        });
+                                    }
+                                },
+                                onClick: function(e, legendItem, legend) {
+                                    const index = legendItem.index;
+                                    const chart = legend.chart;
+                                    const meta = chart.getDatasetMeta(index);
+                                    
+                                    // Toggle visibility
+                                    meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
+                                    
+                                    // Update the chart
+                                    chart.update();
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            if (context.dataset.yAxisID === 'y') {
+                                                label += context.parsed.y.toFixed(2) + ' tons';
+                                            } else {
+                                                // Get the land unit for this specific crop from global variable
+                                                const dataIndex = context.dataIndex;
+                                                console.log('🟢 Tooltip - DataIndex:', dataIndex, 
+                                                    'Global Units:', window.cropInsightLandUnits,
+                                                    'Unit at index:', window.cropInsightLandUnits ? window.cropInsightLandUnits[dataIndex] : 'undefined');
+                                                
+                                                const unit = window.cropInsightLandUnits && window.cropInsightLandUnits[dataIndex] 
+                                                    ? window.cropInsightLandUnits[dataIndex] 
+                                                    : 'ha';
+                                                
+                                                label += context.parsed.y.toLocaleString() + ' ' + unit;
+                                            }
+                                        }
+                                        return label;
+                                    },
+                                    footer: function(tooltipItems) {
+                                        // Calculate total for stacked bars
+                                        let total = 0;
+                                        tooltipItems.forEach(function(tooltipItem) {
+                                            if (tooltipItem.dataset.yAxisID === 'y') {
+                                                total += tooltipItem.parsed.y;
+                                            }
+                                        });
+                                        return total > 0 ? 'Total Production: ' + total.toFixed(2) + ' tons' : '';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                beginAtZero: true,
+                                stacked: true,
+                                title: {
+                                    display: true,
+                                    text: 'Production (tons)',
+                                    color: '#495057',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 12
+                                    }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toFixed(0) + ' t';
+                                    },
+                                    color: '#495057'
+                                },
+                                grid: {
+                                    drawOnChartArea: true,
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Land Cultivated (ha / sqm / m)',
+                                    color: '#0d6efd',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 12
+                                    }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString();
+                                    },
+                                    color: '#0d6efd'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            },
+                            x: {
+                                stacked: true,
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            }
+                        }
+                    }
+                });
+
+                console.log('✅ Crop insight chart rendered successfully');
+
+            } catch (error) {
+                console.error('Error rendering crop insight chart:', error);
             }
         }
 
@@ -4926,11 +6069,21 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
         }
 
         function updateStocksChart(view) {
-            const data = analyticsData.stocks[view];
+            // Map 'name' view to 'category' data structure
+            const dataView = (view === 'name') ? 'category' : view;
+            const data = analyticsData.stocks[dataView];
+            
+            if (!data || !data.labels || !data.data) {
+                console.warn('No data available for stocks view:', view);
+                return;
+            }
+            
             stocksChart.data.labels = data.labels;
             stocksChart.data.datasets[0].data = data.data;
             stocksChart.data.datasets[0].backgroundColor = data.colors;
             stocksChart.update();
+            
+            console.log(`✅ Stocks chart updated to ${view} view`);
         }
 
         // Event Listeners for Filters - with error handling
@@ -4948,9 +6101,11 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             });
         }
 
-        // Export Functions
-        function exportChart(chartType, format) {
-            const chartMap = {
+        // Logout Function
+
+    </script>
+</body>
+</html>
                 'sales': salesChart,
                 'stocks': stocksChart,
                 'soil': soilChart,
@@ -5002,25 +6157,50 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     }
                     break;
                 case 'stocks':
-                    // Always export as Category, Stock, Status for all products
-                    csv = 'Category,Stock,Status\n';
-                    // Fetch all products from analytics (or cache, or refetch if needed)
-                    // We'll use the last fetched products from updateStockAnalyticsFromDB if available
-                    if (window.lastFetchedProductsForExport && Array.isArray(window.lastFetchedProductsForExport)) {
-                        window.lastFetchedProductsForExport.forEach(product => {
-                            const cat = product.category || 'Uncategorized';
-                            const qty = parseInt(product.quantity, 10) || 0;
-                            let status = 'Available';
-                            if (qty === 0) status = 'Out of Stock';
-                            else if (qty > 0 && qty <= 10) status = 'Low Stock';
-                            csv += `${cat},${qty},${status}\n`;
-                        });
+                    // Check current filter to determine export format
+                    const currentFilter = document.getElementById('stocksFilter').value;
+                    
+                    // Get products data - try multiple sources
+                    let productsData = window.lastFetchedProductsForExport 
+                        || analyticsData?.stocks?.category?.products 
+                        || null;
+                    
+                    if (currentFilter === 'status') {
+                        // For status view: Name, Stocks, Status (show all products with their status)
+                        csv = 'Name,Stocks,Status\n';
+                        if (productsData && Array.isArray(productsData)) {
+                            productsData.forEach(product => {
+                                const name = product.name || 'Unnamed Product';
+                                const qty = parseInt(product.quantity, 10) || 0;
+                                let status = 'Available';
+                                if (qty === 0) status = 'Out of Stock';
+                                else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                                csv += `${name},${qty},${status}\n`;
+                            });
+                        }
                     } else {
-                        // fallback: use analyticsData.stocks.category/status (less detail)
-                        data = analyticsData.stocks[document.getElementById('stocksFilter').value];
-                        data.labels.forEach((label, index) => {
-                            csv += label + ',' + data.data[index] + ',\n';
-                        });
+                        // For name view: export all products with full details
+                        csv = 'Product Name,Stock,Category,Status\n';
+                        // Use the products data if available
+                        if (productsData && Array.isArray(productsData)) {
+                            productsData.forEach(product => {
+                                const name = product.name || 'Unnamed Product';
+                                const cat = product.category || 'Uncategorized';
+                                const qty = parseInt(product.quantity, 10) || 0;
+                                let status = 'Available';
+                                if (qty === 0) status = 'Out of Stock';
+                                else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                                csv += `${name},${qty},${cat},${status}\n`;
+                            });
+                        } else {
+                            // fallback: use analyticsData.stocks.category data
+                            data = analyticsData.stocks.category;
+                            if (data && data.labels) {
+                                data.labels.forEach((label, index) => {
+                                    csv += label + ',' + data.data[index] + ',,\n';
+                                });
+                            }
+                        }
                     }
                     break;
                 case 'soil':
@@ -5032,9 +6212,12 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     break;
                 case 'hectare':
                     data = analyticsData.hectare.monthly;
-                    csv = 'Period,Hectares\n';
+                    csv = 'Period,Hectares,Square Meters,Meters\n';
                     data.labels.forEach((label, index) => {
-                        csv += label + ',' + data.data[index] + '\n';
+                        const hectares = data.hectares ? data.hectares[index] : 0;
+                        const squareMeters = data.squareMeters ? data.squareMeters[index] : 0;
+                        const meters = data.meters ? data.meters[index] : 0;
+                        csv += `${label},${hectares},${squareMeters},${meters}\n`;
                     });
                     break;
             }
@@ -5182,43 +6365,50 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         const hectareData = analyticsData.hectare.monthly;
                         console.log('Hectare data for export:', hectareData);
                         
-                        if (hectareData && hectareData.labels && hectareData.data) {
+                        if (hectareData && hectareData.labels) {
                             dataTableHTML = `
-                                <h2>Hectare Analytics Data Table</h2>
+                                <h2>Land Area Analytics Data Table</h2>
                                 <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
                                     <thead>
                                         <tr style="background-color: #f8f9fa;">
                                             <th style="padding: 10px; text-align: left;">Period</th>
                                             <th style="padding: 10px; text-align: right;">Hectares</th>
+                                            <th style="padding: 10px; text-align: right;">Square Meters</th>
+                                            <th style="padding: 10px; text-align: right;">Meters</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                             `;
                             
-                            let total = 0;
+                            let totalHectares = 0;
+                            let totalSquareMeters = 0;
+                            let totalMeters = 0;
+                            
                             hectareData.labels.forEach((label, index) => {
-                                const value = hectareData.data[index] || 0;
-                                total += value;
+                                const hectares = hectareData.hectares ? hectareData.hectares[index] : 0;
+                                const squareMeters = hectareData.squareMeters ? hectareData.squareMeters[index] : 0;
+                                const meters = hectareData.meters ? hectareData.meters[index] : 0;
+                                
+                                totalHectares += hectares;
+                                totalSquareMeters += squareMeters;
+                                totalMeters += meters;
                                 
                                 dataTableHTML += `
                                     <tr>
                                         <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
-                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value.toFixed(1)} ha</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${hectares.toFixed(1)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${squareMeters.toFixed(1)}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${meters.toFixed(1)}</td>
                                     </tr>
                                 `;
                             });
                             
-                            // Calculate average
-                            const average = hectareData.labels.length > 0 ? (total / hectareData.labels.length).toFixed(1) : 0;
-                            
                             dataTableHTML += `
                                         <tr style="background-color: #e9ecef; font-weight: bold;">
                                             <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
-                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total.toFixed(1)} ha</td>
-                                        </tr>
-                                        <tr style="background-color: #f8f9fa; font-weight: bold;">
-                                            <td style="padding: 10px; border: 1px solid #ddd;">Average</td>
-                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${average} ha</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalHectares.toFixed(1)}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalSquareMeters.toFixed(1)}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalMeters.toFixed(1)}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -5229,51 +6419,121 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         }
                     } else if (chartType === 'stocks') {
                         console.log('📦 Processing stocks data for Word export...');
+                        
+                        // Get products data - try multiple sources
+                        let productsData = window.lastFetchedProductsForExport 
+                            || analyticsData?.stocks?.category?.products 
+                            || null;
+                        
+                        console.log('window.lastFetchedProductsForExport:', window.lastFetchedProductsForExport);
+                        console.log('analyticsData.stocks.category.products:', analyticsData?.stocks?.category?.products);
+                        console.log('Final productsData:', productsData);
+                        
                         // Use the current stocks filter to determine which data to show
                         const stocksFilter = document.getElementById('stocksFilter');
-                        const currentView = stocksFilter ? stocksFilter.value : 'category';
-                        const stocksData = analyticsData.stocks[currentView];
+                        const currentView = stocksFilter ? stocksFilter.value : 'name';
+                        console.log('Current view:', currentView);
                         
-                        if (stocksData && stocksData.labels && stocksData.data) {
-                            const headerLabel = currentView === 'category' ? 'Category' : 'Status';
-                            const valueLabel = currentView === 'category' ? 'Quantity' : 'Count';
-                            
-                            dataTableHTML = `
-                                <h2>Stocks Analytics Data Table (${currentView.charAt(0).toUpperCase() + currentView.slice(1)})</h2>
-                                <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
-                                    <thead>
-                                        <tr style="background-color: #f8f9fa;">
-                                            <th style="padding: 10px; text-align: left;">${headerLabel}</th>
-                                            <th style="padding: 10px; text-align: right;">${valueLabel}</th>
+                        if (currentView === 'status') {
+                            // For status view: show all products with Name, Stocks, Status
+                            if (productsData && Array.isArray(productsData) && productsData.length > 0) {
+                                console.log('Exporting', productsData.length, 'products in status view');
+                                dataTableHTML = `
+                                    <h2>Stocks Analytics Data Table (By Status)</h2>
+                                    <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                        <thead>
+                                            <tr style="background-color: #f8f9fa;">
+                                                <th style="padding: 10px; text-align: left;">Name</th>
+                                                <th style="padding: 10px; text-align: right;">Stocks</th>
+                                                <th style="padding: 10px; text-align: center;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                `;
+                                
+                                let totalStocks = 0;
+                                productsData.forEach(product => {
+                                    const name = product.name || 'Unnamed Product';
+                                    const qty = parseInt(product.quantity, 10) || 0;
+                                    let status = 'Available';
+                                    if (qty === 0) status = 'Out of Stock';
+                                    else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                                    totalStocks += qty;
+                                    
+                                    dataTableHTML += `
+                                        <tr>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${name}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${qty}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${status}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                            `;
-                            
-                            let total = 0;
-                            stocksData.labels.forEach((label, index) => {
-                                const value = stocksData.data[index] || 0;
-                                total += value;
+                                    `;
+                                });
                                 
                                 dataTableHTML += `
-                                    <tr>
-                                        <td style="padding: 10px; border: 1px solid #ddd;">${label}</td>
-                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${value}</td>
-                                    </tr>
+                                            <tr style="background-color: #e9ecef; font-weight: bold;">
+                                                <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalStocks}</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 `;
-                            });
-                            
-                            dataTableHTML += `
-                                        <tr style="background-color: #e9ecef; font-weight: bold;">
-                                            <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
-                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${total}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            `;
+                            } else {
+                                console.warn('⚠️ No products data available');
+                                dataTableHTML = `<p><em>No stocks data available for export.</em></p>`;
+                            }
                         } else {
-                            console.warn('⚠️ Stocks data not available for Word export');
-                            dataTableHTML = `<p><em>No stocks data available for export.</em></p>`;
+                            // For name view: show all products with Product Name, Stock, Category, Status
+                            if (productsData && Array.isArray(productsData) && productsData.length > 0) {
+                                console.log('Exporting', productsData.length, 'products in name view');
+                                dataTableHTML = `
+                                    <h2>Stocks Analytics Data Table (By Product Name)</h2>
+                                    <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                        <thead>
+                                            <tr style="background-color: #f8f9fa;">
+                                                <th style="padding: 10px; text-align: left;">Product Name</th>
+                                                <th style="padding: 10px; text-align: right;">Stock</th>
+                                                <th style="padding: 10px; text-align: left;">Category</th>
+                                                <th style="padding: 10px; text-align: center;">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                `;
+                                
+                                let totalStocks = 0;
+                                productsData.forEach(product => {
+                                    const name = product.name || 'Unnamed Product';
+                                    const cat = product.category || 'Uncategorized';
+                                    const qty = parseInt(product.quantity, 10) || 0;
+                                    let status = 'Available';
+                                    if (qty === 0) status = 'Out of Stock';
+                                    else if (qty > 0 && qty <= 10) status = 'Low Stock';
+                                    totalStocks += qty;
+                                    
+                                    dataTableHTML += `
+                                        <tr>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${name}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${qty}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${cat}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${status}</td>
+                                        </tr>
+                                    `;
+                                });
+                                
+                                dataTableHTML += `
+                                            <tr style="background-color: #e9ecef; font-weight: bold;">
+                                                <td style="padding: 10px; border: 1px solid #ddd;">Total</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalStocks}</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd;">-</td>
+                                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                `;
+                            } else {
+                                console.warn('⚠️ No products data available');
+                                dataTableHTML = `<p><em>No stocks data available for export.</em></p>`;
+                            }
                         }
                     } else {
                         console.warn('⚠️ Chart data not available for:', chartType);

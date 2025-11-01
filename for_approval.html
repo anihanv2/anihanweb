@@ -165,7 +165,7 @@
                     <div class="col-12">
                         <div class="approval-card">
                             <div class="approval-card-header d-flex justify-content-between align-items-center">
-                                <span>For Approval Farmers</span>
+                                <span>For Approval Users</span>
                                 <!-- Search Bar -->
                                 <div class="d-flex gap-2">
                                     <div class="search-container">
@@ -181,7 +181,7 @@
                                     <table class="approval-table">
                                         <thead>
                                             <tr>
-                                                <th>Store Name</th>
+                                                <th>Full Name</th>
                                                 <th>Municipality</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
@@ -266,69 +266,56 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="viewApplicationModalLabel">Store Owner Application Details</h5>
+                    <h5 class="modal-title" id="viewApplicationModalLabel">User Application Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-muted">Store Name</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_store_name">-</p>
+                            <label class="form-label fw-bold text-muted">Full Name</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_full_name">-</p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-muted">Operation Time</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_operation_time">-</p>
+                            <label class="form-label fw-bold text-muted">Phone Number</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_phone_number">-</p>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-muted">Crops Type</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_crops_type">-</p>
+                            <label class="form-label fw-bold text-muted">Email</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_email">-</p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-muted">Land Size</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_land_size">-</p>
+                            <label class="form-label fw-bold text-muted">Municipality</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_municipality">-</p>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-muted">Soil Type</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_soil_type">-</p>
+                            <label class="form-label fw-bold text-muted">Barangay</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_barangay">-</p>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Address</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_address">-</p>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold text-muted">Status</label>
                             <p class="form-control-plaintext border-bottom" id="modal_status">-</p>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold text-muted">Recommendation</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_recommendation">-</p>
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-muted">Latitude</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_latitude">-</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-muted">Longitude</label>
-                            <p class="form-control-plaintext border-bottom" id="modal_longitude">-</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
                             <label class="form-label fw-bold text-muted">Application Date</label>
                             <p class="form-control-plaintext border-bottom" id="modal_created_at">-</p>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold text-muted">User Information</label>
-                            <div class="border rounded p-3 bg-light">
-                                <p class="mb-1"><strong>Name:</strong> <span id="modal_user_name">-</span></p>
-                                <p class="mb-1"><strong>Email:</strong> <span id="modal_user_email">-</span></p>
-                                <p class="mb-0"><strong>Municipality:</strong> <span id="modal_user_municipality">-</span></p>
+                            <label class="form-label fw-bold text-muted">Indigency Certificate</label>
+                            <div class="border rounded p-3 bg-light text-center">
+                                <img id="modal_certificate_image" src="" alt="Certificate" style="max-width: 100%; max-height: 500px; display: none;" class="rounded">
+                                <p id="modal_certificate_placeholder" class="text-muted mb-0">No certificate uploaded</p>
                             </div>
                         </div>
                     </div>
@@ -562,7 +549,7 @@
             });
         }
 
-        // Load pending store owner applications with municipality data
+        // Load pending user applications
         async function loadPendingApplications() {
             try {
                 console.log('=== LOADING PENDING APPLICATIONS ===');
@@ -576,14 +563,15 @@
                 
                 console.log('Supabase client:', window.supabaseClient);
                 
-                // First try a simple query without joins to see if basic data exists
-                const { data: simpleStores, error: simpleError } = await window.supabaseClient
-                    .from('store-owner')
-                    .select('id, store_name, status, user_id')
-                    .or('status.eq.pending,status.is.null');
+                // Query users table for pending applications
+                const { data: pendingUsers, error: usersError } = await window.supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: false });
 
-                console.log('Simple query - Error:', simpleError);
-                console.log('Simple query - Data:', simpleStores);
+                console.log('Pending users query - Error:', usersError);
+                console.log('Pending users query - Data:', pendingUsers);
 
                 const tableBody = document.getElementById('pendingApplicationsTableBody');
                 if (!tableBody) {
@@ -591,20 +579,19 @@
                     return;
                 }
 
-                if (simpleError) {
-                    console.error('Error in simple query:', simpleError);
+                if (usersError) {
+                    console.error('Error loading pending users:', usersError);
                     tableBody.innerHTML = `
                         <tr>
                             <td colspan="4" class="text-center text-danger">
-                                Database Error: ${simpleError.message}<br>
-                                Table: store-owner may not exist or have different name
+                                Database Error: ${usersError.message}
                             </td>
                         </tr>
                     `;
                     return;
                 }
 
-                if (!simpleStores || simpleStores.length === 0) {
+                if (!pendingUsers || pendingUsers.length === 0) {
                     console.log('No pending applications found');
                     tableBody.innerHTML = `
                         <tr>
@@ -614,70 +601,26 @@
                     return;
                 }
 
-                console.log(`Found ${simpleStores.length} pending applications`);
-
-                // Now try to get user data for each store
-                const storesWithUsers = [];
-                for (const store of simpleStores) {
-                    try {
-                        console.log(`Looking up user data for store ${store.store_name} with user_id: ${store.user_id}`);
-                        
-                        // Try to get user data for this store
-                        const { data: userData, error: userError } = await window.supabaseClient
-                            .from('users')
-                            .select('*')
-                            .eq('id', store.user_id)
-                            .single();
-
-                        console.log(`User query result for ${store.user_id}:`, { userData, userError });
-
-                        if (userError) {
-                            console.error(`Error fetching user ${store.user_id}:`, userError);
-                        }
-
-                        storesWithUsers.push({
-                            ...store,
-                            users: userError ? null : userData
-                        });
-                    } catch (userErr) {
-                        console.log('Could not get user data for store:', store.id, 'Error:', userErr);
-                        storesWithUsers.push({
-                            ...store,
-                            users: null
-                        });
-                    }
-                }
+                console.log(`Found ${pendingUsers.length} pending applications`);
 
                 // Display the data
-                tableBody.innerHTML = storesWithUsers.map(storeOwner => {
-                    console.log('Processing store owner for display:', storeOwner);
-                    console.log('User data:', storeOwner.users);
-                    console.log('Municipality data:', storeOwner.users?.municipality);
-                    
-                    // Check what municipality field exists
-                    let municipalityDisplay = 'No Municipality Data';
-                    if (storeOwner.users) {
-                        municipalityDisplay = storeOwner.users.municipality || 
-                                            storeOwner.users.Municipality || 
-                                            storeOwner.users.city || 
-                                            storeOwner.users.location || 
-                                            'No Municipality Data';
-                    }
+                tableBody.innerHTML = pendingUsers.map(user => {
+                    console.log('Processing user for display:', user);
                     
                     return `
-                        <tr id="row-${storeOwner.id}">
-                            <td>${storeOwner.store_name || 'N/A'}</td>
-                            <td title="User ID: ${storeOwner.user_id || 'N/A'}">${municipalityDisplay}</td>
+                        <tr id="row-${user.id}">
+                            <td>${user.full_name || 'N/A'}</td>
+                            <td>${user.municipality || 'N/A'}</td>
                             <td><span class="badge bg-warning">Pending Approval</span></td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="btn btn-info btn-sm" onclick="viewApplication('${storeOwner.id}')" title="View Details">
+                                    <button class="btn btn-info btn-sm" onclick="viewApplication('${user.id}')" title="View Details">
                                         <i class="fas fa-eye me-1"></i>View
                                     </button>
-                                    <button class="btn btn-success btn-sm" onclick="approveApplication('${storeOwner.id}')">
+                                    <button class="btn btn-success btn-sm" onclick="approveApplication('${user.id}')">
                                         <i class="fas fa-check me-1"></i>Accept
                                     </button>
-                                    <button class="btn btn-danger btn-sm" onclick="declineApplication('${storeOwner.id}')">
+                                    <button class="btn btn-danger btn-sm" onclick="declineApplication('${user.id}')">
                                         <i class="fas fa-times me-1"></i>Decline
                                     </button>
                                 </div>
@@ -705,16 +648,16 @@
         }
 
         // Approve application
-        async function approveApplication(storeId) {
+        async function approveApplication(userId) {
             if (!confirm('Are you sure you want to accept this application?')) {
                 return;
             }
 
             try {
                 const { error } = await window.supabaseClient
-                    .from('store-owner')
+                    .from('users')
                     .update({ status: 'accepted' })
-                    .eq('id', storeId);
+                    .eq('id', userId);
 
                 if (error) {
                     console.error('Error accepting application:', error);
@@ -723,7 +666,7 @@
                 }
 
                 // Remove the row from the table
-                const row = document.getElementById(`row-${storeId}`);
+                const row = document.getElementById(`row-${userId}`);
                 if (row) {
                     row.remove();
                 }
@@ -747,16 +690,16 @@
         }
 
         // Decline application
-        async function declineApplication(storeId) {
+        async function declineApplication(userId) {
             if (!confirm('Are you sure you want to decline this application?')) {
                 return;
             }
 
             try {
                 const { error } = await window.supabaseClient
-                    .from('store-owner')
+                    .from('users')
                     .update({ status: 'declined' })
-                    .eq('id', storeId);
+                    .eq('id', userId);
 
                 if (error) {
                     console.error('Error declining application:', error);
@@ -765,12 +708,12 @@
                 }
 
                 // Remove the row from the table
-                const row = document.getElementById(`row-${storeId}`);
+                const row = document.getElementById(`row-${userId}`);
                 if (row) {
                     row.remove();
                 }
 
-                alert('Application declined.');
+                alert('Application declined successfully!');
 
                 // Check if table is empty and show message
                 const tableBody = document.getElementById('pendingApplicationsTableBody');
@@ -1229,58 +1172,52 @@
         }
 
         // View application details in modal
-        async function viewApplication(storeId) {
+        async function viewApplication(userId) {
             try {
                 console.log('=== VIEWING APPLICATION DETAILS ===');
-                console.log('Store ID:', storeId);
+                console.log('User ID:', userId);
                 
                 // Store the current application ID for approve/decline from modal
-                currentViewingApplicationId = storeId;
+                currentViewingApplicationId = userId;
 
-                // Fetch complete store-owner data
-                const { data: storeData, error: storeError } = await window.supabaseClient
-                    .from('store-owner')
+                // Fetch user data
+                const { data: userData, error: userError } = await window.supabaseClient
+                    .from('users')
                     .select('*')
-                    .eq('id', storeId)
+                    .eq('id', userId)
                     .single();
 
-                if (storeError) {
-                    console.error('Error fetching store data:', storeError);
+                if (userError) {
+                    console.error('Error fetching user data:', userError);
                     alert('Error loading application details. Please try again.');
                     return;
                 }
 
-                console.log('Store data:', storeData);
-
-                // Fetch user data
-                let userData = null;
-                if (storeData.user_id) {
-                    const { data: user, error: userError } = await window.supabaseClient
-                        .from('users')
-                        .select('*')
-                        .eq('id', storeData.user_id)
-                        .single();
-
-                    if (!userError && user) {
-                        userData = user;
-                        console.log('User data:', userData);
-                    }
-                }
+                console.log('User data:', userData);
 
                 // Populate modal with data
-                document.getElementById('modal_store_name').textContent = storeData.store_name || 'N/A';
-                document.getElementById('modal_operation_time').textContent = storeData.operation_time || 'N/A';
-                document.getElementById('modal_crops_type').textContent = storeData.crops_type || 'N/A';
-                document.getElementById('modal_land_size').textContent = storeData.land_size ? `${storeData.land_size} hectares` : 'N/A';
-                document.getElementById('modal_soil_type').textContent = storeData.soil_type || 'N/A';
-                document.getElementById('modal_status').innerHTML = storeData.status ? 
-                    `<span class="badge bg-warning">${storeData.status}</span>` : 
-                    '<span class="badge bg-secondary">N/A</span>';
-                document.getElementById('modal_recommendation').textContent = storeData.recommendation || 'N/A';
-                document.getElementById('modal_latitude').textContent = storeData.latitude || 'N/A';
-                document.getElementById('modal_longitude').textContent = storeData.longitude || 'N/A';
-                document.getElementById('modal_created_at').textContent = storeData.created_at ? 
-                    new Date(storeData.created_at).toLocaleString('en-US', { 
+                document.getElementById('modal_full_name').textContent = userData.full_name || 'N/A';
+                document.getElementById('modal_phone_number').textContent = userData.phone_number || 'N/A';
+                document.getElementById('modal_email').textContent = userData.email || 'N/A';
+                document.getElementById('modal_municipality').textContent = userData.municipality || 'N/A';
+                document.getElementById('modal_barangay').textContent = userData.barangay || 'N/A';
+                document.getElementById('modal_address').textContent = userData.address || 'N/A';
+                
+                // Status badge
+                let statusBadge = '';
+                if (userData.status === 'pending') {
+                    statusBadge = '<span class="badge bg-warning">Pending</span>';
+                } else if (userData.status === 'accepted') {
+                    statusBadge = '<span class="badge bg-success">Accepted</span>';
+                } else if (userData.status === 'declined') {
+                    statusBadge = '<span class="badge bg-danger">Declined</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-secondary">N/A</span>';
+                }
+                document.getElementById('modal_status').innerHTML = statusBadge;
+                
+                document.getElementById('modal_created_at').textContent = userData.created_at ? 
+                    new Date(userData.created_at).toLocaleString('en-US', { 
                         year: 'numeric', 
                         month: 'long', 
                         day: 'numeric',
@@ -1288,16 +1225,22 @@
                         minute: '2-digit'
                     }) : 'N/A';
 
-                // Populate user information
-                if (userData) {
-                    document.getElementById('modal_user_name').textContent = userData.full_name || userData.name || 'N/A';
-                    document.getElementById('modal_user_email').textContent = userData.email || 'N/A';
-                    document.getElementById('modal_user_municipality').textContent = userData.municipality || 
-                        userData.Municipality || userData.city || 'N/A';
+                // Handle indigency certificate image
+                const certificateImage = document.getElementById('modal_certificate_image');
+                const certificatePlaceholder = document.getElementById('modal_certificate_placeholder');
+                
+                if (userData.indigency_certificate_base64) {
+                    // Check if it's already a data URL or just base64
+                    const imageData = userData.indigency_certificate_base64.startsWith('data:') 
+                        ? userData.indigency_certificate_base64 
+                        : `data:image/jpeg;base64,${userData.indigency_certificate_base64}`;
+                    
+                    certificateImage.src = imageData;
+                    certificateImage.style.display = 'block';
+                    certificatePlaceholder.style.display = 'none';
                 } else {
-                    document.getElementById('modal_user_name').textContent = 'N/A';
-                    document.getElementById('modal_user_email').textContent = 'N/A';
-                    document.getElementById('modal_user_municipality').textContent = 'N/A';
+                    certificateImage.style.display = 'none';
+                    certificatePlaceholder.style.display = 'block';
                 }
 
                 // Show the modal

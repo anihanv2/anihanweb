@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Approval - Sub Admin</title>
+    <link rel="icon" type="image/png" href="images/pic4.png">
+    <link rel="shortcut icon" type="image/png" href="images/pic4.png">
+    <link rel="apple-touch-icon" href="images/pic4.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css?v=5.0" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=5.0" rel="stylesheet">
+    <link href="fixed-layout.css?v=5.0" rel="stylesheet">
+    <link href="profile-dropdown.css?v=5.0" rel="stylesheet">
+    <link href="for_approval.css?v=5.0" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <!-- Mobile hamburger menu button -->
+                <button class="mobile-menu-toggle me-3" onclick="toggleMobileSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <img src="images/pic4.png" alt="Anihan Logo" class="logo-image me-2">
+                <span class="brand-text">Anihan</span>
+            </a>
+            <div class="user-avatar" onclick="toggleProfileDropdown()">
+                <img id="userAvatarImage" class="avatar-img" style="display: none;" alt="Profile">
+                <i id="userAvatarIcon" class="fas fa-user"></i>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-dropdown-header">
+                        <div class="profile-dropdown-avatar">
+                            <img id="profileAvatarImage" class="profile-avatar-img" style="display: none;" alt="Profile">
+                            <i id="profileAvatarIcon" class="fas fa-user"></i>
+                        </div>
+                        <h6 id="profileUserName" class="profile-dropdown-name">Loading...</h6>
+                    </div>
+                    <div class="profile-dropdown-details">
+                        <div class="profile-detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <span id="profileUserEmail">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-user-tag"></i>
+                            <span id="profileUserRole">Loading...</span>
+                        </div>
+                        <div class="profile-detail-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="profileUserAccess">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="profile-dropdown-actions">
+                        <button class="btn" onclick="signOut()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar bg-white border-end">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link d-flex align-items-center text-start" href="municipality_dashboard.html">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Dashboard
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="sub_admin_inventory.html">
+                        <i class="fas fa-boxes me-2"></i>
+                        Inventory Records
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="sub_admin_price_monitoring.html">
+                        <i class="fas fa-dollar-sign me-2"></i>
+                        Price Monitoring
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start" href="sub_admin_in_demand_products.html">
+                        <i class="fas fa-chart-line me-2"></i>
+                        In Demand Products
+                    </a>
+                    
+                    <!-- Account Approval Dropdown -->
+                    <div class="nav-dropdown">
+                        <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
+                                type="button" data-bs-toggle="collapse" data-bs-target="#accountApprovalSubmenu" 
+                                aria-expanded="true" aria-controls="accountApprovalSubmenu">
+                            <span>
+                                <i class="fas fa-clipboard-check me-2"></i>
+                                Account Approval
+                            </span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </button>
+                        <div class="collapse show" id="accountApprovalSubmenu">
+                            <div class="submenu">
+                                <a class="nav-link submenu-link active d-flex align-items-center text-start" href="sub_admin_for_approval.html">
+                                    <i class="fas fa-user-clock me-2"></i>
+                                    For Approval
+                                </a>
+                                <a class="nav-link submenu-link d-flex align-items-center text-start" href="sub_admin_approved_application.html">
+                                    <i class="fas fa-user-check me-2"></i>
+                                    Approved Applications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Sidebar Overlay -->
+            <div class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- For Approval Applications Table -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="approval-card">
+                            <div class="approval-card-header d-flex justify-content-between align-items-center">
+                                <span>For Approval Farmers</span>
+                                <!-- Search Bar -->
+                                <div class="d-flex gap-2">
+                                    <div class="search-container">
+                                        <div class="search-input-wrapper">
+                                            <i class="fas fa-search search-icon"></i>
+                                            <input type="text" class="form-control search-input" id="searchInput" placeholder="Search">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="approval-card-body">
+                                <div class="table-responsive">
+                                    <table class="approval-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Store Name</th>
+                                                <th>Municipality</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="applicationsTableBody">
+                                            <!-- Dynamic content will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="approval-card-footer">
+                                    <a href="javascript:void(0)" onclick="showAllApplicationsModal()" style="color:#2563eb;font-size:0.95rem;cursor:pointer;">View all &gt;</a>
+                                    <div class="approval-pagination">
+                                        <button class="btn" onclick="changePage(-1)">&lt;</button>
+                                        <button class="btn active" id="currentPageBtn">1</button>
+                                        <button class="btn" onclick="changePage(1)">&gt;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View All Applications Modal -->
+    <div class="modal fade" id="allApplicationsModal" tabindex="-1" aria-labelledby="allApplicationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allApplicationsModalLabel">All Pending Applications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="allAppsSearchInput" placeholder="Search by store name, municipality, crops...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Store Name</th>
+                                    <th>Owner</th>
+                                    <th>Municipality</th>
+                                    <th>Crops Type</th>
+                                    <th>Land Size</th>
+                                    <th>Application Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allApplicationsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading applications...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allApplicationsCount">0 applications found</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Application Modal -->
+    <div class="modal fade" id="viewApplicationModal" tabindex="-1" aria-labelledby="viewApplicationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewApplicationModalLabel">Store Owner Application Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Store Name</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_store_name">-</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Operation Time</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_operation_time">-</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Crops Type</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_crops_type">-</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Land Size</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_land_size">-</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Soil Type</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_soil_type">-</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Status</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_status">-</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold text-muted">Recommendation</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_recommendation">-</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Latitude</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_latitude">-</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-muted">Longitude</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_longitude">-</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold text-muted">Location</label>
+                            <div>
+                                <button type="button" class="btn btn-primary btn-sm" id="viewMapBtn" onclick="viewOnMap()">
+                                    <i class="fas fa-map-marker-alt me-1"></i>View Location on Map
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold text-muted">Barangay Certificate</label>
+                            <div id="certificateContainer">
+                                <p class="text-muted">No certificate uploaded</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold text-muted">Application Date</label>
+                            <p class="form-control-plaintext border-bottom" id="modal_created_at">-</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold text-muted">User Information</label>
+                            <div class="border rounded p-3 bg-light">
+                                <p class="mb-1"><strong>Name:</strong> <span id="modal_user_name">-</span></p>
+                                <p class="mb-1"><strong>Email:</strong> <span id="modal_user_email">-</span></p>
+                                <p class="mb-0"><strong>Phone:</strong> <span id="modal_user_phone">-</span></p>
+                                <p class="mb-0"><strong>Municipality:</strong> <span id="modal_user_municipality">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="approveFromModal()">
+                        <i class="fas fa-check me-1"></i>Accept Application
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="declineFromModal()">
+                        <i class="fas fa-times me-1"></i>Decline Application
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Modal -->
+    <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mapModalLabel">Store Location</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="mapContainer" style="width: 100%; height: 400px; border-radius: 8px;">
+                        <iframe id="mapIframe" width="100%" height="100%" frameborder="0" style="border:0; border-radius: 8px;" allowfullscreen></iframe>
+                    </div>
+                    <div class="mt-3">
+                        <p class="mb-1"><strong>Coordinates:</strong></p>
+                        <p class="text-muted" id="mapCoordinates">-</p>
+                        <a id="openInGoogleMaps" href="#" target="_blank" class="btn btn-primary btn-sm">
+                            <i class="fas fa-external-link-alt me-1"></i>Open in Google Maps
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Image Modal -->
+    <div class="modal fade" id="certificateModal" tabindex="-1" aria-labelledby="certificateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="certificateModalLabel">Barangay Certificate</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="certificateImage" src="" alt="Barangay Certificate" style="max-width: 100%; height: auto; border-radius: 8px;">
+                </div>
+                <div class="modal-footer">
+                    <a id="downloadCertificate" href="#" download class="btn btn-primary">
+                        <i class="fas fa-download me-1"></i>Download
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="shared-profile.js?v=5.5"></script>
+    <script>
+        // supabaseClient is already initialized in shared-profile.js
+        // Just ensure it's available
+        let currentApplicationId = null;
+        let allApplications = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
+        // Load applications on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 For Approval page loaded');
+            await loadApplications();
+            setupSearchFunctionality();
+        });
+
+        // Setup search functionality
+        function setupSearchFunctionality() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterTable(searchTerm);
+                });
+            }
+
+            const allAppsSearchInput = document.getElementById('allAppsSearchInput');
+            if (allAppsSearchInput) {
+                allAppsSearchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    filterAllApplicationsTable(searchTerm);
+                });
+            }
+        }
+
+        // Filter main table
+        function filterTable(searchTerm) {
+            const tableBody = document.getElementById('applicationsTableBody');
+            if (!tableBody) return;
+
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // Filter all applications modal table
+        function filterAllApplicationsTable(searchTerm) {
+            const tableBody = document.getElementById('allApplicationsTableBody');
+            if (!tableBody) return;
+
+            const rows = tableBody.querySelectorAll('tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                if (row.cells.length === 1) return; // Skip loading/empty rows
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('allApplicationsCount').textContent = `${visibleCount} applications found`;
+        }
+
+        async function loadApplications() {
+            try {
+                console.log('📡 Loading pending applications...');
+                
+                // Get current admin's municipality from sessionStorage
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+                const municipalityAddress = currentUser.address;
+
+                console.log('🔍 Current User:', currentUser);
+                console.log('🏛️ Municipality Address:', municipalityAddress);
+
+                if (!municipalityAddress) {
+                    console.warn('⚠️ No municipality found for admin');
+                    document.getElementById('applicationsTableBody').innerHTML = `
+                        <tr><td colspan="4" class="text-center text-muted">No municipality assigned to your account</td></tr>
+                    `;
+                    return;
+                }
+
+                // Step 1: Get all users from this municipality
+                const { data: municipalityUsers, error: usersError } = await supabaseClient
+                    .from('users')
+                    .select('id')
+                    .eq('municipality', municipalityAddress);
+
+                if (usersError) {
+                    console.error('❌ Error fetching users:', usersError);
+                    document.getElementById('applicationsTableBody').innerHTML = `
+                        <tr><td colspan="4" class="text-center text-danger">Error: ${usersError.message}</td></tr>
+                    `;
+                    return;
+                }
+
+                console.log('👥 Municipality Users:', municipalityUsers);
+
+                if (!municipalityUsers || municipalityUsers.length === 0) {
+                    document.getElementById('applicationsTableBody').innerHTML = `
+                        <tr><td colspan="4" class="text-center text-muted">No users found in ${municipalityAddress}</td></tr>
+                    `;
+                    return;
+                }
+
+                const userIds = municipalityUsers.map(u => u.id);
+                console.log('🆔 User IDs to query:', userIds);
+
+                // Step 2: Get store-owner applications for these users
+                const { data: applications, error: appsError } = await supabaseClient
+                    .from('store-owner')
+                    .select('*, users!inner(id, full_name, municipality, phone_number, email)')
+                    .in('user_id', userIds)
+                    .or('status.is.null,status.eq.pending')
+                    .order('created_at', { ascending: false });
+
+                if (appsError) {
+                    console.error('❌ Error fetching applications:', appsError);
+                    document.getElementById('applicationsTableBody').innerHTML = `
+                        <tr><td colspan="4" class="text-center text-danger">Error: ${appsError.message}</td></tr>
+                    `;
+                    return;
+                }
+
+                console.log(`📋 Found ${applications?.length || 0} pending applications`);
+                console.log('Applications data:', applications);
+                
+                allApplications = applications || [];
+                displayApplications(allApplications);
+
+            } catch (error) {
+                console.error('❌ Error loading applications:', error);
+                document.getElementById('applicationsTableBody').innerHTML = `
+                    <tr><td colspan="4" class="text-center text-danger">Error loading applications: ${error.message}</td></tr>
+                `;
+            }
+        }
+
+        function displayApplications(applications) {
+            const tbody = document.getElementById('applicationsTableBody');
+            
+            if (!applications || applications.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="4" class="text-center text-muted">No pending applications</td></tr>
+                `;
+                return;
+            }
+
+            // Display paginated results
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedApps = applications.slice(startIndex, endIndex);
+
+            tbody.innerHTML = paginatedApps.map(app => `
+                <tr id="row-${app.id}">
+                    <td>${app.store_name}</td>
+                    <td>${app.users.municipality}</td>
+                    <td><span class="badge bg-warning">Pending Approval</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-info btn-sm" onclick="viewApplication('${app.id}')" title="View Details">
+                                <i class="fas fa-eye me-1"></i>View
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="approveApplication('${app.id}')">
+                                <i class="fas fa-check me-1"></i>Accept
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="declineApplication('${app.id}')">
+                                <i class="fas fa-times me-1"></i>Decline
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('currentPageBtn').textContent = currentPage;
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(allApplications.length / itemsPerPage);
+            currentPage += direction;
+            
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            
+            displayApplications(allApplications);
+        }
+
+        function showAllApplicationsModal() {
+            const tbody = document.getElementById('allApplicationsTableBody');
+            
+            if (!allApplications || allApplications.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="7" class="text-center text-muted">No pending applications</td></tr>
+                `;
+            } else {
+                tbody.innerHTML = allApplications.map(app => `
+                    <tr>
+                        <td>${app.store_name}</td>
+                        <td>${app.users.full_name}</td>
+                        <td>${app.users.municipality}</td>
+                        <td>${app.crops_type}</td>
+                        <td>${app.land_size || 'N/A'} ${app.land_size_unit || ''}</td>
+                        <td>${new Date(app.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewApplication('${app.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="approveApplication('${app.id}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="declineApplication('${app.id}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById('allApplicationsCount').textContent = `${allApplications.length} applications found`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('allApplicationsModal'));
+            modal.show();
+        }
+
+        async function viewApplication(applicationId) {
+            try {
+                currentApplicationId = applicationId;
+                
+                const { data: app, error } = await supabaseClient
+                    .from('store-owner')
+                    .select('*, users!inner(id, full_name, municipality, phone_number, email)')
+                    .eq('id', applicationId)
+                    .single();
+
+                if (error) throw error;
+
+                // Store coordinates globally for map function
+                window.currentLatitude = app.latitude;
+                window.currentLongitude = app.longitude;
+
+                document.getElementById('modal_store_name').textContent = app.store_name;
+                document.getElementById('modal_operation_time').textContent = app.operation_time;
+                document.getElementById('modal_crops_type').textContent = app.crops_type;
+                document.getElementById('modal_land_size').textContent = `${app.land_size || 'N/A'} ${app.land_size_unit || ''}`;
+                document.getElementById('modal_soil_type').textContent = app.soil_type || 'N/A';
+                document.getElementById('modal_status').textContent = app.status || 'Pending';
+                document.getElementById('modal_recommendation').textContent = app.recommendation || 'N/A';
+                document.getElementById('modal_latitude').textContent = app.latitude;
+                document.getElementById('modal_longitude').textContent = app.longitude;
+                document.getElementById('modal_created_at').textContent = new Date(app.created_at).toLocaleString();
+                document.getElementById('modal_user_name').textContent = app.users.full_name;
+                document.getElementById('modal_user_email').textContent = app.users.email || 'N/A';
+                document.getElementById('modal_user_phone').textContent = app.users.phone_number;
+                document.getElementById('modal_user_municipality').textContent = app.users.municipality;
+
+                // Handle Barangay Certificate
+                const certificateContainer = document.getElementById('certificateContainer');
+                if (app.barangay_certificate_url) {
+                    const certUrl = app.barangay_certificate_url;
+                    certificateContainer.innerHTML = `
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="viewCertificate('${certUrl.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-image me-1"></i>View Certificate
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    certificateContainer.innerHTML = '<p class="text-muted mb-0">No certificate uploaded</p>';
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('viewApplicationModal'));
+                modal.show();
+
+            } catch (error) {
+                console.error('❌ Error loading application details:', error);
+                alert('Error loading application details');
+            }
+        }
+
+        function viewOnMap() {
+            const lat = window.currentLatitude;
+            const lon = window.currentLongitude;
+            
+            if (!lat || !lon) {
+                alert('Location coordinates not available');
+                return;
+            }
+
+            // Set map iframe source to Google Maps embed
+            const mapIframe = document.getElementById('mapIframe');
+            mapIframe.src = `https://maps.google.com/maps?q=${lat},${lon}&hl=es;z=14&output=embed`;
+            
+            // Set coordinates text
+            document.getElementById('mapCoordinates').textContent = `Latitude: ${lat}, Longitude: ${lon}`;
+            
+            // Set Google Maps link
+            document.getElementById('openInGoogleMaps').href = `https://www.google.com/maps?q=${lat},${lon}`;
+            
+            // Show the map modal
+            const mapModal = new bootstrap.Modal(document.getElementById('mapModal'));
+            mapModal.show();
+        }
+
+        function viewCertificate(imageUrl) {
+            document.getElementById('certificateImage').src = imageUrl;
+            document.getElementById('downloadCertificate').href = imageUrl;
+            
+            const certModal = new bootstrap.Modal(document.getElementById('certificateModal'));
+            certModal.show();
+        }
+
+        async function approveApplication(storeId) {
+            if (!confirm('Are you sure you want to accept this application?')) {
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('store-owner')
+                    .update({ status: 'approved' })
+                    .eq('id', storeId);
+
+                if (error) throw error;
+
+                alert('Application approved successfully!');
+                
+                // Close any open modals
+                const modals = document.querySelectorAll('.modal.show');
+                modals.forEach(modal => {
+                    bootstrap.Modal.getInstance(modal)?.hide();
+                });
+                
+                await loadApplications();
+
+            } catch (error) {
+                console.error('❌ Error approving application:', error);
+                alert('Error approving application');
+            }
+        }
+
+        async function declineApplication(storeId) {
+            if (!confirm('Are you sure you want to decline this application?')) {
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('store-owner')
+                    .update({ status: 'rejected' })
+                    .eq('id', storeId);
+
+                if (error) throw error;
+
+                alert('Application declined');
+                
+                // Close any open modals
+                const modals = document.querySelectorAll('.modal.show');
+                modals.forEach(modal => {
+                    bootstrap.Modal.getInstance(modal)?.hide();
+                });
+                
+                await loadApplications();
+
+            } catch (error) {
+                console.error('❌ Error declining application:', error);
+                alert('Error declining application');
+            }
+        }
+
+        function approveFromModal() {
+            if (currentApplicationId) {
+                approveApplication(currentApplicationId);
+            }
+        }
+
+        function declineFromModal() {
+            if (currentApplicationId) {
+                declineApplication(currentApplicationId);
+            }
+        }
+
+        function refreshApplications() {
+            loadApplications();
+        }
+
+        // Mobile sidebar toggle
+        function toggleMobileSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+
+        function closeMobileSidebar() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
