@@ -658,7 +658,7 @@
                     <div class="col-md-6">
                         <div class="analytics-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5>Hectare Analytics</h5>
+                                <h5>Land Area Analytics</h5>
                                 <div class="chart-controls">
                                     <select class="form-select form-select-sm me-2" id="hectareFilter" style="width: 120px;" onchange="updateHectareChart(this.value)">
                                         <option value="monthly">Monthly</option>
@@ -697,7 +697,7 @@
 
                 <!-- Crop Insight Analytics -->
                 <div class="row mb-4">
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <div class="analytics-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5>Crop Insight - Harvest vs Overproduction</h5>
@@ -731,6 +731,48 @@
                             <div class="card-body">
                                 <div class="chart-container">
                                     <canvas id="cropInsightChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="analytics-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>Top Selling Products</h5>
+                                <div class="chart-controls">
+                                    <select class="form-select form-select-sm me-2" id="topProductsMunicipalityFilter" style="width: 200px;" onchange="updateTopProductsChart()">
+                                        <option value="all">All Municipalities</option>
+                                        <!-- Municipalities will be loaded dynamically -->
+                                    </select>
+                                    <select class="form-select form-select-sm me-2" id="topProductsLimitFilter" style="width: 120px;" onchange="updateTopProductsChart()">
+                                        <option value="10">Top 10</option>
+                                        <option value="20">Top 20</option>
+                                        <option value="all">All Products</option>
+                                    </select>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-bars"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="exportChart('topProducts', 'csv')">
+                                                <i class="fas fa-file-csv me-2"></i>Save as CSV
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="exportChart('topProducts', 'pdf')">
+                                                <i class="fas fa-file-pdf me-2"></i>Save as PDF
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="exportChart('topProducts', 'word')">
+                                                <i class="fas fa-file-word me-2"></i>Save as Word
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="exportChart('topProducts', 'picture')">
+                                                <i class="fas fa-image me-2"></i>Save as Picture
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="topProductsChart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -954,6 +996,59 @@
         </div>
     </div>
 
+    <!-- All Top Products Modal -->
+    <div class="modal fade" id="allTopProductsModal" tabindex="-1" aria-labelledby="allTopProductsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allTopProductsModalLabel">All Top Selling Products</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="topProductsSearchInput" placeholder="Search products by name or category...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Total Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Orders</th>
+                                    <th>Avg. Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allTopProductsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading top products...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <span id="allTopProductsCount">0 products found</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAllTopProducts('csv')">
+                                <i class="fas fa-file-csv me-1"></i>Export CSV
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="exportAllTopProducts('pdf')">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- All Communities Modal -->
     <div class="modal fade" id="allCommunitiesModal" tabindex="-1" aria-labelledby="allCommunitiesModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -1046,6 +1141,7 @@
                 loadUsersData();
                 loadMunicipalitySalesData();
                 loadCommunityData();
+                initTopProductsChart(); // Initialize top products chart
                 
                 // Debug municipality sales
                 setTimeout(() => {
@@ -2523,6 +2619,391 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             });
         }
 
+        // ========================================
+        // TOP SELLING PRODUCTS CHART FUNCTIONS
+        // ========================================
+
+        let currentTopProductsData = null;
+        let allMunicipalities = [];
+
+        // Initialize top selling products chart
+        async function initTopProductsChart() {
+            try {
+                console.log('🚀 === INITIALIZING TOP SELLING PRODUCTS CHART ===');
+                
+                if (topProductsChart && typeof topProductsChart.destroy === 'function') {
+                    topProductsChart.destroy();
+                    topProductsChart = null;
+                }
+
+                const canvas = document.getElementById('topProductsChart');
+                if (!canvas) {
+                    console.warn('⚠️ Top products chart canvas not found');
+                    return;
+                }
+
+                // Load municipalities for filter
+                await loadMunicipalitiesForFilter();
+
+                // Load and display chart
+                await updateTopProductsChart();
+
+            } catch (error) {
+                console.error('❌ Error initializing top products chart:', error);
+            }
+        }
+
+        // Load municipalities for the filter dropdown
+        async function loadMunicipalitiesForFilter() {
+            try {
+                // Define all 31 municipalities in Batangas (matching admin_accounts.html)
+                const allBatangasMunicipalities = [
+                    'Agoncillo',
+                    'Alitagtag',
+                    'Balayan',
+                    'Balete',
+                    'Batangas City',
+                    'Bauan',
+                    'Calaca City',
+                    'Calatagan',
+                    'Cuenca',
+                    'Ibaan',
+                    'Laurel',
+                    'Lemery',
+                    'Lian',
+                    'Lipa City',
+                    'Lobo',
+                    'Mabini',
+                    'Malvar',
+                    'Mataas na Kahoy',
+                    'Nasugbu',
+                    'Padre Garcia',
+                    'Rosario',
+                    'San Jose',
+                    'San Juan',
+                    'San Luis',
+                    'San Nicolas',
+                    'San Pascual',
+                    'Sta. Teresita',
+                    'Sto. Tomas City',
+                    'Taal',
+                    'Talisay',
+                    'Tanauan City',
+                    'Tingloy',
+                    'Tuy',
+                    'Tysan'
+                ];
+
+                allMunicipalities = allBatangasMunicipalities;
+
+                // Populate dropdown
+                const filterSelect = document.getElementById('topProductsMunicipalityFilter');
+                if (filterSelect) {
+                    // Keep "All Municipalities" option and add all municipalities
+                    filterSelect.innerHTML = '<option value="all">All Municipalities</option>';
+                    allBatangasMunicipalities.forEach(municipality => {
+                        filterSelect.innerHTML += `<option value="${municipality}">${municipality}</option>`;
+                    });
+                }
+
+                console.log(`✅ Loaded ${allBatangasMunicipalities.length} municipalities for filter`);
+
+            } catch (error) {
+                console.error('Error loading municipalities:', error);
+            }
+        }
+
+        // Update top selling products chart based on filters
+        async function updateTopProductsChart() {
+            try {
+                console.log('🔄 Updating top selling products chart...');
+                
+                if (!supabaseClient) {
+                    console.error('❌ Supabase client not available');
+                    renderTopProductsChart([], 'all', '10');
+                    return;
+                }
+
+                const municipalityFilter = document.getElementById('topProductsMunicipalityFilter')?.value || 'all';
+                const limitFilter = document.getElementById('topProductsLimitFilter')?.value || '10';
+
+                console.log('Filters:', { municipalityFilter, limitFilter });
+
+                // Get order items with product details and user info
+                let query = supabaseClient
+                    .from('order_items')
+                    .select(`
+                        id,
+                        quantity,
+                        price,
+                        product_id,
+                        order_id,
+                        my_products!inner (
+                            id,
+                            name,
+                            category,
+                            user_id,
+                            users!my_products_user_id_fkey (
+                                id,
+                                municipality
+                            )
+                        )
+                    `);
+
+                const { data: orderItems, error: orderItemsError } = await query;
+                
+                if (orderItemsError) {
+                    console.error('❌ Error fetching order items:', orderItemsError);
+                    renderTopProductsChart([], municipalityFilter, limitFilter);
+                    return;
+                }
+                
+                console.log(`📦 Found ${orderItems?.length || 0} total order items`);
+                
+                if (!orderItems || orderItems.length === 0) {
+                    console.warn('⚠️ No order items found');
+                    renderTopProductsChart([], municipalityFilter, limitFilter);
+                    return;
+                }
+
+                // Filter by municipality if not "all"
+                let filteredItems = orderItems;
+                if (municipalityFilter !== 'all') {
+                    filteredItems = orderItems.filter(item => {
+                        const municipality = item.my_products?.users?.municipality;
+                        return municipality === municipalityFilter;
+                    });
+                    console.log(`🔍 Filtered to ${filteredItems.length} items for ${municipalityFilter}`);
+                }
+
+                // Group by product and calculate metrics
+                const productMetrics = {};
+                
+                filteredItems.forEach(item => {
+                    const product = item.my_products;
+                    if (!product) return;
+
+                    const productId = product.id;
+                    const productName = product.name;
+                    const category = product.category;
+                    const quantity = parseInt(item.quantity) || 0;
+                    const price = parseFloat(item.price) || 0;
+                    const revenue = quantity * price;
+
+                    if (!productMetrics[productId]) {
+                        productMetrics[productId] = {
+                            productId: productId,
+                            productName: productName,
+                            category: category,
+                            totalSold: 0,
+                            totalRevenue: 0,
+                            orderCount: 0
+                        };
+                    }
+
+                    productMetrics[productId].totalSold += quantity;
+                    productMetrics[productId].totalRevenue += revenue;
+                    productMetrics[productId].orderCount += 1;
+                });
+
+                // Convert to array and sort by total revenue (descending)
+                let productsArray = Object.values(productMetrics);
+                productsArray.sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+                // Apply limit filter
+                if (limitFilter !== 'all') {
+                    const limit = parseInt(limitFilter);
+                    productsArray = productsArray.slice(0, limit);
+                }
+
+                console.log(`✅ Processed ${productsArray.length} products`);
+                console.log('Top 5 products:', productsArray.slice(0, 5));
+
+                // Store current data for exports
+                currentTopProductsData = {
+                    products: productsArray,
+                    municipality: municipalityFilter,
+                    limit: limitFilter
+                };
+
+                renderTopProductsChart(productsArray, municipalityFilter, limitFilter);
+
+            } catch (error) {
+                console.error('💥 Error updating top products chart:', error);
+                renderTopProductsChart([], 'all', '10');
+            }
+        }
+
+        // Render the top products chart
+        function renderTopProductsChart(productsData, municipality, limit) {
+            try {
+                if (topProductsChart && typeof topProductsChart.destroy === 'function') {
+                    topProductsChart.destroy();
+                    topProductsChart = null;
+                }
+
+                const canvas = document.getElementById('topProductsChart');
+                if (!canvas) {
+                    console.warn('⚠️ Top products chart canvas not found');
+                    return;
+                }
+
+                const ctx = canvas.getContext('2d');
+
+                if (!productsData || productsData.length === 0) {
+                    // Show "No data" message
+                    topProductsChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['No Data'],
+                            datasets: [{
+                                label: 'No products found',
+                                data: [0],
+                                backgroundColor: 'rgba(200, 200, 200, 0.5)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: {
+                                    display: true,
+                                    text: municipality === 'all' ? 'No products data available' : `No products found in ${municipality}`
+                                }
+                            }
+                        }
+                    });
+                    return;
+                }
+
+                const labels = productsData.map(p => p.productName);
+                const revenueData = productsData.map(p => p.totalRevenue);
+                const soldData = productsData.map(p => p.totalSold);
+
+                topProductsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Revenue (₱)',
+                                data: revenueData,
+                                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                                borderColor: 'rgba(40, 167, 69, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Quantity Sold',
+                                data: soldData,
+                                backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                                borderColor: 'rgba(23, 162, 184, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: { size: 12 },
+                                    padding: 15
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: municipality === 'all' 
+                                    ? `Top ${limit === 'all' ? 'All' : limit} Selling Products (All Municipalities)` 
+                                    : `Top ${limit === 'all' ? 'All' : limit} Selling Products in ${municipality}`,
+                                font: { size: 16, weight: 'bold' },
+                                padding: { top: 10, bottom: 20 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        const product = productsData[context[0].dataIndex];
+                                        return `${product.productName}`;
+                                    },
+                                    label: function(context) {
+                                        const product = productsData[context.dataIndex];
+                                        if (context.dataset.label === 'Revenue (₱)') {
+                                            return `Revenue: ₱${product.totalRevenue.toLocaleString('en-PH', {minimumFractionDigits: 2})}`;
+                                        } else {
+                                            return `Quantity Sold: ${product.totalSold} units`;
+                                        }
+                                    },
+                                    afterLabel: function(context) {
+                                        const product = productsData[context.dataIndex];
+                                        return [
+                                            `Category: ${product.category}`,
+                                            `Number of Orders: ${product.orderCount}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    font: { size: 10 },
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Revenue (₱)',
+                                    font: { size: 12, weight: 'bold' }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₱' + value.toLocaleString('en-PH');
+                                    }
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Quantity Sold',
+                                    font: { size: 12, weight: 'bold' }
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toLocaleString('en-PH');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                console.log('✅ Top products chart rendered successfully');
+
+            } catch (error) {
+                console.error('❌ Error rendering top products chart:', error);
+            }
+        }
+
         // Search functionality for municipality modal
         function setupMunicipalitySearch() {
             const searchInput = document.getElementById('municipalitySearchInput');
@@ -3645,7 +4126,8 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     stocks: stocksChart,
                     soil: soilChart,
                     hectare: hectareChart,
-                    cropInsight: cropInsightChart
+                    cropInsight: cropInsightChart,
+                    topProducts: topProductsChart
                 };
                 
                 const chart = chartMap[chartType];
@@ -3792,6 +4274,20 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     });
                 }
                 csv = headers + dataRows;
+            } else if (chartType === 'topProducts' && currentTopProductsData) {
+                console.log('🏆 Processing top products export...');
+                headers = 'Rank,Product Name,Category,Units Sold,Revenue (PHP),Number of Orders\n';
+                currentTopProductsData.products.forEach((product, index) => {
+                    const rank = index + 1;
+                    const name = product.productName || 'Unknown';
+                    const category = product.category || 'Unknown';
+                    const sold = product.totalSold || 0;
+                    const revenue = product.totalRevenue || 0;
+                    const orders = product.orderCount || 0;
+                    dataRows += `${rank},"${name}","${category}",${sold},${revenue.toFixed(2)},${orders}\n`;
+                });
+                csv = headers + dataRows;
+                console.log('📊 Top products CSV preview:', csv.substring(0, 200));
             } else {
                 console.log('⚠️ Using fallback export for:', chartType);
                 // Fallback to chart data for other chart types
@@ -3802,7 +4298,8 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     stocks: stocksChart,
                     soil: soilChart,
                     hectare: hectareChart,
-                    cropInsight: cropInsightChart
+                    cropInsight: cropInsightChart,
+                    topProducts: topProductsChart
                 };
                     
                 const chart = chartMap[chartType];
@@ -4085,6 +4582,73 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         styles: { fontSize: 9 }
                     });
                 }
+            } else if (chartType === 'topProducts' && currentTopProductsData) {
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                const municipality = currentTopProductsData.municipality === 'all' ? 'All Municipalities' : currentTopProductsData.municipality;
+                const limit = currentTopProductsData.limit === 'all' ? 'All Products' : `Top ${currentTopProductsData.limit}`;
+                doc.text(`Top Selling Products - ${municipality}`, leftMargin, yPosition);
+                yPosition += 10;
+                
+                const headers = [['Rank', 'Product Name', 'Category', 'Quantity Sold', 'Revenue (PHP)', 'Orders']];
+                const data = [];
+                let totalQuantity = 0;
+                let totalRevenue = 0;
+                let totalOrders = 0;
+                
+                currentTopProductsData.products.forEach((product, index) => {
+                    const rank = index + 1;
+                    const name = product.productName || 'Unknown';
+                    const category = product.category || 'Unknown';
+                    const sold = product.totalSold || 0;
+                    const revenue = product.totalRevenue || 0;
+                    const orders = product.orderCount || 0;
+                    
+                    totalQuantity += sold;
+                    totalRevenue += revenue;
+                    totalOrders += orders;
+                    
+                    const formattedRevenue = new Intl.NumberFormat('en-PH', {
+                        style: 'currency',
+                        currency: 'PHP',
+                        minimumFractionDigits: 2
+                    }).format(revenue);
+                    
+                    data.push([
+                        rank.toString(),
+                        name,
+                        category,
+                        sold.toString(),
+                        formattedRevenue,
+                        orders.toString()
+                    ]);
+                });
+                
+                const formattedTotalRevenue = new Intl.NumberFormat('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP',
+                    minimumFractionDigits: 2
+                }).format(totalRevenue);
+                
+                data.push([
+                    'Total',
+                    '-',
+                    '-',
+                    totalQuantity.toString(),
+                    formattedTotalRevenue,
+                    totalOrders.toString()
+                ]);
+                
+                doc.autoTable({
+                    startY: yPosition,
+                    head: headers,
+                    body: data,
+                    theme: 'grid',
+                    headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold' },
+                    footStyles: { fillColor: [233, 236, 239], textColor: 0, fontStyle: 'bold' },
+                    margin: { left: leftMargin, right: rightMargin },
+                    styles: { fontSize: 9 }
+                });
             }
             
             // Footer
@@ -4435,6 +4999,80 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                                 dataTableHTML = `<p><em>No stocks data available for export.</em></p>`;
                             }
                         }
+                    } else if (chartType === 'topProducts' && currentTopProductsData) {
+                        console.log('🏆 Processing top products data for Word export...');
+                        
+                        const municipality = currentTopProductsData.municipality === 'all' ? 'All Municipalities' : currentTopProductsData.municipality;
+                        const limit = currentTopProductsData.limit === 'all' ? 'All Products' : `Top ${currentTopProductsData.limit}`;
+                        
+                        dataTableHTML = `
+                            <h2>Top Selling Products - ${municipality}</h2>
+                            <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                                <thead>
+                                    <tr style="background-color: #f8f9fa;">
+                                        <th style="padding: 10px; text-align: center;">Rank</th>
+                                        <th style="padding: 10px; text-align: left;">Product Name</th>
+                                        <th style="padding: 10px; text-align: left;">Category</th>
+                                        <th style="padding: 10px; text-align: right;">Quantity Sold</th>
+                                        <th style="padding: 10px; text-align: right;">Revenue (PHP)</th>
+                                        <th style="padding: 10px; text-align: center;">Orders</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        
+                        let totalQuantity = 0;
+                        let totalRevenue = 0;
+                        let totalOrders = 0;
+                        
+                        currentTopProductsData.products.forEach((product, index) => {
+                            const rank = index + 1;
+                            const name = product.productName || 'Unknown';
+                            const category = product.category || 'Unknown';
+                            const sold = product.totalSold || 0;
+                            const revenue = product.totalRevenue || 0;
+                            const orders = product.orderCount || 0;
+                            
+                            totalQuantity += sold;
+                            totalRevenue += revenue;
+                            totalOrders += orders;
+                            
+                            const formattedRevenue = new Intl.NumberFormat('en-PH', {
+                                style: 'currency',
+                                currency: 'PHP',
+                                minimumFractionDigits: 2
+                            }).format(revenue);
+                            
+                            dataTableHTML += `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${rank}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${name}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${category}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${sold}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${formattedRevenue}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${orders}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        const formattedTotalRevenue = new Intl.NumberFormat('en-PH', {
+                            style: 'currency',
+                            currency: 'PHP',
+                            minimumFractionDigits: 2
+                        }).format(totalRevenue);
+                        
+                        dataTableHTML += `
+                                    <tr style="background-color: #e9ecef; font-weight: bold;">
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">Total</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">-</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">-</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${totalQuantity}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${formattedTotalRevenue}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${totalOrders}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
                     } else {
                         console.warn('⚠️ Chart data not available for:', chartType);
                         dataTableHTML = `<p><em>No data available for ${chartType} chart.</em></p>`;
@@ -4889,7 +5527,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
     
     <script>
         // Chart.js Analytics Implementation
-        let salesChart, stocksChart, soilChart, hectareChart, cropInsightChart;
+        let salesChart, stocksChart, soilChart, hectareChart, cropInsightChart, topProductsChart;
         
         // Store crop insight data globally for export
         let currentCropInsightData = null;

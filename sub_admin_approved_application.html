@@ -394,11 +394,12 @@
                 window.currentLongitude = acc.longitude;
 
                 const certUrl = acc.barangay_certificate_url;
+                const certificateType = acc.certificate_type || 'Barangay Certificate';
                 const certificateSection = certUrl ? `
                     <div class="mt-3">
-                        <h6>Barangay Certificate</h6>
+                        <h6>${certificateType}</h6>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-primary" onclick="viewCertificate('${certUrl.replace(/'/g, "\\'")}')">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="viewCertificate('${certUrl.replace(/'/g, "\\'")}', '${certificateType.replace(/'/g, "\\'")}')">
                                 <i class="fas fa-image me-1"></i>View Certificate
                             </button>
                         </div>
@@ -471,9 +472,10 @@
             mapModal.show();
         }
 
-        function viewCertificate(imageUrl) {
+        function viewCertificate(imageUrl, certificateType = 'Barangay Certificate') {
             document.getElementById('certificateImage').src = imageUrl;
             document.getElementById('downloadCertificate').href = imageUrl;
+            document.getElementById('certificateModalLabel').textContent = certificateType;
             
             const certModal = new bootstrap.Modal(document.getElementById('certificateModal'));
             certModal.show();

@@ -279,6 +279,7 @@
         let currentPage = 1;
         let totalSalesLocations = 0;
         const locationsPerPage = 10;
+        let allGroupedSalesData = []; // Store all grouped data for pagination
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -303,14 +304,7 @@
 
                 const client = window.supabaseClient || supabaseClient;
 
-                // First get total count
-                const { count } = await client
-                    .from('order_items')
-                    .select('*', { count: 'exact', head: true });
-
-                totalSalesLocations = count || 0;
-
-                // Get product sales data with store information using the same join approach as price monitoring
+                // Get ALL product sales data (we'll handle pagination after grouping)
                 const { data: salesData, error } = await client
                     .from('order_items')
                     .select(`
@@ -334,8 +328,7 @@
                                 )
                             )
                         )
-                    `)
-                    .range((currentPage - 1) * locationsPerPage, currentPage * locationsPerPage - 1);
+                    `);
 
                 console.log('📈 Sales data query result:', { 
                     dataCount: salesData?.length || 0, 
@@ -432,19 +425,56 @@
                     sampleProcessedData: Object.values(processedData).slice(0, 3)
                 });
 
-                // Convert to array and sort by total sales (descending)
+                // Calculate total sales per municipality first
+                const municipalityTotals = {};
+                Object.values(processedData).forEach(item => {
+                    if (!municipalityTotals[item.municipality]) {
+                        municipalityTotals[item.municipality] = 0;
+                    }
+                    municipalityTotals[item.municipality] += item.totalSales;
+                });
+
+                // Convert to array and sort by municipality total sales (descending), then by product sales
                 const salesArray = Object.values(processedData)
-                    .sort((a, b) => b.totalSales - a.totalSales);
+                    .sort((a, b) => {
+                        // First sort by municipality total sales
+                        const municATotalSales = municipalityTotals[a.municipality];
+                        const municBTotalSales = municipalityTotals[b.municipality];
+                        
+                        if (municATotalSales !== municBTotalSales) {
+                            return municBTotalSales - municATotalSales; // Higher total municipality sales first
+                        }
+                        
+                        // If same municipality, sort by individual product sales
+                        return b.totalSales - a.totalSales;
+                    });
 
                 console.log('✅ Final sales array:', salesArray.length, 'records');
                 console.log('📋 Sample records:', salesArray.slice(0, 5));
+                console.log('🏆 Municipality totals:', municipalityTotals);
                 
-                updateSalesTable(salesArray);
+                // Store all grouped data globally for pagination
+                allGroupedSalesData = salesArray;
+                totalSalesLocations = salesArray.length;
+                
+                // Display the current page
+                displayCurrentPage();
 
             } catch (error) {
                 console.error('💥 Error in loadSalesPerLocationData:', error);
                 updateSalesTable([]);
             }
+        }
+
+        // Function to display the current page from the cached data
+        function displayCurrentPage() {
+            const startIndex = (currentPage - 1) * locationsPerPage;
+            const endIndex = startIndex + locationsPerPage;
+            const paginatedData = allGroupedSalesData.slice(startIndex, endIndex);
+            
+            console.log(`📄 Showing page ${currentPage}: items ${startIndex + 1} to ${Math.min(endIndex, totalSalesLocations)} of ${totalSalesLocations}`);
+            
+            updateSalesTable(paginatedData);
         }
 
         // Update the sales table with data
@@ -521,15 +551,16 @@
         }
 
         // Function to change page
+        // Function to change page
         function changePage(direction) {
             const totalPages = Math.ceil(totalSalesLocations / locationsPerPage);
             
             if (direction === 1 && currentPage < totalPages) {
                 currentPage++;
-                loadSalesPerLocationData();
+                displayCurrentPage(); // Just update display, don't reload data
             } else if (direction === -1 && currentPage > 1) {
                 currentPage--;
-                loadSalesPerLocationData();
+                displayCurrentPage(); // Just update display, don't reload data
             }
         }
 
@@ -570,31 +601,64 @@
                     console.error('Error fetching all sales:', error);
                     updateAllSalesTable([]);
                 } else {
-                    // Process data similar to main function
+                    // Process data similar to main function - group by municipality AND product
                     const processedData = {};
                     allSalesData.forEach(item => {
                         const product = item.my_products;
                         const user = product?.users;
-                        const municipality = user?.municipality || 'Unknown';
+                        const storeOwner = user?.['store-owner']?.[0];
+                        const storeName = storeOwner?.store_name || 'Unknown Store';
+                        const municipality = user?.municipality || 'Unknown Location';
+                        const productName = product?.name || 'Unknown Product';
+                        const category = product?.category || 'Unknown';
                         const quantity = parseInt(item.quantity) || 0;
                         const price = parseFloat(product?.price) || 0;
                         const totalAmount = quantity * price;
                         
-                        if (processedData[municipality]) {
-                            processedData[municipality].totalQuantity += quantity;
-                            processedData[municipality].totalSales += totalAmount;
-                            processedData[municipality].orderCount += 1;
+                        const key = `${municipality}-${productName}`;
+                        
+                        if (processedData[key]) {
+                            processedData[key].quantity += quantity;
+                            processedData[key].totalSales += totalAmount;
+                            processedData[key].orderCount += 1;
                         } else {
-                            processedData[municipality] = {
+                            processedData[key] = {
                                 municipality: municipality,
-                                totalQuantity: quantity,
+                                productName: productName,
+                                category: category,
+                                quantity: quantity,
                                 totalSales: totalAmount,
-                                orderCount: 1
+                                orderCount: 1,
+                                storeName: storeName
                             };
                         }
                     });
                     
-                    const salesData = Object.values(processedData).sort((a, b) => b.totalSales - a.totalSales);
+                    // Calculate total sales per municipality first
+                    const municipalityTotals = {};
+                    Object.values(processedData).forEach(item => {
+                        if (!municipalityTotals[item.municipality]) {
+                            municipalityTotals[item.municipality] = 0;
+                        }
+                        municipalityTotals[item.municipality] += item.totalSales;
+                    });
+
+                    // Sort by municipality total sales (descending), then by product sales
+                    const salesData = Object.values(processedData)
+                        .sort((a, b) => {
+                            // First sort by municipality total sales
+                            const municATotalSales = municipalityTotals[a.municipality];
+                            const municBTotalSales = municipalityTotals[b.municipality];
+                            
+                            if (municATotalSales !== municBTotalSales) {
+                                return municBTotalSales - municATotalSales; // Higher total municipality sales first
+                            }
+                            
+                            // If same municipality, sort by individual product sales
+                            return b.totalSales - a.totalSales;
+                        });
+                    
+                    console.log('🏆 Municipality totals (modal):', municipalityTotals);
                     updateAllSalesTable(salesData);
                 }
             } catch (error) {

@@ -269,7 +269,7 @@
                     <div class="row mt-3">
                         <div class="col-12">
                             <div class="detail-group">
-                                <label class="detail-label">Indigency Certificate:</label>
+                                <label class="detail-label" id="modal_certificate_label">Certificate:</label>
                                 <div class="border rounded p-3 bg-light text-center">
                                     <img id="modal_certificate_image_approved" src="" alt="Certificate" style="max-width: 100%; max-height: 500px; display: none;" class="rounded">
                                     <p id="modal_certificate_placeholder_approved" class="text-muted mb-0">No certificate uploaded</p>
@@ -603,10 +603,18 @@
             document.getElementById('modalStatus').textContent = statusText;
             document.getElementById('modalDate').textContent = app.created_at ? new Date(app.created_at).toLocaleDateString() : 'Not specified';
             
-            // Handle indigency certificate image
+            // Handle certificate type and image
             const certificateImage = document.getElementById('modal_certificate_image_approved');
             const certificatePlaceholder = document.getElementById('modal_certificate_placeholder_approved');
+            const certificateLabel = document.getElementById('modal_certificate_label');
             
+            // Get ID type from users table
+            let idType = app.id_type || 'Indigency Certificate';
+            
+            // Update certificate label based on ID type
+            certificateLabel.textContent = `${idType}:`;
+            
+            // Display certificate image
             if (app.indigency_certificate_base64) {
                 // Check if it's already a data URL or just base64
                 const imageData = app.indigency_certificate_base64.startsWith('data:') 

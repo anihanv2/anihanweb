@@ -280,7 +280,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold text-muted">Barangay Certificate</label>
+                            <label class="form-label fw-bold text-muted" id="modal_certificate_label">Barangay Certificate</label>
                             <div id="certificateContainer">
                                 <p class="text-muted">No certificate uploaded</p>
                             </div>
@@ -628,14 +628,19 @@
                 document.getElementById('modal_user_phone').textContent = app.users.phone_number;
                 document.getElementById('modal_user_municipality').textContent = app.users.municipality;
 
-                // Handle Barangay Certificate
+                // Handle Certificate Type and Label
+                const certificateLabel = document.getElementById('modal_certificate_label');
+                const certificateType = app.certificate_type || 'Barangay Certificate';
+                certificateLabel.textContent = certificateType;
+
+                // Handle Certificate Display
                 const certificateContainer = document.getElementById('certificateContainer');
                 if (app.barangay_certificate_url) {
                     const certUrl = app.barangay_certificate_url;
                     certificateContainer.innerHTML = `
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-primary" onclick="viewCertificate('${certUrl.replace(/'/g, "\\'")}')">
-                                <i class="fas fa-image me-1"></i>View Certificate
+                            <button type="button" class="btn btn-sm btn-primary" onclick="viewCertificate('${certUrl.replace(/'/g, "\\'")}', '${certificateType.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-image me-1"></i>View
                             </button>
                         </div>
                     `;
@@ -676,9 +681,10 @@
             mapModal.show();
         }
 
-        function viewCertificate(imageUrl) {
+        function viewCertificate(imageUrl, certificateType = 'Barangay Certificate') {
             document.getElementById('certificateImage').src = imageUrl;
             document.getElementById('downloadCertificate').href = imageUrl;
+            document.getElementById('certificateModalLabel').textContent = certificateType;
             
             const certModal = new bootstrap.Modal(document.getElementById('certificateModal'));
             certModal.show();

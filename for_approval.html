@@ -312,7 +312,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold text-muted">Indigency Certificate</label>
+                            <label class="form-label fw-bold text-muted" id="modal_certificate_label_pending">Indigency Certificate</label>
                             <div class="border rounded p-3 bg-light text-center">
                                 <img id="modal_certificate_image" src="" alt="Certificate" style="max-width: 100%; max-height: 500px; display: none;" class="rounded">
                                 <p id="modal_certificate_placeholder" class="text-muted mb-0">No certificate uploaded</p>
@@ -1225,9 +1225,16 @@
                         minute: '2-digit'
                     }) : 'N/A';
 
-                // Handle indigency certificate image
+                // Handle certificate label and image
                 const certificateImage = document.getElementById('modal_certificate_image');
                 const certificatePlaceholder = document.getElementById('modal_certificate_placeholder');
+                const certificateLabel = document.getElementById('modal_certificate_label_pending');
+                
+                // Get ID type from users table
+                let idType = userData.id_type || 'Indigency Certificate';
+                
+                // Update certificate label based on ID type
+                certificateLabel.textContent = idType;
                 
                 if (userData.indigency_certificate_base64) {
                     // Check if it's already a data URL or just base64
