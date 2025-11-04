@@ -151,13 +151,14 @@
                                         <th>Store Name</th>
                                         <th>Violation Type</th>
                                         <th>Date of Violation</th>
+                                        <th>Proof</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="violationsTableBody">
                                     <tr>
-                                        <td colspan="5" class="text-center">
+                                        <td colspan="6" class="text-center">
                                             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                                             Loading violations data...
                                         </td>
@@ -288,6 +289,13 @@
                 // Determine status based on report data (you can customize this logic)
                 const status = determineStatus(report);
                 
+                // Check if proof image exists
+                const proofButton = report.proof_image ? 
+                    `<button class="btn btn-primary btn-sm" onclick="viewProofImage('${escapeHtml(report.proof_image)}', '${escapeHtml(report.store_name || 'Unknown Store')}')">
+                        <i class="fas fa-image"></i> View Proof
+                    </button>` : 
+                    '<span class="text-muted">No proof</span>';
+                
                 return `
                     <tr data-report-id="${report.id}">
                         <td>
@@ -298,6 +306,9 @@
                         </td>
                         <td>
                             <div class="violation-date">${formattedDate}</div>
+                        </td>
+                        <td>
+                            ${proofButton}
                         </td>
                         <td>
                             <span class="badge ${getStatusBadgeClass(status)}">${status}</span>
@@ -391,7 +402,7 @@
             const tableBody = document.getElementById('violationsTableBody');
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center text-danger">
+                    <td colspan="6" class="text-center text-danger">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         ${escapeHtml(message)}
                     </td>
@@ -404,7 +415,7 @@
             const tableBody = document.getElementById('violationsTableBody');
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center text-muted">
+                    <td colspan="6" class="text-center text-muted">
                         <i class="fas fa-clipboard-list me-2"></i>
                         No violation reports found
                     </td>
@@ -613,6 +624,57 @@
             }, 3000);
         }
 
+        // Function to view proof image
+        function viewProofImage(imageUrl, storeName) {
+            if (!imageUrl) {
+                alert('No proof image available');
+                return;
+            }
+
+            // Create modal to display proof image
+            const proofModal = document.createElement('div');
+            proofModal.className = 'modal fade';
+            proofModal.id = 'proofImageModal';
+            proofModal.tabIndex = -1;
+            proofModal.innerHTML = `
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Proof Image - ${escapeHtml(storeName)}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="${imageUrl}" alt="Proof Image" style="max-width: 100%; max-height: 70vh; border-radius: 8px;" class="img-fluid">
+                        </div>
+                        <div class="modal-footer">
+                            <a href="${imageUrl}" download class="btn btn-primary">
+                                <i class="fas fa-download me-1"></i>Download Image
+                            </a>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove existing proof modal if any
+            const existingModal = document.getElementById('proofImageModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Add modal to body
+            document.body.appendChild(proofModal);
+
+            // Show modal
+            const modal = new bootstrap.Modal(proofModal);
+            modal.show();
+
+            // Remove modal from DOM when hidden
+            proofModal.addEventListener('hidden.bs.modal', function() {
+                proofModal.remove();
+            });
+        }
+
         // Function to update pagination info
         function updatePaginationInfo() {
             const startItem = totalViolations === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
@@ -710,7 +772,7 @@
             if (!violationsData || violationsData.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center text-muted p-4">
+                        <td colspan="7" class="text-center text-muted p-4">
                             <i class="fas fa-exclamation-triangle me-2"></i>
                             No violation records found
                         </td>
@@ -742,18 +804,26 @@
                         break;
                 }
                 
+                // Check if proof image exists
+                const proofButton = report.proof_image ? 
+                    `<button class="btn btn-primary btn-sm" onclick="viewProofImage('${escapeHtml(report.proof_image)}', '${escapeHtml(report.store_name || 'Unknown Store')}')">
+                        <i class="fas fa-image"></i> View Proof
+                    </button>` : 
+                    '<span class="text-muted">No proof</span>';
+                
                 row.innerHTML = `
                     <td>${escapeHtml(report.id)}</td>
                     <td>${escapeHtml(report.store_name || 'N/A')}</td>
                     <td>${escapeHtml(report.report_description || 'N/A')}</td>
                     <td>${formatDate(report.date)}</td>
+                    <td>${proofButton}</td>
                     <td>${statusBadge}</td>
                     <td>
                         ${report.status?.toLowerCase() === 'pending' ? 
-                            `<button class="btn btn-sm btn-success me-1" onclick="resolveViolation(${report.id})">
+                            `<button class="btn btn-sm btn-success me-1" onclick="resolveViolation('${report.id}')">
                                 <i class="fas fa-check"></i> Resolve
                             </button>
-                            <button class="btn btn-sm btn-secondary" onclick="dismissViolation(${report.id})">
+                            <button class="btn btn-sm btn-secondary" onclick="dismissViolation('${report.id}')">
                                 <i class="fas fa-times"></i> Dismiss
                             </button>` : 
                             '<span class="text-muted">No actions available</span>'
@@ -922,13 +992,14 @@
                                     <th>Store Name</th>
                                     <th>Violation Type</th>
                                     <th>Date Reported</th>
+                                    <th>Proof</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="allViolationsTableBody">
                                 <tr>
-                                    <td colspan="6" class="text-center">Loading violations...</td>
+                                    <td colspan="7" class="text-center">Loading violations...</td>
                                 </tr>
                             </tbody>
                         </table>

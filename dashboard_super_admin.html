@@ -699,19 +699,14 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="analytics-card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5>Crop Insight - Harvest vs Overproduction</h5>
-                                <div class="chart-controls">
-                                    <select class="form-select form-select-sm me-2" id="cropInsightFilter" style="width: 150px;" onchange="updateCropInsightChart(this.value)">
-                                        <option value="all">All Crops</option>
-                                        <option value="top10">Top 10 Crops</option>
-                                        <option value="overproduced">Overproduced Only</option>
-                                    </select>
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">Crop Insight - Harvest vs Overproduction</h5>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-bars"></i>
+                                            <i class="fas fa-download me-1"></i> Export
                                         </button>
-                                        <ul class="dropdown-menu">
+                                        <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="javascript:void(0);" onclick="console.log('CSV clicked'); exportChart('cropInsight', 'csv');">
                                                 <i class="fas fa-file-csv me-2"></i>Save as CSV
                                             </a></li>
@@ -727,6 +722,22 @@
                                         </ul>
                                     </div>
                                 </div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <select class="form-select form-select-sm" id="cropInsightPeriodFilter" onchange="updateCropInsightChart()">
+                                            <option value="monthly">Monthly</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="yearly">Yearly</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select class="form-select form-select-sm" id="cropInsightFilter" onchange="updateCropInsightChart()">
+                                            <option value="all">All Crops</option>
+                                            <option value="top10">Top 10 Crops</option>
+                                            <option value="overproduced">Overproduced Only</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <div class="card-body">
                                 <div class="chart-container">
@@ -737,23 +748,14 @@
                     </div>
                     <div class="col-md-6">
                         <div class="analytics-card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5>Top Selling Products</h5>
-                                <div class="chart-controls">
-                                    <select class="form-select form-select-sm me-2" id="topProductsMunicipalityFilter" style="width: 200px;" onchange="updateTopProductsChart()">
-                                        <option value="all">All Municipalities</option>
-                                        <!-- Municipalities will be loaded dynamically -->
-                                    </select>
-                                    <select class="form-select form-select-sm me-2" id="topProductsLimitFilter" style="width: 120px;" onchange="updateTopProductsChart()">
-                                        <option value="10">Top 10</option>
-                                        <option value="20">Top 20</option>
-                                        <option value="all">All Products</option>
-                                    </select>
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">Top Selling Products</h5>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-bars"></i>
+                                            <i class="fas fa-download me-1"></i> Export
                                         </button>
-                                        <ul class="dropdown-menu">
+                                        <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" href="#" onclick="exportChart('topProducts', 'csv')">
                                                 <i class="fas fa-file-csv me-2"></i>Save as CSV
                                             </a></li>
@@ -767,6 +769,28 @@
                                                 <i class="fas fa-image me-2"></i>Save as Picture
                                             </a></li>
                                         </ul>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <select class="form-select form-select-sm" id="topProductsPeriodFilter" onchange="updateTopProductsChart()">
+                                            <option value="monthly">Monthly</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="yearly">Yearly</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <select class="form-select form-select-sm" id="topProductsMunicipalityFilter" onchange="updateTopProductsChart()">
+                                            <option value="all">All Municipalities</option>
+                                            <!-- Municipalities will be loaded dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select form-select-sm" id="topProductsLimitFilter" onchange="updateTopProductsChart()">
+                                            <option value="10">Top 10</option>
+                                            <option value="20">Top 20</option>
+                                            <option value="all">All Products</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -2720,16 +2744,58 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 
                 if (!supabaseClient) {
                     console.error('❌ Supabase client not available');
-                    renderTopProductsChart([], 'all', '10');
+                    renderTopProductsChart([], 'all', '10', 'monthly');
                     return;
                 }
 
+                const periodFilter = document.getElementById('topProductsPeriodFilter')?.value || 'monthly';
                 const municipalityFilter = document.getElementById('topProductsMunicipalityFilter')?.value || 'all';
                 const limitFilter = document.getElementById('topProductsLimitFilter')?.value || '10';
 
-                console.log('Filters:', { municipalityFilter, limitFilter });
+                console.log('Filters:', { periodFilter, municipalityFilter, limitFilter });
 
-                // Get order items with product details and user info
+                // Calculate date range based on period filter
+                const now = new Date();
+                let startDate;
+                
+                switch (periodFilter) {
+                    case 'weekly':
+                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'yearly':
+                        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'monthly':
+                    default:
+                        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        break;
+                }
+
+                console.log(`Fetching orders from ${startDate.toISOString()} to ${now.toISOString()}`);
+
+                // First, get orders within the date range
+                const { data: orders, error: ordersError } = await supabaseClient
+                    .from('orders')
+                    .select('id, created_at')
+                    .gte('created_at', startDate.toISOString())
+                    .lte('created_at', now.toISOString());
+
+                if (ordersError) {
+                    console.error('❌ Error fetching orders:', ordersError);
+                    renderTopProductsChart([], municipalityFilter, limitFilter, periodFilter);
+                    return;
+                }
+
+                if (!orders || orders.length === 0) {
+                    console.warn('⚠️ No orders found for selected period');
+                    renderTopProductsChart([], municipalityFilter, limitFilter, periodFilter);
+                    return;
+                }
+
+                const orderIds = orders.map(o => o.id);
+                console.log(`📦 Found ${orderIds.length} orders in ${periodFilter} period`);
+
+                // Get order items with product details and user info for these orders
                 let query = supabaseClient
                     .from('order_items')
                     .select(`
@@ -2748,13 +2814,14 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                                 municipality
                             )
                         )
-                    `);
+                    `)
+                    .in('order_id', orderIds);
 
                 const { data: orderItems, error: orderItemsError } = await query;
                 
                 if (orderItemsError) {
                     console.error('❌ Error fetching order items:', orderItemsError);
-                    renderTopProductsChart([], municipalityFilter, limitFilter);
+                    renderTopProductsChart([], municipalityFilter, limitFilter, periodFilter);
                     return;
                 }
                 
@@ -2762,7 +2829,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 
                 if (!orderItems || orderItems.length === 0) {
                     console.warn('⚠️ No order items found');
-                    renderTopProductsChart([], municipalityFilter, limitFilter);
+                    renderTopProductsChart([], municipalityFilter, limitFilter, periodFilter);
                     return;
                 }
 
@@ -2822,20 +2889,21 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 // Store current data for exports
                 currentTopProductsData = {
                     products: productsArray,
+                    period: periodFilter,
                     municipality: municipalityFilter,
                     limit: limitFilter
                 };
 
-                renderTopProductsChart(productsArray, municipalityFilter, limitFilter);
+                renderTopProductsChart(productsArray, municipalityFilter, limitFilter, periodFilter);
 
             } catch (error) {
                 console.error('💥 Error updating top products chart:', error);
-                renderTopProductsChart([], 'all', '10');
+                renderTopProductsChart([], 'all', '10', 'monthly');
             }
         }
 
         // Render the top products chart
-        function renderTopProductsChart(productsData, municipality, limit) {
+        function renderTopProductsChart(productsData, municipality, limit, period) {
             try {
                 if (topProductsChart && typeof topProductsChart.destroy === 'function') {
                     topProductsChart.destroy();
@@ -2849,6 +2917,9 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 }
 
                 const ctx = canvas.getContext('2d');
+
+                // Format period label for display
+                const periodLabel = period === 'weekly' ? 'Weekly' : period === 'yearly' ? 'Yearly' : 'Monthly';
 
                 if (!productsData || productsData.length === 0) {
                     // Show "No data" message
@@ -2869,7 +2940,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                                 legend: { display: false },
                                 title: {
                                     display: true,
-                                    text: municipality === 'all' ? 'No products data available' : `No products found in ${municipality}`
+                                    text: `${periodLabel} - ${municipality === 'all' ? 'No products data available' : `No products found in ${municipality}`}`
                                 }
                             }
                         }
@@ -2921,9 +2992,7 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                             },
                             title: {
                                 display: true,
-                                text: municipality === 'all' 
-                                    ? `Top ${limit === 'all' ? 'All' : limit} Selling Products (All Municipalities)` 
-                                    : `Top ${limit === 'all' ? 'All' : limit} Selling Products in ${municipality}`,
+                                text: `${periodLabel} - Top ${limit === 'all' ? 'All' : limit} Selling Products${municipality === 'all' ? ' (All Municipalities)' : ` in ${municipality}`}`,
                                 font: { size: 16, weight: 'bold' },
                                 padding: { top: 10, bottom: 20 }
                             },
@@ -4196,9 +4265,14 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     return;
                 }
                 
-                console.log('✅ Exporting crop insight data...');
-                // Export crop insight data
-                headers = 'Crop Name,Harvested (tons),Overproduction (tons),Total Production (tons),Land Cultivated,Unit\n';
+                const period = currentCropInsightData.period || 'Monthly';
+                const filter = currentCropInsightData.filter || 'All';
+                const periodLabel = period.charAt(0).toUpperCase() + period.slice(1);
+                const filterLabel = filter === 'all' ? 'All Crops' : filter === 'top10' ? 'Top 10 Crops' : 'Overproduced Only';
+                
+                console.log(`✅ Exporting crop insight data (${periodLabel} - ${filterLabel})...`);
+                // Export crop insight data with period and filter info
+                headers = `Period: ${periodLabel}\nFilter: ${filterLabel}\n\nCrop Name,Harvested (tons),Overproduction (tons),Total Production (tons),Land Cultivated,Unit\n`;
                 currentCropInsightData.labels.forEach((label, index) => {
                     const harvest = currentCropInsightData.harvest[index] || 0;
                     const overproduction = currentCropInsightData.overproduction[index] || 0;
@@ -4276,7 +4350,13 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 csv = headers + dataRows;
             } else if (chartType === 'topProducts' && currentTopProductsData) {
                 console.log('🏆 Processing top products export...');
-                headers = 'Rank,Product Name,Category,Units Sold,Revenue (PHP),Number of Orders\n';
+                
+                const period = currentTopProductsData.period === 'weekly' ? 'Weekly' : currentTopProductsData.period === 'yearly' ? 'Yearly' : 'Monthly';
+                const municipality = currentTopProductsData.municipality === 'all' ? 'All Municipalities' : currentTopProductsData.municipality;
+                const limit = currentTopProductsData.limit === 'all' ? 'All Products' : `Top ${currentTopProductsData.limit}`;
+                
+                headers = `Top Selling Products\nPeriod: ${period}\nMunicipality: ${municipality}\nShowing: ${limit}\n\nRank,Product Name,Category,Units Sold,Revenue (PHP),Number of Orders\n`;
+                
                 currentTopProductsData.products.forEach((product, index) => {
                     const rank = index + 1;
                     const name = product.productName || 'Unknown';
@@ -4403,9 +4483,14 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     margin: { left: leftMargin, right: rightMargin }
                 });
             } else if (chartType === 'cropInsight' && currentCropInsightData) {
+                const period = currentCropInsightData.period || 'Monthly';
+                const filter = currentCropInsightData.filter || 'All';
+                const periodLabel = period.charAt(0).toUpperCase() + period.slice(1);
+                const filterLabel = filter === 'all' ? 'All Crops' : filter === 'top10' ? 'Top 10 Crops' : 'Overproduced Only';
+                
                 doc.setFontSize(14);
                 doc.setFont(undefined, 'bold');
-                doc.text('Crop Insight Data Table', leftMargin, yPosition);
+                doc.text(`Crop Insight Data Table (${periodLabel} - ${filterLabel})`, leftMargin, yPosition);
                 yPosition += 10;
                 
                 const headers = [['Crop Name', 'Harvested (tons)', 'Overproduction (tons)', 'Total (tons)', 'Land Cultivated']];
@@ -4585,9 +4670,10 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
             } else if (chartType === 'topProducts' && currentTopProductsData) {
                 doc.setFontSize(14);
                 doc.setFont(undefined, 'bold');
+                const period = currentTopProductsData.period === 'weekly' ? 'Weekly' : currentTopProductsData.period === 'yearly' ? 'Yearly' : 'Monthly';
                 const municipality = currentTopProductsData.municipality === 'all' ? 'All Municipalities' : currentTopProductsData.municipality;
                 const limit = currentTopProductsData.limit === 'all' ? 'All Products' : `Top ${currentTopProductsData.limit}`;
-                doc.text(`Top Selling Products - ${municipality}`, leftMargin, yPosition);
+                doc.text(`Top Selling Products (${period}) - ${municipality} - ${limit}`, leftMargin, yPosition);
                 yPosition += 10;
                 
                 const headers = [['Rank', 'Product Name', 'Category', 'Quantity Sold', 'Revenue (PHP)', 'Orders']];
@@ -4829,8 +4915,15 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         }
                     } else if (chartType === 'cropInsight' && currentCropInsightData) {
                         console.log('🌾 Processing crop insight data...');
+                        
+                        const period = currentCropInsightData.period || 'Monthly';
+                        const filter = currentCropInsightData.filter || 'All';
+                        const periodLabel = period.charAt(0).toUpperCase() + period.slice(1);
+                        const filterLabel = filter === 'all' ? 'All Crops' : filter === 'top10' ? 'Top 10 Crops' : 'Overproduced Only';
+                        
                         dataTableHTML = `
                             <h2>Crop Insight Data Table</h2>
+                            <p><strong>Period:</strong> ${periodLabel} | <strong>Filter:</strong> ${filterLabel}</p>
                             <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
                                 <thead>
                                     <tr style="background-color: #f8f9fa;">
@@ -5002,11 +5095,12 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     } else if (chartType === 'topProducts' && currentTopProductsData) {
                         console.log('🏆 Processing top products data for Word export...');
                         
+                        const period = currentTopProductsData.period === 'weekly' ? 'Weekly' : currentTopProductsData.period === 'yearly' ? 'Yearly' : 'Monthly';
                         const municipality = currentTopProductsData.municipality === 'all' ? 'All Municipalities' : currentTopProductsData.municipality;
                         const limit = currentTopProductsData.limit === 'all' ? 'All Products' : `Top ${currentTopProductsData.limit}`;
                         
                         dataTableHTML = `
-                            <h2>Top Selling Products - ${municipality}</h2>
+                            <h2>Top Selling Products (${period}) - ${municipality} - ${limit}</h2>
                             <table border="1" style="border-collapse: collapse; width: 100%; margin: 20px 0;">
                                 <thead>
                                     <tr style="background-color: #f8f9fa;">
@@ -6199,19 +6293,43 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
         }
 
         // Update Crop Insight Chart based on filter
-        async function updateCropInsightChart(filter) {
+        async function updateCropInsightChart() {
             try {
-                console.log(`=== UPDATING CROP INSIGHT CHART (${filter}) ===`);
+                const periodFilter = document.getElementById('cropInsightPeriodFilter')?.value || 'monthly';
+                const cropFilter = document.getElementById('cropInsightFilter')?.value || 'all';
+                
+                console.log(`=== UPDATING CROP INSIGHT CHART (Period: ${periodFilter}, Filter: ${cropFilter}) ===`);
                 
                 if (!supabaseClient) {
                     console.error('Supabase client not available');
                     return;
                 }
 
-                // Fetch crop yield tracker data
+                // Calculate date range based on period filter
+                const now = new Date();
+                let startDate;
+                
+                switch (periodFilter) {
+                    case 'weekly':
+                        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'yearly':
+                        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'monthly':
+                    default:
+                        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        break;
+                }
+
+                console.log(`Fetching crop data from ${startDate.toISOString()} to ${now.toISOString()}`);
+
+                // Fetch crop yield tracker data with date filter
                 const { data: cropData, error } = await supabaseClient
                     .from('crop_yield_tracker')
                     .select('crop_name, overproduction, hectares, land_cultivated, land_unit, total_tons, shop_sellable_tons, created_at')
+                    .gte('created_at', startDate.toISOString())
+                    .lte('created_at', now.toISOString())
                     .order('created_at', { ascending: false });
 
                 if (error) {
@@ -6220,12 +6338,12 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                 }
 
                 if (!cropData || cropData.length === 0) {
-                    console.log('No crop data found, using demo data');
-                    renderCropInsightChart([], filter);
+                    console.log('No crop data found for selected period, using demo data');
+                    renderCropInsightChart([], cropFilter, periodFilter);
                     return;
                 }
 
-                console.log(`Found ${cropData.length} crop records`);
+                console.log(`Found ${cropData.length} crop records for ${periodFilter} period`);
                 
                 // Debug: Log first few records to check land_unit
                 if (cropData.length > 0) {
@@ -6233,20 +6351,21 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                         crop: c.crop_name,
                         land_cultivated: c.land_cultivated,
                         land_unit: c.land_unit,
-                        hectares: c.hectares
+                        hectares: c.hectares,
+                        created_at: c.created_at
                     })));
                 }
                 
-                renderCropInsightChart(cropData, filter);
+                renderCropInsightChart(cropData, cropFilter, periodFilter);
 
             } catch (error) {
                 console.error('Error updating crop insight chart:', error);
-                renderCropInsightChart([], filter);
+                renderCropInsightChart([], 'all', 'monthly');
             }
         }
 
         // Render Crop Insight Chart
-        function renderCropInsightChart(cropData, filter) {
+        function renderCropInsightChart(cropData, filter, period = 'monthly') {
             try {
                 // Destroy existing chart
                 if (cropInsightChart && typeof cropInsightChart.destroy === 'function') {
@@ -6333,11 +6452,15 @@ ${validSales > 0 ? '✅ Data looks good!' : '❌ No valid sales data found'}`;
                     overproduction: overproductionData,
                     landCultivated: landCultivatedData,
                     landUnits: landUnits,
-                    fullData: cropsArray
+                    fullData: cropsArray,
+                    period: period,
+                    filter: filter
                 };
                 
                 console.log('💾 Stored crop insight data for export:', {
                     crops: labels.length,
+                    period: period,
+                    filter: filter,
                     sampleData: currentCropInsightData.fullData.slice(0, 2)
                 });
                 
