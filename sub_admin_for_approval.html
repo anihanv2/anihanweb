@@ -11,7 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=5.0" rel="stylesheet">
     <link href="fixed-layout.css?v=5.0" rel="stylesheet">
     <link href="profile-dropdown.css?v=5.0" rel="stylesheet">
-    <link href="for_approval.css?v=5.0" rel="stylesheet">
+    <link href="sub_admin_for_approval.css?v=5.0" rel="stylesheet">
 </head>
 <body>
     <!-- Top Navigation -->
@@ -67,7 +67,6 @@
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar bg-white border-end">
                 <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                     <a class="nav-link d-flex align-items-center text-start" href="municipality_dashboard.html">
                         <i class="fas fa-tachometer-alt me-2"></i>
                         Dashboard
@@ -88,8 +87,19 @@
                         In Demand Products
                     </a>
                     
-                    <!-- Account Approval Dropdown -->
-                    <div class="nav-dropdown">
+                    <!-- Mobile-only flat links for Account Approval -->
+                    <a class="nav-link active d-flex align-items-center text-start d-md-none" href="sub_admin_for_approval.html">
+                        <i class="fas fa-user-clock me-2"></i>
+                        For Approval
+                    </a>
+                    
+                    <a class="nav-link d-flex align-items-center text-start d-md-none" href="sub_admin_approved_application.html">
+                        <i class="fas fa-user-check me-2"></i>
+                        Approved Applications
+                    </a>
+                    
+                    <!-- Account Approval Dropdown (Desktop only) -->
+                    <div class="nav-dropdown d-none d-md-block">
                         <button class="nav-link d-flex align-items-center justify-content-between text-start w-100" 
                                 type="button" data-bs-toggle="collapse" data-bs-target="#accountApprovalSubmenu" 
                                 aria-expanded="true" aria-controls="accountApprovalSubmenu">
@@ -766,12 +776,12 @@
 
         // Mobile sidebar toggle
         function toggleMobileSidebar() {
-            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
             document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
 
         function closeMobileSidebar() {
-            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar').classList.remove('mobile-open');
             document.querySelector('.sidebar-overlay').classList.remove('active');
         }
     </script>
